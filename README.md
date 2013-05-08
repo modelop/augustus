@@ -9,10 +9,10 @@ the tags directory.  For now, we recommend that you use Augustus 0.5.2.0 or
 
 Information about previous releases can be found here:
 
- * [API] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_3_0.uml)
- * [API] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_2_0.uml)
- * [API] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_1_0.uml)
- * [API] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_0_0.uml)
+ * [0.5.3.0 API Epydoc] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_3_0.uml)
+ * [0.5.2.0 API Epydoc] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_2_0.uml)
+ * [0.5.1.0 API Epydoc] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_1_0.uml)
+ * [0.5.0.0 API Epydoc] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0_5_0_0.uml)
 
 ### Older Releases ###
 
