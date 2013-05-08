@@ -1,0 +1,5 @@
+#!/usr/bin/env python2.5
+#I'm not sure this line is still needed.
+#import __setpath
+from augustus.pmmllib.pmmlConsumer import main
+main()

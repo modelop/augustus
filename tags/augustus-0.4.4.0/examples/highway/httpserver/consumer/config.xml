@@ -1,0 +1,22 @@
+<pmmlDeployment>
+  <logging>
+    <toStandardError/>
+  </logging>
+  <inputModel>
+    <fromFile name="sensor.pmml"/>
+  </inputModel>
+  <inputData>
+    <fromHTTP url="/score" port="8000" type="XML"/>
+  </inputData>
+  <output>
+    <eventBased/>
+    <report name="Highway">
+      <outputRow name="Event">
+        <outputColumn name="Direction" fieldName="sensor" />
+        <outputColumn name="Volume" fieldName="volume" />
+        <score name="Score" />
+        <alert name="Alert" />
+      </outputRow>
+    </report>
+  </output>
+</pmmlDeployment>

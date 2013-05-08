@@ -1,0 +1,5 @@
+<model input="input.pmml" output="model.pmml">
+    <test field="entity" testStatistic="zValue" testType="threshold" threshold="2">
+        <data file="test.csv" type="CSV" header="id,date,site,flag,entity" dist="gaussian"/>
+     </test>
+</model>

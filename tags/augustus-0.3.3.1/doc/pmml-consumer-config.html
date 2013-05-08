@@ -1,0 +1,64 @@
+<html><head><title>Augustus PMML comsumer configuration file documentation</title></head>
+<body>
+<p>This file documents the parts of an Augustus PMML consumer configuration file.</p>
+
+<p>An Augustus PMML consumer configuration file consists of several parts all included inside &lt;pmmlDeployment&gt; tags. The different parts that we will cover are, in order:
+
+<ol>
+<li>metadata</li>
+<li>logging</li>
+<li>inputModel</li>
+<li>inputData</li>
+<li>output</li>
+</ol></p>
+
+<h3>Metadata</h3>
+<p>The &lt;metadata&gt; tag is the first (and entirely optional) element of &lt;pmmlDeployment&gt;. This tag can include arbitrary elements that will not affect scoring at all. This is useful for storing metadata about the scoring that you might like to use for generating reports.</p>
+
+<h3>Logging</h3>
+<p>The &lt;logging&gt; tag is the second (and entirely optional) child element of &lt;pmmlDeployment&gt;. Within the logging tag there are three different tags that can be used to specify where log messages will be sent. Please note that you can use all of these tags multiple times.
+<ul>
+<li>&lt;toStandardOut&gt; can be used to send log messages to standard output.</li>
+<li>&lt;toStandardError&gt; can be used to send log messages to standard error.</li>
+<li>&lt;toFile name="filename"&gt; can be used to send log messages to a file.  The name attribute specifies which file messages will be written to. Please note that this option appends log messages to the file.</li>
+</ul></p>
+
+<h3>Input Model</h3>
+<p>The &lt;inputModel&gt; tag is the thrid child element of &lt;pmmlDeployment&gt; and the first that is required. This tag is used to specify where the PMML model file will be read from. Within the inputModel tag there are three different child elements that will be recognized.
+<ul>
+<li>&lt;fromFile name="filename"&gt; can be used to read the PMML model from the file <i>filename</i>.</li>
+<li>&lt;fromFifo name="filename"&gt; can be used to read the PMML model from the fifo <i>filename</i>.</li>
+<li>&lt;fromHTTP&gt; will be recognized but currently has no use. (Allowing models to be input via HTTP is a planed feature for future versions.)</li>
+</ul></p>
+
+<h3>Input Data</h3>
+<p>The &lt;inputData&gt; tag is the fourth child element of &lt;pmmlDeployment&gt; and is also required. This tag is used to specify how the data that will be scored will be input. Within the inputData tag there are several different child elements that we will cover.
+<ul>
+<li>&lt;fromFile name="filename" [type="UniTable"]&gt; specifies that the data will be read from the file <i>filename</i>. If the type attribute is present and is specified as "UniTable" (case sensitive) the file is assumed to be either a csv type file with headder or a NumArray Binary (NAB) type file; otherwise the file is assumed to be an XML file.</li>
+<li>&lt;fromCSVFile name="filename" [header="delimited header"] [sep="seperator"]&gt; specifies that the data will be read from the file <i>filename</i>. This use of this tag should only be necessary if data needs to be read in from a csv type file that needs special treatment. There are two critera that a csv type file could meet to qualify for special treatment:
+<ol>
+<li>The file does not have a header as the first line of the file and/or</li>
+<li>the seperator used in the file is not recognized. (The pipe, "|", character is the only common know case that would meet this critera.)</li>
+</ol>
+Remidies for both these cases can be specified as the attributes of this tag.
+</li>
+<li>&lt;fromFifo name="filename" [type="UniTable"]&gt; specifies that the data will be read from the fifo <i>filename</i>. If the type attribute is present and is specified as "UniTable" (case sensitive) the fifo is assumed to contain either a csv type format with headder or a NumArray Binary (NAB) type format; otherwise the fifo is assumed to contain an XML file.</li>
+<li>&lt;fromStandardInput [type="UniTable"]&gt; specifies that the data will be read from standard input. If the type attribute is present and is specified as "UniTable" (case sensitive) the input is assumed to be either a csv type file with headder or a NumArray Binary (NAB) type file; otherwise the input is assumed to be an XML file.</li>
+<li>&lt;fromHTTP url="relativeURL" port="portnum" [type="UniTable"]&gt; specifies that the data will be input via a GData like HTTP interface. The <i>portnum</i> attribute is the port that the PMML consumer will listen to and the <i>relativeURL</i> attribute is the relative URL that the requests must be made to. Note that <i>relativeURL</i> must include a leading slash ("/"). (Ex. to set up a scoring enging at example.com/score, <i>relativeURL</i> must be "/score".)</li>
+<li>&lt;batchScoring&gt; specifies that the PMML consumer will run in batch scoring mode. In batch scoring mode the PMML consumer will read and process all data before producing only one score per segment. (Normally the PMML consumer will output a score for every event that matches a segment.)</li>
+<li>&lt;readOnce&gt; specifies that the PMML consumer will only read from the data input source one time. <em>Unless you know what the code is doing you should include this tag anytime you use the fromFile, fromFifo, or fromStandardInput tags.</em></li>
+</ul></p>
+
+<h3>Output</h3>
+<p>The &lt;output&gt; tag is the last child element of &lt;pmmlDeployment&gt; and is also required. <em>This part of the configuration file could use some cleaning up. I'm not sure why everything is where it is and <i>I</i> am the one who wrote it.</em> Output has two possible child elements, &lt;report&gt; and &lt;eventBased&gt;, and we will discuss each of them in turn.</p>
+<p>The first child element of ouptut is &lt;report name="reportname"&gt;. The name attribute is required and is output at the beginning of a report. Report has three child elements and we'll cover each one of them here. The first is &lt;toFile name="filename"&gt; which will append the report to the file <i>filename</i>. The second is &lt;toHTTP host="hostname" url="rel_url"&gt; which will send each row in the report to the server <i>hostname</i> by POSTing to <i>rel_url</i>. (The <i>rel_url</i> attribute should include a leading "/".) If you need to specify a port, then <i>hostname</i> should look like <i>www.example.com:8000</i>. The thrid is &lt;outputRow name="rowname"&gt; which itself has several possible child elements that specify what the report will consists of. (The attribute <i>rowname</i> is used to wrap all of the columns and is output once per score computed.)
+<ul>
+<li>&lt;outputColumn name="colname" fieldName="PMMLfield"&gt; will output the value in <i>PMMLfield</i> in a format like this: &lt;colname&gt;<i>fieldvalue</i>&lt;/colname&gt;.</li>
+<li>&lt;outputColumn name="colname" value="string"&gt; will output <i>string</i> in a format like this: &lt;colname&gt;<i>string</i>&lt;/colname&gt;.</li>
+<li>&lt;score name="colname"&gt; will output the score the PMML consumer calculated in a format like this: &lt;colname&gt;<i>score</i>&lt;/colname&gt;.</li>
+<li>&lt;alert name="colname"&gt; will output wether or not the the score the PMML consumer calculated should be considered an alert in a format like this: &lt;colname&gt;<i>True/False</i>&lt;/colname&gt;.</li>
+<li>&lt;segments&gt; will output the segment information for this row in a format like this: &lt;Segments&gt;<i>segmentinfo</i>&lt;/Segments&gt;.</li>
+</ul></p>
+<p>The second child element of output is &lt;eventBased&gt; and if it is present the PMML consumer will wrap each score computed with the report name. Otherwise the report name will be output to the output file as an xml tag when the consumer starts and closed when consumer has finished scoring.</p>
+</body>
+</html>

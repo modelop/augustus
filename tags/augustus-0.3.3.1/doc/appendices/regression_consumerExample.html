@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Generator" content="Kate, the KDE Advanced Text Editor" />
+<title>regression_consumerExample.html</title>
+</head>
+<body>
+<pre>
+<span style="font-weight: bold;color: #000000;">
+&lt;pmmlDeployment&gt;
+ &lt;inputData&gt;
+  &lt;readOnce /&gt;
+  &lt;fromFile type="UniTable" name="../data/sampleRegressionData.nab"/&gt;
+ &lt;/inputData&gt;
+ &lt;inputModel&gt;
+  &lt;fromFile name="testRegression_output.pmml"/&gt;
+ &lt;/inputModel&gt;
+&lt;output&gt;
+ &lt;report name="report"&gt;
+  &lt;toFile name="_out/testRegressionOutput.xml"/&gt;
+  &lt;outputRow name="event"&gt;
+    &lt;score name="score"/&gt;
+  &lt;/outputRow&gt;
+  &lt;/report&gt;
+&lt;/output&gt;
+&lt;logging&gt;
+ &lt;toStandardError/&gt;
+&lt;/logging&gt;
+&lt;/pmmlDeployment&gt;
+
+</span>
+</pre></body>
+</html>

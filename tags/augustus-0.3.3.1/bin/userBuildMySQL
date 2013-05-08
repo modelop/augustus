@@ -1,0 +1,4 @@
+#!/usr/bin/python
+import __setpath
+from app.userBuildMySQL import main
+main()

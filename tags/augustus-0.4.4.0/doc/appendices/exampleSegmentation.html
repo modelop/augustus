@@ -1,0 +1,26 @@
+<html>
+  <body>
+    &lt;model <font color="green">input=</font><font color="red">"in.pmml"</font> <font color="green">output=</font><font color="red">"out.pmml"</font>&gt;<br />
+    &nbsp;&nbsp;&lt;test <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;baseline <font color="green">dist=</font><font color="red">"gaussian"</font> <font color="green">file=</font><font color="red">"inventory_may_2006.nab"</font> <font color="green">type=</font><font color="red">"UniTable"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;segmentation&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="grey">&lt;!-- &nbsp; the states where we currently have businesses-- &nbsp; &gt;</font><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;explicitSegments <font color="green">field=</font><font color="red">"state"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;segment <font color="green">value=</font><font color="red">"Texas"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;segment <font color="green">value=</font><font color="red">"Arizona"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;segment <font color="green">value=</font><font color="red">"Oklahoma"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;segment <font color="green">value=</font><font color="red">"California"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;segment <font color="green">value=</font><font color="red">"Mississippi"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;segment <font color="green">value=</font><font color="red">"Illinois"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/explicitSegments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="grey">&lt;!--the hours of the day--&gt;</font><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;regularSegments <font color="green">field=</font><font color="red">"hour"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;partition <font color="green">low=</font><font color="red">"0"</font> <font color="green">high=</font><font color="red">"24"</font> <font color="green">divisions=</font><font color="red">"24"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="grey">&lt;!-- &nbsp; while there should never be a 24, there will be things like 23.99,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so the division includes 24 to get all values less than 24 in that segment &nbsp; --&gt;</font><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/regularSegments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/segmentation&gt;<br />
+    &nbsp;&nbsp;&lt;/test&gt;<br />
+    &lt;/model&gt;<br />
+  </body>
+</html>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Generator" content="Kate, the KDE Advanced Text Editor" />
+<title>nbayes_example.pmml</title>
+</head>
+<body>
+<pre>
+<span style="color: #000000;">&lt;PMML version="3.2"&gt;</span>
+<span style="color: #000000;">  &lt;DataDictionary&gt;</span>
+<span style="color: #000000;">    &lt;DataField name="Gender" optype="categorical" dataType="string" /&gt;</span>
+<span style="color: #000000;">    &lt;DataField name="Month" optype="categorical" dataType="string" /&gt;</span>
+<span style="color: #000000;">    &lt;DataField name="YearlySalary" optype="categorical" dataType="string" /&gt;</span>
+<span style="color: #000000;">    &lt;DataField name="State" optype="categorical" dataType="string" /&gt;</span>
+<span style="color: #000000;">    &lt;DataField name="Candidate" optype="categorical" dataType="string" /&gt;</span>
+<span style="color: #000000;">  &lt;/DataDictionary&gt;</span>
+<span style="color: #000000;">  &lt;NaiveBayesModel threshold="0.05" functionName="classification"&gt;</span>
+<span style="color: #000000;">    &lt;MiningSchema&gt;</span>
+<span style="color: #000000;">      &lt;MiningField name="Gender" /&gt;</span>
+<span style="color: #000000;">      &lt;MiningField name="YearlySalary" /&gt;</span>
+<span style="color: #000000;">      &lt;MiningField name="State" /&gt;</span>
+<span style="color: #000000;">      &lt;MiningField name="Candidate" /&gt;</span>
+<span style="color: #000000;">    &lt;/MiningSchema&gt;</span>
+<span style="color: #000000;">    &lt;NaiveBayes&gt;</span>
+<span style="color: #000000;">      &lt;BayesInputs&gt;</span>
+<span style="color: #000000;">        &lt;BayesInput fieldName="Gender"&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="Male"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="1122.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="1138.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="1126.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="Female"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="1212.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="1110.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="1022.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">        &lt;/BayesInput&gt;</span>
+<span style="color: #000000;">        &lt;BayesInput fieldName="State"&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="New Hampshire"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="794.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="702.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="662.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="Iowa"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="718.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="756.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="736.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="South Carolina"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="822.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="790.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="750.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">        &lt;/BayesInput&gt;</span>
+<span style="color: #000000;">        &lt;BayesInput fieldName="YearlySalary"&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="Less Than 10,001"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="472.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="422.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="444.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="10,001-50,000"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="502.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="498.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="444.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="50,001-80,000"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="460.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="422.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="416.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="80,001-180,000"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="428.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="466.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="424.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">          &lt;PairCounts value="Greater Than 180,000"&gt;</span>
+<span style="color: #000000;">            &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Hillary Clinton" count="472.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="Barack Obama" count="440.0" /&gt;</span>
+<span style="color: #000000;">              &lt;TargetValueCount value="John Edwards" count="420.0" /&gt;</span>
+<span style="color: #000000;">            &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;/PairCounts&gt;</span>
+<span style="color: #000000;">        &lt;/BayesInput&gt;</span>
+<span style="color: #000000;">      &lt;/BayesInputs&gt;</span>
+<span style="color: #000000;">      &lt;BayesOutput fieldName="Candidate"&gt;</span>
+<span style="color: #000000;">        &lt;TargetValueCounts&gt;</span>
+<span style="color: #000000;">          &lt;TargetValueCount value="Hillary Clinton" count="2334.0" /&gt;</span>
+<span style="color: #000000;">          &lt;TargetValueCount value="Barack Obama" count="2248.0" /&gt;</span>
+<span style="color: #000000;">          &lt;TargetValueCount value="John Edwards" count="2148.0" /&gt;</span>
+<span style="color: #000000;">        &lt;/TargetValueCounts&gt;</span>
+<span style="color: #000000;">      &lt;/BayesOutput&gt;</span>
+<span style="color: #000000;">      &lt;Segments&gt;</span>
+<span style="color: #000000;">        &lt;ExplicitSegment field="Month" value="December" /&gt;</span>
+<span style="color: #000000;">      &lt;/Segments&gt;</span>
+<span style="color: #000000;">    &lt;/NaiveBayes&gt;</span>
+<span style="color: #000000;">  &lt;/NaiveBayesModel&gt;</span>
+<span style="color: #000000;">&lt;/PMML&gt;</span>
+</pre></body>
+</html>

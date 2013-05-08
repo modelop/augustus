@@ -1,0 +1,141 @@
+<html><head><link href="appendices/documentation.css" rel="stylesheet" type="text/css" /></head><body><h1 /><h2 /><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Producer Configuration File</a><br /><span>2 </span><a class="link" href="#2">Example Configuration</a><br /></div><body>
+<h3 id="1">1 Producer Configuration File</h3><div class="section">
+The configuration file for production of baseline models is used to specify the location of the input schema and resulting model, the type of test to be applied, the baseline data, and desired segmentation. <br />
+The configuration file is an XML document with a <i>&lt;model&gt;</i> as the root element. 
+Configuration elements are used as follows:
+<h3> Input Schema and Output Model </h3> 
+<br />
+These are specified as the <i>input</i> and <i>output</i> attributes of the <i> &lt;model&gt; </i> element,
+respectively.
+<br />
+<h3> Statistical Test </h3>
+The test is specified with the <i>&lt;test&gt;</i> element.
+Attributes include: 
+<dl>
+<dt><b><i>testStatistic</i></b>
+<dd> Which test to employ. Supported tests are:
+<ul>
+<li>GLR</li>
+<li>CUSUM</li>
+<li>zValue</li>
+<li>dDist</li>
+</ul>
+</dd>
+</dt>
+<dt><b><i>field</i></b></dt>
+<dd>Mining Field on which the models test for change.</dd>
+<dt><b><i>testType</i></b></dt>
+<dd>Type of comparison used between observed and expected values.</dd>
+<dt><b><i>normalizationScheme</i></b></dt>
+<dd>The ddist test collectively compares two vectors or <i>n</i>-tuples of values. The 
+test optionally applies a normalization factor to the collection of values. 
+Possible values are:
+<ul>
+<li>Independent (default)</li>
+<li>Average</li>
+<li>None</li>
+</ul>
+ </dd>
+<dt><b><i>threshold</i></b></dt>
+<dd>Numeric value from which the consumer evaluates whether an Alert Flag is generated on the output.</dd>
+<dt><b><i>conditionField</i></b>
+  <dd>
+  </dd>
+</dt>
+<dt><b><i>resetValue</i></b>
+  <dd>
+  </dd>
+</dt>
+<dt><b><i>windowSize</i></b>
+  <dd>
+  </dd>
+</dt>
+<dt><b><i>weightField</i></b>
+  <dd>
+  </dd>
+</dt>
+</dl>
+<h3> Baseline Data </h3>
+Baseline data is specified with the <i>&lt;baseline&gt;</i> element.
+This should be a child element of the <i>&lt;test&gt;</i> element.
+Attributes are as follows:
+<dl>
+ <dt><b><i>file</i></b></dt>
+ <dd />
+ <dt><b><i>type</i></b></dt>
+ <dd />
+ <dt><b><i>dist</i></b></dt>
+ <dd>Description to be used for baseline in sense of its distribution.
+Possible values are:
+<ul>
+ <li> poisson </li>
+ <li> uniform </li>
+ <li> gaussian </li>
+ <li> discrete </li>
+</ul>
+</dd>
+ <dt><b><i>type</i></b></dt>
+ <dd> File type. Currently supported ones are:
+  <ul>
+   <li> CSV </li>
+   <li> Binary </li>
+   <li> XML </li>
+  </ul>
+ </dd>
+ <dt><b><i>header</i></b></dt>
+ <dd> When the file is in CSV format, this string specifies an optional header.
+ If no header is specified, the first line of the file is assumed to be the header.
+ </dd>
+ <dt><b><i>sep</i></b></dt>
+ <dd> When the file is in CSV format, this string specifies an optional separator type.
+The default is a comma (,)</dd>
+</dl>
+
+<h3> Segmentation </h3>
+Segmentation is specified with the &lt;<i>segmentation</i>&gt; child element of the
+&lt;<i>test</i>&gt; element. Segmentation is then specified as a set of child
+elements of &lt;<i>segmentation</i>&gt; that defines the segmentation according
+to each of the segmenting variables. These definitions use one of the
+following choices:
+<dl>
+<dt>&lt;<i>explicitSegments</i>&gt;</dt>
+<dd>This element indicates that discrete values of a particular mining field, specified
+by the <i>field</i> attribute, will be used to define segments. The field
+values are then specified with a set of <i>&lt;segment&gt;</i> elements, each
+of which is a child element of the <i>&lt;explicitSegments&gt;</i> element.
+Each <i>&lt;segment&gt;</i> element should include a <i>value</i> attribute
+specifying the relevant value.</dd>
+<dt>&lt;<i>regularSegments</i>&gt;</dt>
+<dd>This element indicates a set of uniformly subdivided ranges of values
+for a particular mining field, 
+specified
+by the <i>field</i> attribute, will be used to define segments. The field
+values are then specified with a set of <i>&lt;segment&gt;</i> elements, each
+of which is a child element of the <i>&lt;regularSegments&gt;</i> element.
+Each <i>&lt;segment&gt;</i> element should include a <i>low</i>,<i>high</i>, and <i>divisions</i> attribute
+to specify, respectively, the lower bound, upper bound, and number of divisions.</dd>
+</dl>
+<br />
+</div>
+<br /><a class="link" href="#">Top</a><h3 id="2">2 Example Configuration</h3><div class="section">
+&lt;model input="schema.pmml" output="model.pmml"&gt; <br />
+&lt;test field="frequency" normalizationScheme="Independent" testStatistic="dDist" testType="threshold" threshold="0.875"&gt;<br />
+&lt;baseline dir="/data" dist="discrete" file="preprocessed.csv" type="CSV" /&gt;<br />
+&lt;segmentation&gt;<br />
+ &lt;explicitSegments field="Location"&gt;<br />
+  &lt;segment value=" Elm St." /&gt;<br />
+  &lt;segment value=" Main Ave." /&gt;<br />
+ &lt;/explicitSegments&gt;<br />
+ &lt;explicitSegments field="FamilySize"&gt;<br />
+  &lt;segment value=" 1" /&gt;<br />
+  &lt;segment value=" 2" /&gt;<br />
+  &lt;segment value=" &gt;2" /&gt;<br />
+ &lt;/explicitSegments&gt;<br />
+ &lt;regularSegments field="Income"&gt;<br />
+  &lt;segment low="0" high="1000000" divisions="20" /&gt;<br />
+&lt;/segmentation&gt;<br />
+&lt;/test&gt;<br />
+&lt;/model&gt;<br />
+</div>
+<br /><a class="link" href="#">Top</a></body>
+</body></html>

@@ -1,0 +1,25 @@
+Basic Examples
+----- --------
+
+This diretory holds simple examples to help a user get use to unitable and 
+models.
+
+top_ten.py
+----------
+
+top_ten.py takes one or more files (nab or csv) and outputs the top ten values
+for each field from each file.
+
+    $ python top-ten.py ../auto/data/training.nab
+    $ python top-ten.py ../auto/data/training.nab \
+        ../auto/data/wtraining_converted.csv 
+
+
+naive_bayes.py
+--------------
+
+naive-bayes.py takes a single file and determines the accuracy of a simple
+naive-bayes model.
+
+Additional flags and parameters can also be passed in, please see the file for
+more information.

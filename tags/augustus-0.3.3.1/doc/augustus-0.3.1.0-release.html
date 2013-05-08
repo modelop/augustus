@@ -1,0 +1,78 @@
+<html>
+<head>
+  <link href="appendices/documentation.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<center>
+<h2>Augustus Version 0.3.1.0</h2>
+<h3>
+Point Release Notes v.0.3.1.0<br>
+April 2, 2009<br>
+</h3>
+</center>
+
+
+<h4><br>Contents</h4>
+<div class="section">
+<span>1 </span><a class="link" href="#1"> Overview</a><br />
+<span>2 </span><a class="link" href="#2"> Point release additions</a><br />
+<span>3 </span><a class="link" href="#3"> Bugs fixed</a><br />
+</div>
+
+
+<h4 id="1"><br>1. Overview</h4>
+<div class="section">
+<p>
+These are the point release notes that augment the <a class="link" href="augustus-docs-v1.html" target="_blank">documentation</a> for Augustus Version 0.3.1.0.
+</p>
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="2"><br>2. Point release additions</h4>
+<div class="section">
+<h5><br>
+Tree Model
+</h5>
+<p>
+Augustus now supports the Tree model.  All types of trees can be consumed and classification trees can be produced.
+</p>
+<h5><br>
+Regression Model
+</h5>
+<p>
+Augustus now supports the Regression model.
+</p>
+<h5><br>
+Unified Consumer
+</h5>
+<p>
+Previously, each type of model had its own consumer script.  Now that we've added support for two more models, we've discovered that we only need to have a single consumer script that can consume all types of models.  Please replace any uses of AugustusBaselineConsumer or AugustusNaiveBayesConsumer with the new AugustusPMMLConsumer.
+</p>
+
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="3"><br>3. Bugs fixed</h4>
+<div class="section">
+<h5><br>
+Naive Bayes Improvements
+</h5>
+<p>
+Various minor bugs releated to the Naive Bayes model were fixed.
+</p>
+
+<h5><br>
+PMML Builtin Functions
+</h5>
+<p>
+Various builtin functions were clarified in PMML version 3.2 and we've updated our implementation of these to match their description in the standard.
+</p>
+
+</div>
+<a class="link" href="#">Top</a>
+
+</body>
+</html>

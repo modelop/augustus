@@ -1,0 +1,65 @@
+<html><head><link href="./documentation.css" rel="stylesheet" type="text/css" /></head><body><h1>Examples and Demostrations</h1><h2>Augustus 0.4.4.0</h2><h2>Project Example</h2><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Description</a><br /><span>2 </span><a class="link" href="#2">Setup</a><br /><div class="section"><span>2.1 </span><a class="link" href="#2.1">Copy files</a><br /><span>2.2 </span><a class="link" href="#2.2">Set environment variables</a><br /><span>2.3 </span><a class="link" href="#2.3">Data</a><br /></div><span>3 </span><a class="link" href="#3">Execution</a><br /><div class="section"><span>3.1 </span><a class="link" href="#3.1">Analyses</a><br /><span>3.2 </span><a class="link" href="#3.2">Create a PMML file</a><br /><span>3.3 </span><a class="link" href="#3.3">Produce scores from a data file</a><br /><span>3.4 </span><a class="link" href="#3.4">Help</a><br /></div></div><h3 id="1">1 Description</h3><div class="section">
+    This document describes the example project.
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="2">2 Setup</h3><div class="section">
+    <h4 id="2.1">2.1 Copy files</h4><div class="section">
+      Copy the files from <span class="directory">augustus/examples/projectExample</span> 
+      into a new directory not in the augustus directory tree.  This new 
+      directory is the <span class="directory">project</span> directory.<br /><br />
+
+      For example: <br /><br />
+      <span class="command">cd ~/augustus/examples</span><br />
+      <span class="command">cp -pr projectExample/ ~/project</span><br />
+    </div>
+
+    <h4 id="2.2">2.2 Set environment variables</h4><div class="section">
+      Set the PROJECT environment variable to point to the <span class="directory">project</span> 
+      directory.  Set the PYTHONPATH to point to <span class="directory">project</span> 
+      and <span class="directory">augustus</span>.<br /><br />
+
+      For example: <br /><br />
+      <span class="command">export PROJECT=~/project</span><br />
+      <span class="command">export PYTHONPATH=$PYTHONPATH:$PROJECT:~/augustus</span><br />
+    </div>
+
+   <h4 id="2.3">2.3 Data</h4><div class="section">
+      Download one of the traffic-24h*.gz data files, for example traffic-24h-2007-11-01.gz, from the 
+      <a class="link" href="http://highway.lac.uic.edu/snapshots/">Pantheon Testbed</a> 
+      provided by the TeraFlow Testbed and place it in <span class="directory">project/data</span>.<br /><br />
+
+      Uncompress the data file:<br /><br />
+      <span class="command">gunzip project/data/traffic-24h*.gz</span>
+    </div>
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="3">3 Execution</h3><div class="section">
+    <h4 id="3.1">3.1 Analyses</h4><div class="section">
+      Choose one of the following:<br /><br />
+      <div class="section">
+        Occupancy Example - Move to <span class="directory">project/occupancyExample/scripts</span>.<br />
+        Speed Example - Move to <span class="directory">project/speedExample/scripts</span>.<br />
+        Volume Example - Move to <span class="directory">project/volumeExample/scripts</span>.<br />
+      </div>
+    </div>
+    <h4 id="3.2">3.2 Create a PMML file</h4><div class="section">
+      Enter<br /><br />
+      <span class="command">python produce.py -f traffic-24h* -t 10</span><br /><br />
+      to produce a PMML file while outputting timing information every 10% of the 
+      way through the data.
+    </div>
+    <h4 id="3.3">3.3 Produce scores from a data file</h4><div class="section">
+      Enter<br /><br />
+      <span class="command">python consume.py -b traffic-24h* -f traffic-24h*</span><br /><br />
+      to score the same data you used to create the PMML file.<br /><br />
+
+      After the producer and consumer complete processing output data will be in the
+      <span class="directory">producer</span> and <span class="directory">consumer</span> directories.
+    </div>
+    <h4 id="3.4">3.4 Help</h4><div class="section">
+      If you wish to see help for these programs enter<br /><br />
+      <span class="command">python produce.py -h</span><br />
+      <span class="command">python consume.py -h</span>.
+    </div>
+  </div>
+<br /><a class="link" href="#">Top</a></body></html>

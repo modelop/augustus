@@ -1,0 +1,93 @@
+<html>
+<head>
+  <link href="./release.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<center>
+<h2><span>Augustus Version 0.3.0.0</span></h2>
+<h3>
+Point Release Notes v.0.3.0.0<br>
+October 31, 2008<br>
+</h3>
+</center>
+
+
+<h4><br>Contents</h4>
+<div class="section">
+<a class="local" href="#1"> Overview</a><br />
+<a class="local" href="#2"> Point release additions</a><br />
+<a class="local" href="#3"> Bugs fixed</a><br />
+</div>
+
+
+<h4 id="1"><br>1. Overview</h4>
+<div class="section">
+<p>
+These are the point release notes that augment the <a class="link" href="augustus-docs-v1.html" target="_blank">documentation</a> for Augustus Version 0.3.0.0.
+</p>
+</div>
+<a class="local" href="#">Top</a>
+
+
+<h4 id="2"><br>2. Point release additions</h4>
+<div class="section">
+<h5><br>
+Switch to Python v2.5
+</h5>
+</p>
+<p>
+Augustus is now based on Python v2.5 throughout.
+</p>
+<h5><br>
+Switch to NumPy package.
+</h5>
+<p>
+Previous versions of Augustus used the Numarray package to handle a variety of mathematical and vectorized processing. Numarray has been superceded by the NumPy package. One advantage of using NumPy is that, on platform which support large memory addresses, Unitable columns of more than 2 Gb are now supported. This change has been accompanied by the change to compliance with Python v2.5.
+</p>
+<h5><br>
+Segment Validation for Baseline Models using ddist test.
+</h5>
+<p>
+Baseline models scored with a ddist test may be created with the producer
+which omit segments which do not have sufficient data as specified by the user.
+</p>
+<h5><br>
+Updates to Baseline Models using ddist test.
+</h5>
+<p>
+Existing Baseline models which use a ddist test may be updated with new data without having to
+re-process previous data used to create the original model.
+</p>
+<h5><br>
+Naive Bayes Model
+</h5>
+<p>
+Augustus now supports a Naive Bayes model.
+</p>
+
+</div>
+<a class="local" href="#">Top</a>
+
+
+<h4 id="3"><br>3. Bugs fixed</h4>
+<div class="section">
+<h5><br>
+Producing Baseline Models supporting the CUSUM test.
+</h5>
+<p>
+A bug in the producer for Baseline models did not correctly handle specification of the alternate model required for this test. This bug is now fixed.
+</p>
+
+<h5><br>
+Hidden files in directory specified to producer as data source.
+</h5>
+<p>
+Users have the option of specifying a directory where data appropriate for building models is located. Previous versions failed when the directory contained irregular files, most notably 'hidden' directories such as those beginning with a period ('.'). The current version ignores both directories and these files.
+</p>
+
+</div>
+<a class="local" href="#">Top</a>
+
+</body>
+</html>

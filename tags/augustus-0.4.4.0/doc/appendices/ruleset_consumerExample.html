@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Generator" content="Kate, the KDE Advanced Text Editor" />
+<title>ruleset_consumnerExample.html</title>
+</head>
+<body>
+<pre>
+<span style="font-weight: bold;color: #000000;">&lt;pmmlDeployment&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;logging&gt;</span>
+<span style="color: #000000;">   </span><span style="font-weight: bold;color: #000000;">&lt;toStandardError/&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;/logging&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;inputModel&gt;</span>
+<span style="color: #000000;">   </span><span style="font-weight: bold;color: #000000;">&lt;fromFile</span><span style="color: #008000;"> name=</span><span style="color: #aa0000;">"iris-ruleset-model.pmml"</span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;/inputModel&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;inputData&gt;</span>
+<span style="color: #000000;">   </span><span style="font-weight: bold;color: #000000;">&lt;readOnce</span><span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;">   </span><span style="font-weight: bold;color: #000000;">&lt;fromFile</span><span style="color: #008000;"> type=</span><span style="color: #aa0000;">"UniTable"</span>&nbsp;<span style="color: #008000;">name=</span><span style="color: #aa0000;">"../data/Iris.csv"</span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;/inputData&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;output&gt;</span>
+<span style="color: #000000;">   </span><span style="font-weight: bold;color: #000000;">&lt;report</span><span style="color: #008000;"> name=</span><span style="color: #aa0000;">"Iris"</span><span style="font-weight: bold;color: #000000;">&gt;</span>
+<span style="color: #000000;">     </span><span style="font-weight: bold;color: #000000;">&lt;toFile</span><span style="color: #008000;"> name=</span><span style="color: #aa0000;">"/_out/iris-ruleset-output.xml"</span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;">     </span><span style="font-weight: bold;color: #000000;">&lt;outputRow</span><span style="color: #008000;"> name=</span><span style="color: #aa0000;">"Event"</span><span style="font-weight: bold;color: #000000;">&gt;</span>
+<span style="color: #000000;">       </span><span style="font-weight: bold;color: #000000;">&lt;score</span><span style="color: #008000;"> name=</span><span style="color: #aa0000;">"Score"</span><span style="font-weight: bold;color: #000000;">&gt;</span>
+<span style="color: #000000;">     </span><span style="font-weight: bold;color: #000000;">&lt;/outputRow&gt;</span>
+<span style="color: #000000;">   </span><span style="font-weight: bold;color: #000000;">&lt;/report&gt;</span>
+<span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">&lt;/output&gt;</span>
+<span style="font-weight: bold;color: #000000;">&lt;/pmmlDeployment&gt;</span>
+</pre></body>
+</html>

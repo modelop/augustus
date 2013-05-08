@@ -1,0 +1,20 @@
+One of the file types that Augustus can use is .nab.  These are NumArray Binary
+files.  This a convenient file type, but there can be a problem moving these
+from machine to machine when different encodings are used.
+
+We hope that the data files in this directory are usable on your system.  The
+*_converted.csv files were generated using unitable and can be used if the .nab
+files do not work on your system.
+
+The csv files were generated on the commandline with:
+
+  $ pyhon
+  Python 2.5.4 (r254:67916, Apr  4 2009, 17:56:17) 
+  [GCC 4.3.3] on linux2
+  Type "help", "copyright", "credits" or "license" for more information.
+  >>> from augustus.kernel.unitable import UniTable
+  >>> tbl = UniTable()
+  >>> tbl.fromfile('wtraining.nab')
+  ... method output omitted
+  >>> tbl.to_csv_file('wtraining_converted.csv')
+

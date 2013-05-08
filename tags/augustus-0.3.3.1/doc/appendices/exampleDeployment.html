@@ -1,0 +1,52 @@
+<html>
+  <body>
+    &lt;pmmlDeployment&gt;<br />
+    &nbsp;&nbsp;&lt;inputModel&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromFile <font color="green">name=</font><font color="red">"inventory.pmml"</font> /&gt;<br />
+<font color="grey">&lt;!--###################################################<br />
+...<br />
+Any of the following options may also be chosen for use; however, only one<br />
+at a time may be utilized.<br />
+...<br />
+###################################################<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromFifo name="inventory.fifo" type="XML"/&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromDatabase connectioninfo="DATABASE:pmml;TABLE:inventory" /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromHTTP url="inventory.html" port="80" /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromStandardInput type="UniTable" /&gt;<br />
+--&gt;</font><br />
+    &nbsp;&nbsp;&lt;/inputModel&gt;<br />
+    &nbsp;&nbsp;&lt;inputData&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromFile <font color="green">name=</font><font color="red">"inventory_june_2006.nab"</font> <font color="green">type=</font><font color="red">"UniTable"</font> /&gt;<br />
+<font color="grey">&lt;!--###################################################<br />
+...<br />
+Any of the following options may also be chosen for use; however, only one<br />
+at a time may be utilized.<br />
+...<br />
+###################################################<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromFifo name="inventory_june_2006.fifo" type="XML"/&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromDatabase connectioninfo="DATABASE:pmml;TABLE:inventory_june_2006" /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromHTTP url="inventory_june_2006.html" port="80" /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;fromStandardInput type="XML" /&gt;<br />
+--&gt;</font><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color="grey">&lt;!--&lt;batchScoring /&gt;--&gt;</font><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color="grey">&lt;!--&lt;readOnce /&gt;--&gt;</font><br />
+    &nbsp;&nbsp;&lt;/inputData&gt;<br />
+    &nbsp;&nbsp;&lt;output&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color="grey">&lt;!--&lt;eventBased /&gt;--&gt;</font><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;report <font color="green">name=</font><font color="red">"inventory"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;toFile <font color="green">name=</font><font color="red">"scores.xml"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;outputRow <font color="green">name=</font><font color="red">"hourlyInventory"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;outputColumn <font color="green">name=</font><font color="red">"state"</font> <font color="green">field=</font><font color="red">"state"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;outputColumn <font color="green">name=</font><font color="red">"hour"</font> <font color="green">field=</font><font color="red">"hour"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;score <font color="green">name=</font><font color="red">"score"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;outputColumn <font color="green">name=</font><font color="red">"numberOfVehicle"</font> <font color="green">field=</font><font color="red">"num"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;outputColumn <font color="green">name=</font><font color="red">"make"</font> <font color="green">field=</font><font color="red">"make"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;outputColumn <font color="green">name=</font><font color="red">"model"</font> <font color="green">field=</font><font color="red">"model"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;alert <font color="green">name=</font><font color="red">"tooManyVehicles"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;segments /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/outputRow&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/report&gt;<br />
+    &nbsp;&nbsp;&lt;/output&gt;<br />
+    &lt;/pmmlDeployment&gt;<br />
+  </body>
+</html>

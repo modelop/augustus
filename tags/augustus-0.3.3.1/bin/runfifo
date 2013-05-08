@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+import __setpath
+from tools import runfifo
+runfifo.main()

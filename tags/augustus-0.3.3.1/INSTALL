@@ -1,0 +1,56 @@
+Installing Augustus
+===================
+
+Requirements
+------------
+
+The following are required to install and run Augustus.
+
+1. Python version 2.5, earlier versions are not supported.
+2. numpy version 1.1 or later, <http://sourceforge.net/project/showfiles.php?group_id=1369&package_id=175103>
+
+Optional Packages
+-----------------
+
+The following are not currently required but, if available,
+will enhance the capabilities of Augustus.  Most of these will
+be required when Augustus reaches version 1.0.
+
+Math enhancements.
+
+1. Python interface to R <http://rpy.sourceforge.net/>
+   The tree model producer has an option to use R-rpart as an engine.
+
+XML/PMML enhancements:
+
+1. LXML, python interface to libxml2 and libxslt <http://codespeak.net/lxml/> 
+
+4. Python interface to the GNU Scientific Library <http://pygsl.sourceforge.net>
+
+Installation
+------------
+
+There are two standard ways of installing Augustus:
+
+1. The unpacked augustus distribution can be use in-place by setting
+   appropriate environment variables.  For example, if augustus-0.3.0.0.tar.gz
+   is unpacked in /usr/local, then use:
+
+     PYTHONPATH=$PYTHONPATH:/usr/local/augustus-0.3.0.0
+     PATH=$PATH:/usr/local/augustus-0.3.0.0/bin
+
+2. The usual python package installation steps can be used to install
+   to standard locations that are by default in PYTHONPATH and PATH.
+   After unpacking the distribution, in the distribution base directory run:
+
+     python setup.py install
+
+   The installation destination can be modified by using options such as
+   --prefix (run "python setup.py --help" for more).  By default,
+   this would install into:
+
+     /usr/local/lib/python2.5/site-packages
+     /usr/local/bin
+
+
+See doc/install.html for more detailed installation instructions.

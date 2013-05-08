@@ -1,0 +1,55 @@
+<html><head><link href="documentation.css" rel="stylesheet" type="text/css" /></head><body><h1>Augustus 0.3.2</h1><h2>Overview of PMML Segmentation</h2><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Description</a><br /><span>2 </span><a class="link" href="#2">Definition</a><br /><span>3 </span><a class="link" href="#3">Use</a><br /><div class="section"><span>3.1 </span><a class="link" href="#3.1">Defining Segments</a><br /><span>3.2 </span><a class="link" href="#3.2">When to use segments</a><br /></div></div><h3 id="1">1 Description</h3><div class="section">
+    This document describes the definition and use of 
+    segmentation.
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="2">2 Definition</h3><div class="section">
+    Segmentation allows the user to partition the input data 
+    using either string literals or real ranges.  This means 
+    that the user can create multiple models within the same 
+    PMML file based upon input parameters.  For instance, in 
+    this <a class="link" href="producedPmml.html" target="_blank">example</a> 
+    the user has broken up the data so that for every state 
+    and hour combination there is a different model.
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="3">3 Use</h3><div class="section">
+    It would be rather tedious to calculate the mean and 
+    variance for each distribution by hand (especially since 
+    there could be thousands of them to calculate) so 
+    Augustus contains a producer that fulfills this function.<br /><br />
+    <h4 id="3.1">3.1 Defining Segments</h4><div class="section">
+      An <a class="link" href="exampleSegmentation.html" target="_blank">example</a> 
+      producer configuration file is provided for the user.<br /><br />
+      The segmentation tag denotes the definition of the 
+      segmentation for this model.  Within it there may be 
+      any number of explicit and/or regular segment 
+      declarations; however, there may only be one 
+      declaration per field.<br /><br />
+      The explicit segment declaration identifies the field the 
+      restriction is placed upon as the state field and then 
+      lists the possible values (there may be any number of 
+      these).  The regular segment declaration declares the 
+      field the restriction is placed upon as the hour field 
+      and then states that the producer is to create 24 ranges 
+      of equal length between the numbers 0 and 24.  There can 
+      be any number of these partition declarations.<br /><br />
+      When the producer creates the models, it will make a 
+      distinct model for all possible sets of the values (or 
+      ranges) choosing one from each declaration.  In our 
+      example, this means that there will be 6 (# of states) * 
+      24 (# of hours) = 144 (number of segments) different 
+      models.
+    </div>
+    <h4 id="3.2">3.2 When to use segments</h4><div class="section">
+      Segmentation is used so that multiple predictive models 
+      can be used to improve the overall performance of the 
+      combined model.  For example, when scoring the average 
+      amount of rainfall recorded for a region one could break 
+      up the data into rainfall for certain regions (which has 
+      a huge impact on average rainfall data) and month (which 
+      also has a huge impact on average rainfall data.)  This 
+      allows for more accurate results when scoring data.
+    </div>
+  </div>
+<br /><a class="link" href="#">Top</a></body></html>

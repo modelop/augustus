@@ -1,0 +1,24 @@
+<pmmlDeployment>
+  <logging>
+    <toStandardError/>
+  </logging>
+  <inputModel>
+    <fromFile name="real_baseline.pmml" />
+  </inputModel>
+  <inputData>
+    <fromFile name="../data/scoring.csv" type="UniTable"/>
+    <readOnce/>
+  </inputData>
+  <output>
+    <report name="Test">
+      <toFile name="../results/scores.xml" />
+      <outputRow name="Event">
+        <outputColumn name="Device" fieldName="fielddeviceid" />
+        <outputColumn name="Day" fieldName="Day" />
+        <outputColumn name="Hour" fieldName="Hour" />
+        <score name="Score" />
+        <alert name="Alert" />
+      </outputRow>
+    </report>
+  </output>
+</pmmlDeployment>

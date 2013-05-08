@@ -1,0 +1,433 @@
+<html><head><link href="./documentation.css" rel="stylesheet" type="text/css" /></head><body><h1>Statistical and Data Handling Considerations for Baseline Models</h1><h2 /><h2 /><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Data Samples</a><br /><div class="section"><span>1.1 </span><a class="link" href="#1.1">Preprocessing Data</a><br /><span>1.2 </span><a class="link" href="#1.2">Differences between Baseline and Scored Data</a><br /><span>1.3 </span><a class="link" href="#1.3">Required Sample Sizes for Models and Segments</a><br /><span>1.4 </span><a class="link" href="#1.4">Refreshing Models</a><br /><span>1.5 </span><a class="link" href="#1.5">Segmentation Strategies</a><br /></div><span>2 </span><a class="link" href="#2">Statistical Distributions</a><br /><div class="section"><span>2.1 </span><a class="link" href="#2.1">Uses for Different Distributions and Tests</a><br /><div class="section"><span>2.1.1 </span><a class="link" href="#2.1.1">Changes in an Average Value</a><br /><span>2.1.2 </span><a class="link" href="#2.1.2">Changes in Counts</a><br /><span>2.1.3 </span><a class="link" href="#2.1.3">Changes in Rates</a><br /><span>2.1.4 </span><a class="link" href="#2.1.4">Changes in Relative Frequencies</a><br /></div><span>2.2 </span><a class="link" href="#2.2"> Normal Distributions</a><br /><span>2.3 </span><a class="link" href="#2.3">Poisson Distributions</a><br /><span>2.4 </span><a class="link" href="#2.4">User-defined distributions:</a><br /><span>2.5 </span><a class="link" href="#2.5">Continuous and Discrete Distributions</a><br /></div><span>3 </span><a class="link" href="#3">Testing Baseline Models</a><br /><div class="section"><span>3.1 </span><a class="link" href="#3.1">Score Normalizations</a><br /></div></div><h3 id="1">1 Data Samples</h3><div class="section">
+
+<h4 id="1.1">1.1 Preprocessing Data</h4><div class="section">
+      In the course of developing and using models, users inevitably find 
+      a need to augment their data. Examples are the removal of observations
+      known to be extraneous or spurious or the introduction of new
+      fields derived from the 'raw' observations. Raw data typically
+      has limited flexibility to support changes to its structure. Instead,
+      such needs are met either by 'Preprocessing', creating an
+      intermediate sample prior to its analysis. Preprocessing can be
+      accomplished externally to a model producer or consumer or internally.
+      In the context of Augustus, internal preprocessing is supported
+      either through the use of Derived Fields, specified by PMML, or by 
+      a number of configuration options passed to the Augustus producer 
+      applications. 
+<p />
+      Externally preprocessing the data has the greatest flexibility 
+      of these approaches but requires more intensive work by the user 
+      who is responsible for implementing the preprocessing sequence. Once
+      a preprocessing sequence is implemented, Augustus can be used to
+      invoke it through the deployment package. Depending on details
+      of the implementation, preprocessing will usually require user
+      attention to the management of intermediate data.  Users should also
+      pay attention to whether preprocessing of baseline and scored data
+      will maintain coherence between the two; i.e. whether preprocessing
+      is unexpectedly introducing systematic differences in either the
+      structure or properties of the two samples.
+<p />
+      PMML supports the presence of Derived Fields in the description
+      of models. Values for derived fields are specified by referencing
+      the appropriate elements which describe functions to be applied
+      to raw data fields. 
+<p />
+      The Augustus producer applications support two common cases
+      of preprocessing by specific configuration options. These cases
+      include:
+      <li> Correction of models for implied cases of empty observations.</li>
+      <li> Requiring minimal amounts of data in model segments.</li>
+</div>
+
+
+<h4 id="1.2">1.2 Differences between Baseline and Scored Data</h4><div class="section">
+
+Not all data is created alike. Baseline models are particularly
+sensitive to differences between the data used for the construction
+of the model and the data which is scored. Baseline models, after
+all, are tested by assessing the likelihood that scored data looks
+like baseline data. A common situation for users is having large
+samples of historical data that can be used to create a baseline
+model intended for use in testing new sources of data. Obviously these
+two data samples can differ in their structure (e.g. field names,
+number of fields, and delimiters), but there are other less obvious 
+possible differences that users need to bear in mind.
+<p />
+   Do values in the baseline and scored data samples span the same
+   ranges?
+<p />
+   The most common and often overlooked example of this is when
+   the baseline sample reports a count corresponding to specific
+   field values that reflects an aggregation. In such cases, a
+   count of 0 will typically be omitted. If the subsequently scored
+   data will include situations where a count of 0 is included, the
+   test of the baseline model will not be accurate.  As an example,
+   suppose that scoring proceeds by comparing the number of blue 
+   widgets, red widgets, and green widgets observed each day with the 
+   historical expectations. Suppose that the baseline data consists 
+   of a a list of widgets observed per day, *if any*, their color, 
+   and the day on which they were observed. The expected count per 
+   day is calculated from the list of counts per day per color.
+   Suppose that 3 red widgets were observed on day 1, 3 on day 2, 3
+   on day 3, 1 on day 4, and none on day 5. The expected count will
+   be determined as (3+3+3+1)/4 = 2.5 and *not* (3+3+3+1)/5 = 2.0.
+   The expected count is the expected count given that there were any.
+   If the model is tested against data on a day where there were no
+   red widgets, the observation of no such widgets is clearly less
+   consistent with such a model (0 is less consistent with 2.5 than 
+   with 2.0).
+
+   There are several ways of managing these cases:
+   <ol type="1">
+   <li type="1"> Preprocess baseline data to introduce records with counts of 0.</li>
+  
+   <li> Preprocess scored data to omit records with counts of 0.</li>
+
+   <li> Score data in 'batch' mode and performing live aggregation of
+      scored data. 
+      This will yield scores per segment and not per record. In such a 
+      case, users will need to provide for aggregations (using the 
+      Aggregation PMML element, for instance). Using the aggregations 
+      over the counts and the appropriate length of time (days in the 
+      example above) will produce scored values which are calculated the 
+      same way as the baseline model, i.e. by effectively omitting zeroes.
+      With this procedure there is still a risk that the aggregated count
+      is zero which would not be accurately scored.</li>
+
+   <li> Correcting the model for implied occurrences of 0 counts.
+      The Augustus baseline producer allows users to specify the number
+      of occurrences over which statistics are to be calculated. If the
+      observations for a given segment are less than the specified number,
+      then the model is corrected by taking the difference to reflect
+      unseen counts of 0.</li>
+   </ol>
+</div>
+<h4 id="1.3">1.3 Required Sample Sizes for Models and Segments</h4><div class="section">
+      Sample sizes impact models by limiting the precision with
+      which parameters are estimated. By introducing uncertainty
+      into model parameters, the fraction of false positives
+      will generally exceed what is expected. Appropriate data
+      sizes will accordingly depend on a user's tolerance for
+      false positives. In most cases, at least 100 observations
+      would be needed to support additional false positives rates 
+      smaller than 5% or so. Suppressing additional false positive 
+      rates to below 1% would require at least 1000 observations.
+
+      While users can and will often perform their own preprocessing to
+      ensure sufficient data relative to each segment, Augustus
+      supports simple validation of segments according to their
+      populations using the "validation" tag for the baseline
+      producer. 
+</div>
+
+<h4 id="1.4">1.4 Refreshing Models</h4><div class="section">
+      Baseline models are often built with historical data. The
+     data is used to infer parameters which describe a model. Generally,
+     the precision with which such parameters are known improves with the
+     amount of data. The accuracy, however, is impacted by how 
+     representative the data is of the samples to be tested. Collecting
+     two decades worth of commuter data from 1920 will not help
+     describe traffic patterns in 2010. Conversely, one hour of data
+     collected last Wednesday may differ appreciably from an hour of
+     data collected today purely due to statistical variability.
+     Managing models should be seen as a dynamic process. As new data 
+     is collected it can, in turn, be used to calculate a more 
+     contemporary model. Unless there are specific reasons to use 
+     particular dates.
+</div>
+
+<h4 id="1.5">1.5 Segmentation Strategies</h4><div class="section">
+      The complexity of models required to accurately model data is
+     often closely related to the number of factors required to
+     account for its variability. Augustus relies on model segmentation
+     to associate simpler models with specified intervals of 
+     dataspace over which each model is an accurate representation.
+     The intervals of dataspace are sometimes referred to as data cubes.
+     With infinite data, users could slice data into infinitesimally
+     fine data cubes and obtain very accurate models. Correlations
+     between neighboring datacubes may limit the veracity of this
+     statement, but in practice are not typically large enough to alter
+     the general viewpoint.
+<p />
+      Two statistical considerations affect the choice of segmentation 
+     to use in producing a model. First, increasing the number of 
+     segments decreases the size of baseline samples used to determine
+     model parameters for each segment. A useful rule of thumb is that the
+     precision with which a parameter is estimated is given by its 
+     standard deviation (S.D.) divided by the square root of the number of
+     observations(N). Second, since segmentation improves the model 
+     performance by accounting for variability in a variable due to 
+     variations in a segmentation variable, a natural progression of 
+     segmentation obtained by focusing on those variable that do the best 
+     job at accounting for variability. 
+<p />
+       In practice, a good approach is to begin with a small number of 
+     segmentation variables - preferably one - which are known or expected 
+     to account for the largest amount of variability. Excursions from
+     this initial model reflect the grossest sources of unexpected
+     changes or possible problems with the underlying data that should
+     be addressed first before any finer modeling of the data is
+     attempted. Once a model is understood at a low level of granularity,
+     a finer attempt at segmentation can be attempted, with the 
+     proviso that enough data per segment should be on hand to 
+     justify the decrease in S.D./sqrt(N) precision with which model
+     parameters are estimated.
+<p />
+       Segments can also be defined for which no data is available
+     in a baseline sample. Producing these segments with the 
+     Augustus producers is not yet supported, but users should be
+     able to edit their models with any additional segments of interest.
+     Automatic generation of such segments with default values is
+     anticipated in a future release.
+
+  </div>
+</div>
+
+<br /><a class="link" href="#">Top</a><h3 id="2">2 Statistical Distributions</h3><div class="section">
+    Baseline Models describe and test changes in statistics calculated
+    from data samples representative of a baseline and a scored
+    population. The particular statistics are motivated by the
+    nature of the changes and statistical conceptualizations of the
+    underlying populations. Augustus currently supports CUSUM, GLR,
+    Z scores and scalar vector tests. 
+    <p />
+    All of the supported tests used for baseline models rely either
+    explicitly or implicitly on distributions. For the z, GLR, and 
+    CUSUM tests, these will be well known distributions such as the
+    normal, poisson, exponential, etc. A non-parameteric scalar
+    vector test is also supplied for discrete distributions. The scalar
+    vector test does not require an analytic form to describe the
+    model.
+   <p />
+    Baseline models are distinguished by understanding data to
+    having an ordering, often based in time. For CUSUM and GLR
+    tests, this is explicit: these tests are implemented as
+    sequential samplings with evaluations for each ordered
+    event in a sequence. These tests should not use the "batch"
+    option for consuming. z-tests and scalar vector tests of
+    discrete distributions can be evaluated in "batch" mode. This
+    means that a score is evaluated by a consumer after processing
+    of all data in a batch. 
+    <p />
+    The sequencing of events matters only
+    in that the state of the data at the time of scoring reflects
+    the cumulative effect of all prior events. A batch score may,
+    for example, be used to count the number of widgits produced in
+    a day. Event records might report the number of widgits produced
+    each hour. A consumer would ingest data from a day, sum the total
+    and compare the total with the expected value. 
+    <p />
+    z-tests may be used in non-batch scoring as well. In this case, a
+    single value is tested against an expected mean.
+    <h4 id="2.1">2.1 Uses for Different Distributions and Tests</h4><div class="section">
+      Canonical uses for each supported test and distribution include
+      the following:
+      <h4 id="2.1.1">2.1.1 Changes in an Average Value</h4><div class="section">
+        Use Gaussian distribution.
+      </div>
+      <h4 id="2.1.2">2.1.2 Changes in Counts</h4><div class="section">
+        Use Poisson distribution for 'small' values, or Gaussian.
+      </div>
+      <h4 id="2.1.3">2.1.3 Changes in Rates</h4><div class="section">
+        Use Exponential distribution for Time Difference.
+      </div>
+      <h4 id="2.1.4">2.1.4 Changes in Relative Frequencies</h4><div class="section">
+        Use Discrete distribution
+      </div>
+     <p />
+     Statistical changes are tested with several tests. These
+     are distinguished by whether one is 1) testing single values
+     or relative frequencies among multiple values; 2) interested
+     in a determination of when a change has occurred within a 
+     sample of data or simply whether a sample shows a change
+     in toto; 3) is interested in a change to a particular final
+     state.
+     <ol>
+       <li> CUSUM and GLR are useful with NON-batch scoring when
+            a user wishes to identify particular records which
+            coincide with a change in state.
+       </li>
+       <li> The z-test is useful for either batch or non-batched
+            scoring to test whether a value or mean value differs
+            from an expectation.
+       </li>
+       <li> 
+           Scalar vector tests are useful in a batched situation
+           where the relative frequency of multiple outcomes can
+           be tested against expectations.
+        </li>
+     </ol>
+    </div>    
+    <p />
+    Each distribution implies a set of considerations that users should
+    be aware of. While an exhaustive discussion of the properties of each
+    distribution is outside of the scope of this document, certain common
+    aspects merit emphasis.
+
+    <h4 id="2.2">2.2  Normal Distributions</h4><div class="section">
+       This is the most common distribution used and is often used
+       regardless of whether the underlying populations are truly
+       normal since it captures the most intuitive aspects of a 
+       sample: a clustering about some value where the cluster size
+       corresponds to a standard deviation and the cluster center
+       corresponds to the population mean. From the perspective of
+       baseline models, its use requires attention paid to the following
+       aspects:
+       1) Outliers:
+          A significant feature of normal distributions compared to
+          other distributions is the size of the 'tails'. Quite often,
+          well behaved data will display tails which are, statistically
+          speaking, unusual when interpreted as arising from a 
+          normal distribution.  By definition, these are not as obvious
+          at initial stages of modeling as they are rare. From the
+          perspective of a normal distribution, they might be 
+          considered outliers. These cases mean that a gaussian-based
+          test will tend to produce a somewhat higher fraction of
+          test results that appear to be abnormal but are actually
+          'False Positives'. Depending on resources and goals, users
+          should consider being more conservative in evaluating the
+          score results using their direct p-values. A common technique
+          is to 'post-process' results to weight low probability events
+          in an appropriate way to emphasize results with relatively
+          small p-values.
+       2) Calculation of a sample standard deviation:
+          Users should be aware of situations where the variance of
+          a sample is zero or very small or where discrete values are
+          used.  If a segment is calculated to have a variance of
+          exactly 0, typically arising from issues related to precision,
+          constants, or paucity of data, Augustus will, by default,
+          fail and inform the user of options for handling this case.
+          These options are documented elsewhere. No handling of
+          'oddly small' variances is provided and uses should be
+          aware that such cases can lead to abnormal results.
+       3) Calculation of a sample mean
+    </div>
+    <h4 id="2.3">2.3 Poisson Distributions</h4><div class="section">
+       Poisson distributions are appropriate to so-called 'counting'
+       observations, such as the number of widgits observed in a
+       unit of time. Poisson distributions are solely parametrized
+       by the population mean. The calculation of the mean is very
+       robust. Note that for 'large' expected counts, the Poisson
+       distribution tends toward a normal distribution. For large
+       counts (greater than 10 or so), users should consider a
+       normal distribution for performance reasons.
+    </div>
+
+
+    <h4 id="2.4">2.4 User-defined distributions:</h4><div class="section">
+       Augustus provides a test for the similarity of two bounded,
+       discrete distributions through a 'scalar' vector test.
+       Of importance from a statistical perspective are two issues:
+       1) The sample sizes
+       2) Normalization of the distributions.
+    </div>
+
+    <p />
+    Depending on whether the scored variables are
+    random or discrete in nature, different distributions are
+    appropriate and different statistical tests are appropriate.
+
+
+
+    <h4 id="2.5">2.5 Continuous and Discrete Distributions</h4><div class="section">
+    When the independent or scored variable is discrete, some care
+    should be taken when choosing a test. Integer valued variables
+    with sufficient range can often be used with continuous distributions.
+    As an extreme case where such an approach would not work, consider
+    a two-valued variable such as 'True' or 'False' (encoded as 1 and 0)
+    which occur with equal likelihood in a baseline sample. If this
+    were modeled with a normal distribution, one would obtain a mean of 0.5
+    with a standard deviation of 0.5. Every subsequently scored sample would
+    consist of exactly two scores, one for True, reflecting a +1 S.D.
+    deviation, and one for False, reflecting a -1 S.D. deviation. Clearly,
+    no single score would be reflective of any information. A 
+    better choice would be to use a model the number of True values
+    observed in some interval using a Poisson distribution. 
+
+
+    Multivariate distributions
+      At this time, Augustus does not support tests with multiple
+    independent variables.
+
+    User defined distributions
+    </div>
+    </div>
+<br /><a class="link" href="#">Top</a><h3 id="3">3 Testing Baseline Models</h3><div class="section">
+    Baseline models are tested in many ways. Augustus currently supports
+    4 different tests:
+    1. z-test: This is a standard tests comparing a sample mean to
+       an expected mean scaled by the expected standard deviation.
+    2. GLR: This evaluates the log odds ratio between the expected 
+       distribution and a range of alternative distributions. The
+       range of alternative distributions is typically a full span such
+       that a user does not need to anticipate a particular one.
+    3. CUSUM: This is a special case of the GLR test where the span
+       of alternative distributions is limited to a specific choice.
+       The archetype of such a test is looking for a change from a
+       normally distributed population with a particular mean value
+       to another normally distributed population with a different
+       mean value. The test supports additional distributions
+    4. Discrete Distribution scalar product test: This test is used
+       to compare a sampled discrete distribution with known values
+       to a historically expected distribution. Augustus currently
+       supports testing two such distributions by calculating a 
+       scalar product between the two distributions.
+
+    <h4 id="3.1">3.1 Score Normalizations</h4><div class="section">
+    Tests of baseline models yield numbers (scores) which are indicative
+    of consistency with expectations from baseline data. The precise
+    score definition differs according to the particular test. In the
+    case of z-tests, for example, the score will be a number between 
+    -Infinity and +Infinity, while the CUSUM and GLR tests return 
+    real numbers between 0 and +Infinity. 
+    A score of 0 reflects perfect agreement with the null
+    hypothesis (i.e., the baseline data) for all three tests. 
+    <p />
+    Numeric techniques exist to render the a z-test score as a number 
+    between 0 and 1 (or any other finite number). An example method
+    can be found in the routine 'romberg.py' found with Augustus and
+    may be applied to scoring results as part of postprocessing.
+    <p />
+    No general method exists for CUSUM or GLR tests since these 
+    tests require the additional specification of one or two
+    distributions. For the particular distributions offered within
+    Augustus, example normalization methods can be found in
+    'lrNormMethods.py'.
+    <p />
+    Testing similarity between two arbitrary discrete distributions
+    of fixed length (n) is supported by Augustus using the scalar vector 
+    test. This test treats the normalized distributions as n-dimensional
+    vectors and compares them by calculating the scalar product between
+    them. Equality consists of equal length vectors point in the same
+    direction which coincides with a score of 0. 
+    <p />
+    In principle, scalar products may take on negative values, but for
+    the case where each component is positive definite, the product
+    is bounded below by 0 which is taken to represent maximally
+    different distributions equivalent to orthogonal vectors. Thus,
+    scores for a scalar vector test lie between 0 and 1.
+    <p />
+    A different aspect of normalization with respects to discrete
+    distributions also needs to be kept in mind. Prior to calculating
+    the scalar vector product, the distributions will be normalized.
+    The most common normalization is to require each distribution to
+    satisfy the requirement that their scalar vector product with
+    itself to be equal to one; this is the default treatment. 
+    <p />
+    An alternative is to calculate the scalar vector product using 
+    un-normalized distributions and normalize the scores based on
+    the squared average of the two distributions. This approach will
+    reduce the score as the relative size of the two distributions
+    differ, independent of their shape. Here, the 'sizes' refer to
+    the sums of the contents included in the distributions.
+    Two distributions which have the same shape but very different 
+    sizes will yield scores indicating different distributions.
+    
+  </div>
+
+
+GLR and CUSUM tests
+
+
+Discrete Distribution tests
+</div>
+<br /><a class="link" href="#">Top</a></body></html>

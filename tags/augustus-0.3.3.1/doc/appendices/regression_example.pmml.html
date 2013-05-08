@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Generator" content="Kate, the KDE Advanced Text Editor" />
+<title>regression_example.pmml</title>
+</head>
+<body>
+<pre>
+<span style="color: #000000;">
+
+&lt;PMML version="3.2"&gt;
+  &lt;DataDictionary&gt;
+    &lt;DataField name="X1" optype="continuous" dataType="float" /&gt;
+    &lt;DataField name="X2" optype="continuous" dataType="float" /&gt;
+    &lt;DataField name="Y" optype="continuous" dataType="float" /&gt;
+    &lt;DataField name="month" optype="categorical" dataType="string" /&gt;
+  &lt;/DataDictionary&gt;
+  &lt;RegressionModel modelName="testregression1" functionName="regression" algorithmName="Cholesky" modelType="linearRegression"&gt;
+    &lt;MiningSchema&gt;
+      &lt;MiningField name="X1" /&gt;
+      &lt;MiningField name="X2" /&gt;
+      &lt;MiningField name="Y" usageType="predicted" /&gt;
+      &lt;MiningField name="month" /&gt;
+      &lt;MiningField name="Ytrue" /&gt;
+    &lt;/MiningSchema&gt;
+    &lt;Regression&gt;
+      &lt;RegressionTable intercept="-0.0029179745986"&gt;
+        &lt;NumericPredictor name="X1" exponent="1" coefficient="1.00004242342" /&gt;
+        &lt;NumericPredictor name="X2" exponent="1" coefficient="0.999334106681" /&gt;
+        &lt;PredictorTerm coefficient="0.100003764999"&gt;
+          &lt;FieldRef field="X1" /&gt;
+          &lt;FieldRef field="X2" /&gt;
+        &lt;/PredictorTerm&gt;
+      &lt;/RegressionTable&gt;
+      &lt;Segments&gt;
+        &lt;ExplicitSegment field="month" value="December" /&gt;
+      &lt;/Segments&gt;
+    &lt;/Regression&gt;
+    &lt;Regression&gt;
+      &lt;RegressionTable intercept="0.0104094495766"&gt;
+        &lt;NumericPredictor name="X1" exponent="1" coefficient="0.99881719251" /&gt;
+        &lt;NumericPredictor name="X2" exponent="1" coefficient="0.999658516446" /&gt;
+        &lt;PredictorTerm coefficient="0.100018511194"&gt;
+          &lt;FieldRef field="X1" /&gt;
+          &lt;FieldRef field="X2" /&gt;
+        &lt;/PredictorTerm&gt;
+      &lt;/RegressionTable&gt;
+      &lt;Segments&gt;
+        &lt;ExplicitSegment field="month" value="November" /&gt;
+      &lt;/Segments&gt;
+    &lt;/Regression&gt;
+  &lt;/RegressionModel&gt;
+&lt;/PMML&gt;
+
+</span>
+</pre></body>
+</html>

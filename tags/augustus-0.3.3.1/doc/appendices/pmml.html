@@ -1,0 +1,100 @@
+<html><head><link href="documentation.css" rel="stylesheet" type="text/css" /></head><body><h1>Augustus 0.3.2</h1><h2>Overview of the PMML Baseline Model</h2><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Description</a><br /><span>2 </span><a class="link" href="#2">Definition</a><br /><span>3 </span><a class="link" href="#3">Portions of PMML</a><br /><div class="section"><span>3.1 </span><a class="link" href="#3.1">Data Dictionary</a><br /><span>3.2 </span><a class="link" href="#3.2">Model</a><br /><span>3.3 </span><a class="link" href="#3.3">Test Distributions</a><br /><span>3.4 </span><a class="link" href="#3.4">NaiveBayes</a><br /></div><span>4 </span><a class="link" href="#4">Official Specification</a><br /></div><h3 id="1">1 Description</h3><div class="section">
+    This document gives a general overview of the definition and 
+    parts of PMML.
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="2">2 Definition</h3><div class="section">
+    PMML stands for Predictive Model Markup Language and it is a 
+    standard way to represent models.  A model is simply an 
+    expected mode of behavior based off of previous acts.
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="3">3 Portions of PMML</h3><div class="section">
+    An <a class="link" href="producedPmml.html" target="_blank">example</a> 
+    is provided for the user to follow along.<br /><br />
+    Due to the fact that PMML is an XML compliant language, it is 
+    required to have one element that encapsulates all the others.  
+    This is the &lt;PMML&gt; element.  The most current version of 
+    PMML is given as an attribute to this element.
+    <h4 id="3.1">3.1 Data Dictionary</h4><div class="section">
+      Here a user records the names of the fields containing data 
+      and their respective types that are necessary for input or 
+      output from the model.
+    </div>
+    <h4 id="3.2">3.2 Model</h4><div class="section">
+      Next some type of model is described.  Here it is either a baseline 
+      or naive bayes model.  Since the contents of a model are varied, only the 
+      necessary sections are discussed below.
+      <p>
+      All models include a &lt;MiningSchema&gt; element.
+      Here a user records the names of the fields that are required 
+      for scoring purposes.  Each field described here must be 
+      identical to one in the data dictionary.
+      </p>
+      <p>
+      Each model includes an element which indicates the data segment for which
+      it is to be applied and the specification of any parameters needed by the model.
+      For Baseline models, this element is the TestDistribution element. For Naive Bayes models, it is the NaiveBayes element. Specification of segmentation information for both models is accomplished with a &lt;Segments&gt; element found within each of the &lt;TestDistribution&gt; or &lt;NaiveBayes&gt; elements. 
+      </p>
+    </div>
+    <h4 id="3.3">3.3 Test Distributions</h4><div class="section">
+      This element describes a scoring action for Baseline models only.  Each time you want to 
+      score an act (measure it against the model and see if the given 
+      act was expected or unexpected) you go through these elements 
+      (in order) until you find one that meets the <a class="link" href="segmentation.html" target="_blank">segmentation</a>
+      requirements and then you produce a score according to the 
+      distributions given, the test statistic and the threshold.
+      <br /><br />
+      Each distribution represents a probability density function that 
+      models the behavior of the previously examined actions.  The 
+      distribution that is contained within the baseline element models 
+      the actions that are expected while the distribution contained 
+      within the alternate element (if it exists) models the behavior 
+      expected if the actions do not match the baseline distribution.
+      <br /><br />
+      The test statistic determines how the new actions are measured 
+      against the distributions.  For the CUSUM statistic, the formula 
+      to score (measure) this is as follows:  
+      max(reset, last+log(alternatePDF(x)/baselinePDF(x)))
+      where reset is the reset value (defaults to 0.0), last is the last 
+      score that came from this test statistic, and log is the logarithm 
+      base 10.  The reset value can be modified by adding an attribute 
+      to the TestDistributions element like resetValue="165.0".  The 
+      following two statistics require no alternate distribution.  The 
+      zValue statistic uses the following formula to score:  
+      (x - baselineMean)/baselineStdDev 
+      where baselineMean and baselineStdDev are the mean and standard 
+      deviation, respectively, of the baseline function.  Finally, the
+      glr statistic uses the following formula: 
+      1/(2*baselineVar) * max(sums) where 
+      baselineVar is the variance of the baseline distribution and sums 
+      is the set of values given by:  the sum where i goes from n to m of 
+      (x<sub>i</sub> - baselineMean)^2, 
+       m goes from n to 1, and x<sub>i</sub> 
+      represents the i<sup>th</sup> score.<br /><br />
+      The scores given above are, finally, tested against the given 
+      threshold and a truth value is determined 
+      (true iff the given measure is greater than the threshold,
+       this is referred to as an alert).
+     </div>
+     <h4 id="3.4">3.4 NaiveBayes</h4><div class="section">
+      This element describes a scoring action for Naive Bayes models only. Scoring for the Naive Bayes model means making a prediction of a value for a categorical variable. Within a model, there are multiple elements, each called a NaiveBayes element. When scoring, you go through these elements 
+      (in order) until you find one that meets the <a class="link" href="segmentation.html" target="_blank">segmentation</a>
+      requirements and then you produce a score (predicted value) 
+      The score is calculated from the distribution of counts among the 
+      different combinations of allowed input fields and values and
+      output values. The counts for the various combinations are specified
+      in the NaiveBayesInputs and NaiveBayesOutput elements, found 
+      within each NaiveBayes element.
+     <br /><br />
+    </div>
+   </div>
+  <br /><a class="link" href="#">Top</a><h3 id="4">4 Official Specification</h3><div class="section">
+    The official specification is available 
+    for more in-depth description.  
+    You may view it on the Data Mining Group's website at:
+    <a class="link" href="http://www.dmg.org/v3-1/GeneralStructure.html">
+       www.dmg.org
+    </a>.
+  </div>
+<br /><a class="link" href="#">Top</a></body></html>

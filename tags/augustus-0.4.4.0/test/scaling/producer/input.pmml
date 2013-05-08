@@ -1,0 +1,16 @@
+<PMML version="4.0">
+    <Header copyright="Copyright (c) 2011 Open Data Group" />
+    <DataDictionary>
+        <DataField name="id" optype="categorical" dataType="string" />
+        <DataField name="date" optype="categorical" dataType="string" />
+        <DataField name="site" optype="continuous" dataType="integer" />
+        <DataField name="flag" optype="continuous" dataType="integer" />
+        <DataField name="entity" optype="continuous" dataType="integer" />
+    </DataDictionary>
+    <BaselineModel functionName="baseline">
+        <MiningSchema>
+            <MiningField name="id" usageType="supplemental" />
+            <MiningField name="entity" usageType="active" />
+        </MiningSchema>
+    </BaselineModel>
+</PMML>

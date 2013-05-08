@@ -1,0 +1,176 @@
+Augustus now provides scale up tests.  These allow you to see how the
+performance changes as the size of the dataset increases.  Currently, the tests
+only use Baseline models, but we are currently working on getting the other
+supported models into the tests.
+
+It be helpful to see how the performance changes when the data to be scored
+exceeds what can be held in memory by the system.
+
+
+Generate the Data
+-------- --- ----
+
+The tests range in size from 1 KB to 1 6GB.  This may exceed the capacity of
+your system.  Data files are not shipped with Augustus do to the large sizes.
+They can be generated using gen_data.sh in test/scripts.
+
+If you only want to run a few of the tests, edit the line:
+
+  DATA_FILES="10|1k.csv 10000|1m.csv 1000000|100m.csv 10000000|1g.csv 40000000|4g.csv 80000000|8g.csv 160000000|16g.csv"
+
+For example, if I want to generate the data files for the 1 MB and 100 MB tests,
+then I would use:
+
+  DATA_FILES="10000|1m.csv 1000000|100m.csv"
+
+The script can be run without arguments and it calls ../util/data_generator.py
+
+A directory _data will be created in test/scaling and all generated data files
+will reside there.
+
+On 2 x Dual Core AMD Opteron(tm) Processor 280 with 32 GB RAM, all 7 data files
+were generated in two hours and 12 minutes.
+
+
+  |---------------------|
+  | Data file |   Time  |
+  |-----------|---------|
+  |   1 kB    |  < 1 m  |
+  |-----------|---------|
+  |   1 MB    |  < 1 m  |
+  |-----------|---------|
+  |  100 MB   |  < 1 m  |
+  |-----------|---------|
+  |   1 GB    |    4 m  |
+  |-----------|---------|
+  |   4 GB    |   18 m  |
+  |-----------|---------|
+  |   8 GB    |   30 m  |
+  |-----------|---------|
+  |  16 GB    |   74 m  |
+  |-----------|---------|
+  |-----------|---------|
+  |   Total   |  132 m  |
+  |---------------------|
+
+
+Run the Tests
+--- --- -----
+
+Once the data files have been generated, you can run the tests with
+scripts/./run_tests.sh
+
+If all of the data files were not generate, modify the line:
+
+  TESTS="1k 1m 100m 1g 4g 8g 16g"
+
+to only include the desired tests.  In the example above, I would use
+
+  TESTS="1m 100m"
+
+
+What is Being Tested
+---- -- ----- ------
+
+Models already exist for each of the datasets and they are in models/.  The data
+is generated probabilistically, so the scoring output will not be same each run.
+Each test can be performed in two ways.
+
+  1. The dataset to consume is specified in a consumer configuration file.  The
+  model is initialized and the entire file is read in and scored.
+
+  2. The Augustus Consumer is initialized with the model.  Then, the entire data
+  file is read into an UniTable instance.  The rows of the unitable are
+  iterated over and each row is scored one at time.  The scoring results are
+  held in a list, but are ignored.
+  
+  For more infomration about UniTable, see
+  http://code.google.com/p/augustus/wiki/UniTable
+
+
+In scripts/run_tests.sh, the first method is performed by the line
+
+    # File-bound Scoring
+    /usr/bin/time AugustusPMMLConsumer -c ${CONFIG_DIR}/${test}-config.xml
+
+an the second by 
+
+    # Interactive Scoring
+    /usr/bin/time python ${UTIL_DIR}/event-tester.py ${test}
+
+You may comment out one or the other if it is not use cases of interest.
+
+The calls to score the data are passed into /usr/bin/time.  This gives us the
+user and system times as well as the CPU utilization.
+
+
+Test Output
+---- ------
+
+The scoring output for the file-bound tests is written to output.xml files
+in test/scaling/_out.  The _out directory is created by run_tests.sh and 
+each test has it's ouwn output file.  Any _out directory from a previous run
+is deleted when run_tests.sh starts.
+
+The interactive scoring test moethod does not create scoring output files.
+
+Using the above configuration, of just the 1 MB and 100 MB tests, a sample
+output is below:
+
+
+$ cd augustus-trunk/test/scaling/script
+$ ./run_tests.sh 
+
+Running 1m test
+INFO:Augustus:Garbage Collecting of Circular References Disabled
+INFO:Augustus:>>>>>>>>>>>>>>> Preprocess <<<<<<<<<<<<<<<
+INFO:Augustus:>>>>>>>>>>>>>>> Consumer <<<<<<<<<<<<<<<
+
+No handlers could be found for logger "consumer"
+INFO:Augustus:>>>>>>>>>>>>>>> Postprocess <<<<<<<<<<<<<<<
+
+1.34user 0.03system 0:01.45elapsed 94%CPU (0avgtext+0avgdata 93040maxresident)k
+8inputs+1600outputs (0major+6670minor)pagefaults 0swaps
+
+No handlers could be found for logger "consumer"
+1.32user 0.05system 0:01.45elapsed 94%CPU (0avgtext+0avgdata 91248maxresident)k
+0inputs+1600outputs (0major+6373minor)pagefaults 0swaps
+
+
+Running 100m test
+INFO:Augustus:Garbage Collecting of Circular References Disabled
+INFO:Augustus:>>>>>>>>>>>>>>> Preprocess <<<<<<<<<<<<<<<
+INFO:Augustus:>>>>>>>>>>>>>>> Consumer <<<<<<<<<<<<<<<
+
+No handlers could be found for logger "consumer"
+INFO:Augustus:>>>>>>>>>>>>>>> Postprocess <<<<<<<<<<<<<<<
+
+109.10user 0.81system 1:51.40elapsed 98%CPU (0avgtext+0avgdata 1737888maxresident)k
+8inputs+160208outputs (0major+111440minor)pagefaults 0swaps
+
+No handlers could be found for logger "consumer"
+112.71user 0.85system 2:00.67elapsed 94%CPU (0avgtext+0avgdata 1736336maxresident)k
+0inputs+160256outputs (0major+111193minor)pagefaults 0swaps
+
+If we strip out the logging messages form the output, we have the both methods
+for the 1 MB took 1.45 seconds of wall time.  The 100 MB tests took
+approximately two minutes.
+
+  |-------------------------------------------------|
+  |                  1 MB Data Set                  |
+  |----------|---------|--------|----------|--------|
+  |   Test   |  User   | System | Elapsed  | CPU %  |
+  |----------|---------|--------|----------|--------|
+  |   File   |  1.34s  |  0.03s | 0:01.45m |   94   |
+  |----------|---------|--------|----------|--------|
+  | UniTable |  1.32s  |  0.05s | 0:01.45m |   94   |
+  |-------------------------------------------------|
+  |                100 MB Data Set                  |
+  |----------|---------|--------|----------|--------|
+  |   Test   |  User   | System | Elapsed  | CPU %  |
+  |----------|---------|--------|----------|--------|
+  |   File   | 109.10s |  0.81s | 1:51.40m |   98   |
+  |----------|---------|--------|----------|--------|
+  | UniTable | 112.71s |  0.85s | 2:00.67m |   94   |
+  |-------------------------------------------------|
+

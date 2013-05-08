@@ -1,0 +1,51 @@
+<html>
+<head><title>Augustus PMML Consumer HTTP Interface</title>
+</head>
+<body>
+<p>The Augustus PMML Consumer is able to act as an HTTP server and accept data
+via a POST request and return an alert via a response. We will look at how to
+configure the Augustus PMML Consumer so that this is possible, how to send data
+to the consumer and how the consumer returns results.
+</p>
+<h2>Configuring the consumer</h2>
+<p>Configuring the Augustus PMML consumer is covered in great detail elsewhere
+so we will limit our discussion to what is needed to get the consumer to accept
+data via HTTP, namely the fromHTTP child element of inputData.  This element
+looks like,</p>
+
+<pre>&lt;from HTTP url="relativeURL" port="portnum" [type="UniTable"]&gt;.</pre>
+
+<p>The <i>portnum</i> attribute is the port that the PMML consumer will listen to
+and the <i>relativeURL</i> attribute is the relative URL that the requests must
+be made to. Note that <i>relativeURL</i> must include a leading slash ("/").</p>
+
+<p>(Ex. to set up a scoring enging at example.com/score
+<i>relativeURL</i> must be "/score".) If <i>type</i> is present and specified as
+"UniTable" (case sensitive) the input is expected to be in a CSV format,
+including a header row.  Otherwise the data is expected to be XML.</p>
+
+<h2>Sending the data</h2>
+<p>Data is usually sent to the consumer in XML format so we will discuss that
+first and then discuss CSV format later. To get the data to the consumer it
+should be attached as the body of a POST request for the relative URL specified
+in the configuration.
+</p>
+<h2>Getting a result</h2>
+<p>If everything goes well, and it usually does, the consumer will send a 200 OK
+response and the alert that is defined in the consumer configuration output
+section will be the body of the response. If something should go wrong, then a
+500 Server Error response will be send instead.  The consumer will always send a
+response to every request.
+</p>
+<h2>Putting it all together</h2>
+<p>A simple example of how to connect to a consumer running at /score on
+port 8888 on localhost in Python is:
+<pre>import httplib
+headers = {"Content-type":"text/xml","Accept":"text/plain"}
+conn = httplib.HTTPConnection('127.0.0.1',8888)
+data = '&lt;event val1="Hello" val2="World" val3="12345" /&gt;'
+conn.request("POST", "/score", data, headers)
+response = conn.getresponse()
+score = response.read()</pre></p>
+</body>
+</html>

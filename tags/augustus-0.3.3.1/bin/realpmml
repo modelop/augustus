@@ -1,0 +1,83 @@
+#!/bin/bash
+
+MYNAME=`basename $0`
+if [ -z "$AUGUSTUS" ]; then
+  BINDIR=`dirname $0`
+  AUGUSTUS=$BINDIR/..
+  type -t realpath >/dev/null && AUGUSTUS=`realpath $AUGUSTUS`
+fi
+XSDDIR=${XSDDIR:-$AUGUSTUS/augustus/pmmllib/xsd}
+
+SAMPLE='<?xml version="1.0" encoding="ISO-8859-1"?>
+<PMML xmlns="http://www.dmg.org/PMML-3_1"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      version="3.1">
+  <Header copyright="Copyright Open Data Group, 2006, All rights reserved" />
+  <DataDictionary>
+    <DataField name="score" optype="categorical" dataType="integer" />
+  </DataDictionary>
+</PMML>
+'
+
+HELP='
+  Validate correctness of PMML document. The default schema is the
+  latest proposed version with additional models (eg. BaselineModel)
+  added.  Other schemas may be selected.
+
+  Synopsis:
+    realpmml [opts] pmml_file(s)
+
+  Options:
+    -v|--verbose  Verbose mode
+    --3-0	  Use PMML version 3-0 schema
+    --3-1	  Use PMML version 3-1 schema
+    --3-2	  Use PMML version 3-2 schema
+    --auto	  Output small valid PMML sample
+
+  See "man xmllint" for more options.
+'
+
+if [ $# = 0 ]; then echo "$HELP" && exit 0; fi
+
+PMML_VER=${PMML_VER:-"3-1"}
+VERBOSE=
+ARGS=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) echo "$HELP" && exit 0;;
+    --) shift; break;;
+    -) break;;
+    --auto) echo "$SAMPLE"; exit 0;;
+    -v|--verbose) VERBOSE=1; shift;;
+    --3-0|--3.0|-3-0|-3.0) PMML_VER="3-0"; shift;;
+    --3-1|--3.1|-3-1|-3.1) PMML_VER="3-1"; shift;;
+    --3-2|--3.2|-3-2|-3.2) PMML_VER="3-2"; shift;;
+    -*) ARGS="$ARGS $1"; shift;;
+    *) break;;
+  esac
+done
+XSD_FILE="pmml-$PMML_VER.xsd"
+PMML_XSD="$XSDDIR/$XSD_FILE"
+
+if [ ! -d "$XSDDIR" ]; then
+  echo "$MYNAME: XSD directory not found: $XSDDIR" >&2; exit 1
+fi
+if [ ! -f "$PMML_XSD" ]; then
+  echo "$MYNAME: XSD file not found: $PMML_XSD" >&2; exit 1
+fi
+if [ "`type -t xmllint`" != "file" ]; then
+  echo "$MYNAME: xmllint tool not found" >&2
+  echo "$MYNAME: xmllint is part of libxml2 at <http://www.xmlsoft.org/>" >&2
+  echo "$MYNAME: xmllint is in debian package 'libxml2-utils'" >&2
+  exit 1
+fi
+
+if [ "$VERBOSE" ]; then echo "$MYNAME: using $PMML_XSD" >&2; fi
+for name; do
+  CMD="xmllint --nocatalogs --schema $PMML_XSD $ARGS $name"
+  if [ "$VERBOSE" ]; then echo "$MYNAME: $CMD" >&2; fi
+  $CMD >/dev/null
+done
+
+
+# vim:sw=2:sts=2

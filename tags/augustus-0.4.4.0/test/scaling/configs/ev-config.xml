@@ -1,0 +1,23 @@
+<pmmlDeployment>
+    <Processing>
+        <Consumer/>
+    </Processing>
+    <inputModel>
+        <fromFile name="../models/model.pmml"/>
+    </inputModel>
+    <inputData>
+        <readOnce/>
+        <eventBased/>
+        <fromCSVFile name="../_data/1g.csv" type="CSV" header="id,date,site,flag,entity" />
+    </inputData>
+    <output>
+        <eventBased/>
+        <report name="Report">
+            <toFile name="../_out/1g-output.xml" />
+            <outputRow name="Event">
+                <score name="Score" />
+                <alert name="Alert" />
+            </outputRow>
+        </report>
+    </output>
+</pmmlDeployment>

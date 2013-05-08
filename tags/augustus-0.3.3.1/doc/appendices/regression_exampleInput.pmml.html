@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="Generator" content="Kate, the KDE Advanced Text Editor">
+  <title>regression_exampleInput.pmml</title>
+</head>
+<body>
+<pre><big><big><span style="font-weight: bold; color: rgb(0, 0, 0);">
+&lt;PMML version="3.2">
+&lt;DataDictionary>
+ &lt;DataField name='X1' optype='continuous' dataType='float'/>
+ &lt;DataField name='X2' optype='continuous' dataType='float'/>
+ &lt;DataField name='Y'  optype='continuous' dataType='float'/>
+ &lt;DataField name='month' optype='categorical' dataType='string'/>
+&lt;/DataDictionary>
+&lt;RegressionModel modelName='testregression1' functionName='regression'
+ algorithmName='Cholesky' modelType='linearRegression'>
+ &lt;MiningSchema>
+  &lt;MiningField name='X1'/>
+  &lt;MiningField name='X2'/>
+  &lt;MiningField name='Y' usageType='predicted'/>
+  &lt;MiningField name='month'/>
+  &lt;MiningField name='Ytrue'/>
+ &lt;/MiningSchema>
+ &lt;Regression modelName='1' functionName='regression' 
+ algorithmName='Cholesky' normalizationMethod='none'>
+   &lt;RegressionTable intercept="0.0">
+     &lt;NumericPredictor name='X1' exponent='1' coefficient='0.0'/>
+     &lt;!--&lt;NumericPredictor name='X1' exponent='2' coefficient='0.0'/>-->
+     &lt;NumericPredictor name='X2' exponent='1' coefficient='0.0'/>
+     &lt;!--&lt;NumericPredictor name='X2' exponent='2' coefficient='0.0'/>-->
+     &lt;PredictorTerm coefficient='0.0'>
+       &lt;FieldRef field='X1'/>
+       &lt;FieldRef field='X2'/>
+     &lt;/PredictorTerm>
+   &lt;/RegressionTable>
+  &lt;/Regression>
+&lt;/RegressionModel>
+&lt;/PMML>
+</body>
+</html>

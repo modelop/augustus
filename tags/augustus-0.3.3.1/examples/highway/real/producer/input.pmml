@@ -1,0 +1,37 @@
+<PMML version="3.1">
+  <Header copyright="Open Data Group, 2007" />
+  <DataDictionary>
+    <DataField name="fielddeviceid" optype="categorical" dataType="string" />
+    <DataField name="locationtimestamp" optype="continious" dataType="dateTimeSecondsSince[1970]" />
+    <DataField name="volume" optype="continious" dataType="integer" />
+    <DataField name="speed" optype="continious" dataType="float" />
+    <DataField name="occupancy" optype="continious" dataType="float" />
+  </DataDictionary>
+  <TransformationDictionary>
+    <DerivedField name="Day" optype="continious" dataType="integer">
+      <Apply function="%">
+        <Apply function="dateDaysSinceYear">
+          <FieldRef field="locationtimestamp"/>
+          <Constant>2002</Constant><!--Most recent common year that started on a Tuesday. -->
+        </Apply>
+        <Constant>7</Constant>
+      </Apply>
+    </DerivedField>
+    <DerivedField name="Hour" optype="continious" dataType="integer">
+      <Apply function="/">
+        <Apply function="dateSecondsSinceMidnight">
+          <FieldRef field="locationtimestamp"/>
+        </Apply>
+        <Constant>3600</Constant>
+      </Apply>
+    </DerivedField>
+  </TransformationDictionary>
+  <BaselineModel functionName="baseline">
+    <MiningSchema>
+      <MiningField name="volume" />
+      <MiningField name="fielddeviceid" />
+      <MiningField name="Day" />
+      <MiningField name="Hour" />
+    </MiningSchema>
+  </BaselineModel>
+</PMML>

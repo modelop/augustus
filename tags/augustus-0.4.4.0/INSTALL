@@ -1,0 +1,50 @@
+Brief Augustus Installation
+----- -------- ------------
+
+0. Get
+
+Download a release or checkout trunk.
+
+    $ tar zxvf augustus-0.4.4.0.tar.gz
+
+or check out from Subversion:
+
+    $ svn checkout http://augustus.googlecode.com/svn/trunk/  augustus-trunk
+
+Make sure you have Python 2.5 or 2.6 installed as well as numPy.  We prefer
+numPy 1.3.1.
+
+1. Install
+
+There are two standard ways of installing Augustus:
+
+The unpacked Augustus distribution can be use in-place by setting appropriate
+environment variables.
+
+For example, if augustus-0.4.4.0.tar.gz is unpacked in /usr/local, then in your
+.bashrc file, include:
+
+    AUGUSTUS_HOME=/usr/local/augustus-0.4.4.0
+    export PYTHONPATH=${PYTHONPATH}:${AUGUSTUS_HOME}
+    export  PATH=${PATH}:${AUGUSTUS_HOME}/bin
+
+No compilation or setup step is necessary. This works if the code was checked
+out from source as well, just use the appropriate names and locations.
+
+
+You can also use setup.py.  The locations used are by default in PYTONPATH.
+From the Augustus directory, run:
+
+    $ python setup.py install
+
+The installation destination can be modified by using options such as --prefix.
+Use
+
+    $ python setup.py --help
+
+for other options.
+
+
+2. Questions
+
+Please refer to Augustus_Installation.pdf for the complete installation instructions.

@@ -1,0 +1,43 @@
+<PMML version="4.0">
+  <Header copyright="Open Data Group, 2009" />
+  <DataDictionary>
+    <DataField name="sensor" optype="categorical" dataType="string" />
+    <DataField name="volume" optype="continious" dataType="integer" />
+  </DataDictionary>
+  <MiningModel functionName="baseline">
+    <MiningSchema>
+      <MiningField name="sensor" />
+      <MiningField name="volume" />
+    </MiningSchema>
+    <Segmentation multipleModelMethod="selectAll">
+      <Segment>
+        <SimplePredicate field="sensor" operator="equal" value="N" />
+        <BaselineModel functionName="baseline">
+          <MiningSchema>
+            <MiningField name="sensor" />
+            <MiningField name="volume" />
+          </MiningSchema>
+          <TestDistributions field='volume' testStatistic='GLR' testType='threshold' threshold='0.5' windowSize='5'>
+            <Baseline>
+              <GaussianDistribution mean='10.0' variance='81.0' />
+            </Baseline>
+          </TestDistributions>
+        </BaselineModel>
+      </Segment>
+      <Segment>
+        <SimplePredicate field="sensor" operator="equal" value="S" />
+        <BaselineModel functionName="baseline">
+          <MiningSchema>
+            <MiningField name="sensor" />
+            <MiningField name="volume" />
+          </MiningSchema>
+          <TestDistributions field='volume' testStatistic='GLR' testType='threshold' threshold='0.5' windowSize='5'>
+            <Baseline>
+              <GaussianDistribution mean='10.0' variance='81.0' />
+            </Baseline>
+          </TestDistributions>
+        </BaselineModel>
+      </Segment>
+    </Segmentation>
+  </MiningModel>
+</PMML>

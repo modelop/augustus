@@ -1,0 +1,4 @@
+#!/usr/bin/python
+import __setpath
+from modellib.baseline.tools.fake_event_source import main
+main()

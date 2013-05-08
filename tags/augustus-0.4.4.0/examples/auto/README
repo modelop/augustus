@@ -1,0 +1,151 @@
+    This project directory contains four simple examples applying vector
+channel analysis to a single field of a stream of input records.  The
+examples use two types of data files in the data sub-directory.  The
+files training.nab and scoring.nab both have records with three entries:
+Date, Color, and Automaker.  The files wtraining.nab and wscoring.nab
+have an additional 'weight' column, named 'Count'.  The Count field
+records the number of occurrences of identical tuples in the non-weighted
+data and collapses them into one record.
+
+    In all four examples, 'Automaker' is the test field, and the
+'Color' field is used for model segmentation.  The Automaker field can
+take on only a handful of distinct values.  In each example the producer
+accumulates frequency counts in each 'Color' segment for the various
+'Automaker' values. These are the baseline distributions for the model.
+
+    The consumer collects the same frequency counts from a stream
+of input records and compares its count vectors to the baseline 
+distributions.
+
+
+Window vs. Batch
+----------------
+
+    In two examples (Window and WeightedWindow), the consumer keeps counts 
+of the test field for sliding fixed length window of records that fall 
+within each segment.  As each new record enters the window and the oldest 
+one drops out, the updated count vector is compared to the baseline.  
+
+    In the Batch and WeightedBatch examples, the consumer accumulates 
+frequency counts within each segment for the entire data stream 
+and compares the overall distributions from the scoring data
+with the baseline.  This is triggered by the 'batchScoring' subelement
+of inputData and the absence of a windowSize.
+
+    For the WeightedWindow and WeightedBatch examples, use the weighted
+training file wtraining.nab.  For Window and Batch, use training.nab.
+
+Test Statistic
+--------------
+
+    The test statistic is a 'distribution distance' that is a normalized 
+inner product of the two vectors of counts.  The consumer compares this
+statistic against a specified threshold to generate alerts.
+
+
+Running the examples
+--------------------
+
+    Set the PROJECT environment variable to the path of this directory,
+or the location at which a copy of it, including the data and example
+sub-directories, is located.   For example, I am running the examples
+under
+
+    /home/augustus-testing/trunk/augustus/
+
+so I would set the PROJECT value as:
+
+    $ export PROJECT=/home/augustus-testing/trunk/augustus/examples/auto
+
+
+Change to the scripts sub-directory of one of the examples.  For instance,
+
+    % cd Window/scripts
+
+Invoke the producer to make a model from the data file 'training.nab'
+
+    % python produce.py -f training.nab -t5
+
+Note: use wtraining.nab if running either of the Weighted examples.
+
+This will create xml and pmml files in both the Window/producer and
+Window/consumer sub-directories.
+
+Now invoke the consumer to score input from the data file 'scoring.nab'
+
+    % python consume.py -b training.nab -f scoring.nab
+
+The output of this process (event scores and alerts) will be in the 
+Window/postprocess directory.
+
+
+Sample run
+----------
+
+Below is the output from running the Batch example
+
+
+    $ cd examples/auto/Batch/scripts 
+    $ export PROJECT=/home/augustus-testing/trunk/augustus/examples/auto
+    $ python produce.py -f training.nab -t10
+
+    (0.000 secs)  Beginning timing
+    (0.000 secs)  Creating configuration file
+    (0.270 secs)  Creating input PMML file
+    (0.002 secs)  Starting producer
+    producer 2010-08-26 14:33:31,505 Read Config File
+    (0.004 secs)  Inputting configurations
+    (0.000 secs)  Inputting model
+    (0.003 secs)  Collecting stats for baseline distribution
+    (1.112 secs)  Events 10.000% processed
+    (1.114 secs)  Events 20.000% processed
+    (1.064 secs)  Events 30.000% processed
+    (1.062 secs)  Events 40.000% processed
+    (1.064 secs)  Events 50.000% processed
+    (1.063 secs)  Events 60.000% processed
+    (1.060 secs)  Events 70.000% processed
+    (1.061 secs)  Events 80.000% processed
+    (1.064 secs)  Events 90.000% processed
+    (1.063 secs)  Events 100.000% processed
+    (0.000 secs)  Making test distributions from statistics
+    producer 2010-08-26 14:33:42,239 The Empty Segment
+
+    (0.009 secs)  Outputting PMML
+    (11.030 secs)  Lifetime of timer
+
+    $ python consume.py -b training.nab -f scoring.nab
+    calling Consumer.main
+    No handlers could be found for logger "consumer"
+    Initialize model
+    Initializing
+    Create reader for PMML
+    Parse PMML
+    Initialize Model
+    find model
+    Ready to score
+    Batch Scoring
+
+    $ cd ../postprocess
+    $ ls
+    README  scoring.nab.training.nab.xml
+
+    $ cat scoring.nab.training.nab.xml
+    <report>
+        <event><score>7.22367280473e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Blue" /></Segments></event>
+        <event><score>9.109974656e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Red" /></Segments></event>
+        <event><score>7.25563142937e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Green" /></Segments></event>
+        <event><score>5.69279889457e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Black" /></Segments></event>
+    </report>
+    <report>
+        <event><score>7.22367280473e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Blue" /></Segments></event>
+        <event><score>9.109974656e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Red" /></Segments></event>
+        <event><score>7.25563142937e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Green" /></Segments></event>
+        <event><score>5.69279889457e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Black" /></Segments></event>
+    </report>
+    <report>
+        <event><score>7.22367280473e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Blue" /></Segments></event>
+        <event><score>9.109974656e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Red" /></Segments></event>
+        <event><score>7.25563142937e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Green" /></Segments></event>
+        <event><score>5.69279889457e-05</score><alert>True</alert><Segments><Explicit field="Color" value="Black" /></Segments></event>
+    </report>
+

@@ -1,0 +1,62 @@
+These are two different example projects that use highway sensors as a data source.
+
+The first is located in the gdata directory and highlights a gdata like interface to
+the scoring engine.  To run the example, first navigate to the consumer subdirectory
+and run "AugustusBaselineConsumer -c config.xml".  This will start up a webserver on
+port 8000.  Next, in a seperate shell, navigate to the scripts subdirectory and run
+"python test.py" which will send data from a sample data file to the consumer and
+use the results to write a webpage in the reports subdirectory.
+
+The second example, located in the real directory, shows the end to end process from
+model creation to score production.
+
+There are four subdirectories in the real directory.  The data directory holds the
+data used for the example.  The producer directory holds all the files needed to run
+the producer, other than the data itself.  The consumer directory holds all the
+files needed to run the consumer (or rather it will once you run the producer to
+produce the model).  Finally, the results directory will hold the scores generated
+by the consumer.
+
+To run this example, cd into the producer directory and run
+"AugustusBaselineProducer -c producer_config.xml -t 1".  The file
+"producer_config.xml" is a config file for the producer that specifies the
+segmentation that we will be using and refrences the training.csv data file and the
+input.pmml PMML stub.  The "input.pmml" has all the parts of a PMML baseline model
+(eg. DataDictionary, TransformationDictionary, MiningSchema) except for the test
+distributions.  The output to the screen should look something like the following:
+
+(0.000 secs)  Producer timer begins
+(0.000 secs)  Inputting configurations
+(0.631 secs)  Inputting model
+(0.005 secs)  Collecting stats for baseline distribution
+(1 mins 37.105 secs)  Events 1.000% processed
+(0.346 secs)  Events 2.000% processed
+(0.345 secs)  Events 3.001% processed
+(0.345 secs)  Events 4.001% processed
+(0.345 secs)  Events 5.001% processed
+*sniped 90 lines*
+(0.344 secs)  Events 96.018% processed
+(0.344 secs)  Events 97.019% processed
+(0.344 secs)  Events 98.019% processed
+(0.344 secs)  Events 99.019% processed
+(0.337 secs)  Events 100.000% processed
+(1.338 secs)  Making test distributions from statistics
+(4.010 secs)  Outputting PMML
+(0.548 secs)  Producer timer ends
+(2 mins 17.755 secs)  Total producer time
+
+Once the producer is finished running, the file "real_baseline.pmml" should now be
+in the consumer directory.  Now you can run the consumer to create scores by cd'ing
+to the consumer directory and running "AugustusBaselineConsumer -c
+consumer_config.xml"  The file "consumer_config.xml" is a config file for the
+consumer and references the newly created "real_baseline.pmml" PMML file, the
+"scoring.csv" data file and instructs the consumer to output scores as scores.xml in
+the reports directory.  Running the consumer will take about the same amount of time
+as running the producer and the only output you should see will be "Ready to score".
+
+Once you have run the consumer you should find a "scores.xml" file in the reports
+directory.  If Augustus is set up correctly this file should be the same as
+"scores.xml.ref".  (The files may not be exactly the same due to floating point
+precision but they should have the same number of lines and the same number of
+alerts.)  If the files match, then congratulations are in order because you've just
+correclty produced and consumed a PMML baseline model.

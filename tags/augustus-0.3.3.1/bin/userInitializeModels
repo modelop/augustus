@@ -1,0 +1,4 @@
+#!/usr/bin/python
+from __setpath import *
+from modellib.baseline.tools.userInitializeModels import main
+main()

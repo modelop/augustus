@@ -1,0 +1,66 @@
+<html><head><link href="appendices/documentation.css" rel="stylesheet" type="text/css" /></head><body><h1>Augustus 0.3.3</h1><h2>Augustus PMML Consumer User's Guide</h2><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Description</a><br /><span>2 </span><a class="link" href="#2">Consumer</a><br /><div class="section"><span>2.1 </span><a class="link" href="#2.1">Description</a><br /><span>2.2 </span><a class="link" href="#2.2">Configuration File</a><br /><span>2.3 </span><a class="link" href="#2.3">Usage</a><br /></div></div><h3 id="1">1 Description</h3><div class="section">
+    This document describes the Augustus PMML Consumer.
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="2">2 Consumer</h3><div class="section">
+    <h4 id="2.1">2.1 Description</h4><div class="section">
+      The consumer scores data according to a model.  It requires a 
+      configuration file as input to tell it where to get the model and data 
+      and how to output the scores.<br /><br />
+    </div>
+    <h4 id="2.2">2.2 Configuration File</h4><div class="section">
+      An <a class="link" href="appendices/exampleDeployment.html" target="_blank">example</a> is provided 
+      for the reader.<br /><br />
+      The inputModel tag specifies where the model is located and what type of 
+      file it is.  Each of the commented elements specifies a different file 
+      type:  a normal file, a fifo file, a file from a database, a http 
+      specified file, or a file from the standard input device.<br /><br />
+      The inputData tag specifies where the data is located and what type of 
+      file it is in.  The options are the same as for the model, except that 
+      the manner in which the data is stored in the file is required as well.  
+      This is given as the type attribute of each possible element.  The 
+      options for this type are, currently, unitable or xml .  Reading from 
+      files with fixed record formats is also possibe with the 
+      fromFixedRecordFile child element of the inputData element. 
+      The name attribute of this file should indicate the file name and it
+      should include a set of Field child elements used to specify the
+      record format. Each Field element should include a length, name, and
+      type attribute. Currently, only 'int' is supported for types. 
+      Read once should 
+      be specified if the type of data is unitable.  Batch scoring should be 
+      specified if you wish the scoring engine to produce all scores after all 
+      events have been processed.<br /><br />
+      The output tag specifies how output is generated from the consumer.<br /><br />
+      If the eventBased tag is in the file, the application will output a 
+      report for each event that is scored, whereas if it isn't, there will be 
+      a single report output which will wrap an output row for each event.<br /><br />
+      The report tag specifies what tag will be output to surround each report.<br /><br />
+      The toFile tag specifies where the output is to be placed.  If the file 
+      already exists, then the application will append to the data that is in 
+      it; however, if it doesn't exist, then the application will create it 
+      and then place the data in it.<br /><br />
+      The outputRow element specifies the name of the tag for each row to be 
+      output to the file.<br /><br />
+      Each of the following tags contains a name which specifies the tag to be
+      output surrounding the data each represents.<br /><br />
+      <div class="section">
+        Each outputColumn tag must contain either a fieldName which is one of the 
+        fields described in the data dictionary or a constant value to be output.  
+        These columns will be output in order for each event scored.<br /><br />
+        The score tag specifies that the value the application receives for this 
+        event will be placed in this column.<br /><br />
+        The alert tag specifies that the application will tell whether or not the 
+        given score broke the threshold given for this test.<br /><br />
+        The segments tag specifies that the application will output information 
+        concerning which test produced the score.<br /><br />
+      </div>
+    </div>
+    <h4 id="2.3">2.3 Usage</h4><div class="section">
+      Assuming that the environment variables are specified correctly (as 
+      given in the installation guide) the following command will run the consumer:<br /><br />
+      <span class="command">AugustusPMMLConsumer -c config</span><br /><br />
+      Where config is the configuration file.
+    </div>
+  </div>
+
+<br /><a class="link" href="#">Top</a></body></html>

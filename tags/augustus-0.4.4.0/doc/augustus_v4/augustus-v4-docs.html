@@ -1,0 +1,1716 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Augustus Documentation</title>
+  <link rel="stylesheet" type="text/css" href="augustus.css">
+</head>
+
+<body>
+
+<!-- <pre class="screen"> -->
+<!-- <pre class="programlisting"> -->
+<center>
+<h1>Augustus Documentation </h1>
+
+<h3>
+Version 0.4.0.0
+<br>(updated for release 0.4.3)<br>
+<br>December, 2010
+</h3>
+
+</center>
+
+<br>
+
+<br>
+
+<h2>Table of Contents </h2>
+
+<ol>
+
+  <li>Introduction </li>
+
+  <li>Setting Up Augustus </li>
+
+  <li>Overview of Augustus </li>
+
+  <li>Overview of PMML </li>
+
+  <li>Model Segmentation </li>
+
+  <li>Models </li>
+
+  
+  <ol>
+
+    <li> Trees </li>
+
+    <li> Baseline Models </li>
+
+    <li> Naive Bayes</li>
+
+    <li> Regression Models </li>
+
+    <li> RuleSets</li>
+  
+  </ol>
+
+  <li>Deployment Environment </li>
+
+  <li>Example</li>
+
+  <li>UniTable </li>
+
+  <li>References</li>
+
+</ol>
+
+<h2>1. Introduction </h2>
+
+<p>Augustus [1] is an open source system for building and scoring
+statistical models that is designed to work with data sets that are too
+large to fit into memory. If data can fit into memory, then there are
+several open source statistical systems available, including the R
+System [2]. </p>
+
+<p>Augustus is compliant with the Predictive Model Markup Language, PMML,
+version 4 [3]. </p>
+
+<p>This documentation is based in part on [4] and [5]. </p>
+
+<h2>2. Setting Up Augustus</h2>
+
+<h3>2.1 Requirements </h3>
+
+<p>The following are required to install and run Augustus. </p>
+
+<ol>
+
+  
+  <p></p>
+  <li>Python version 2.5 or 2.6 can be used.  Earlier and later versions are not supported.</li>
+  <li>The numpy package must be installed and version 1.2.1 or 1.3.0 is recommended.
+  Numpy is available from SourceForge (http://sourceforge.net/projects/numpy )
+  and via the Package Manager on many linux distributions</li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+</ol>
+
+<h3>2.2 Optional Packages</h3>
+
+<p>The following are not currently required but, if available,
+will enhance the capabilities of Augustus.</p>
+
+<ul>
+
+  
+  <p></p>
+
+  <li>Math enhancements:
+
+    <p></p>
+
+    <ol type="i">
+
+      <p></p>
+
+      <li>Python interface to the GNU Scientific Library <http:> http://pygsl.sourceforge.net/
+        </http:></li>
+
+      <p></p>
+
+      <p></p>
+
+      <li>Python interface to R <http:> The tree model producer has an
+option to use R-rpart as an engine. </http:></li>
+
+      <p></p>
+
+    </ol>
+
+    <p></p>
+
+    <p></p>
+
+  </li>
+
+  <li>XML/PMML enhancements
+
+    <p></p>
+
+    <ol type="i">
+
+      <p></p>
+
+      <li>LXML, python interface to libxml2 and libxslt <http:> </http:></li>
+
+      <p></p>
+
+
+    </ol>
+
+    <p></p>
+
+  </li>
+
+</ul>
+
+<h3>2.3 Installation </h3>
+
+<p>There are two standard ways of installing Augustus.  The source can be obtained by either downloading a tar.gz file from the project site,
+(http://augustus.googlecode.com) or checked out from subversion:
+<pre class="programlisting">     svn checkout http://augustus.googlecode.com/svn/trunk/  augustus-trunk-read-only<br></pre>
+
+<ul>
+
+  <p></p>
+
+  <li>The unpacked or checked out augustus code can be use in-place by setting
+appropriate environment variables. For example, if
+augustus-0.4.0.tar.gz is unpacked in or checked out to /usr/local, then use:
+    
+    <pre class="programlisting">     PYTHONPATH=$PYTHONPATH:/usr/local/augustus-0.4.0<br>     PATH=$PATH:/usr/local/augustus-0.4.0/bin<br></pre>
+
+    <p></p>
+
+  </li>
+
+
+  <p></p>
+
+  <li>The usual python package installation steps can be used to
+install to standard locations that are by default in PYTHONPATH and
+PATH. After unpacking the distribution, in the distribution base
+directory run:
+
+    <pre class="programlisting">     python2.6 setup.py install<br></pre>
+
+The installation destination can be modified by using options such as
+--prefix (run "python2.6 setup.py --help" for more). By default, this
+would install into:
+    
+    <p></p>
+
+    <pre class="programlisting">     /usr/local/lib/python2.6/site-packages<br>     /usr/local/bin<br></pre>
+
+    <p></p>
+
+  </li>
+
+</ul>
+
+<h4>2.4 Environment</h4>
+
+<p>The System needs to be aware of the Augustus installation directory.  If
+setup.py was not used or if it was given non-standards targets, the following
+environment variable needs to be specified:</p>
+
+<pre>        PYTHONPATH must point to <em>augustus</em>.<br></pre>
+For many of the examples, an additional environment variable must be set.  This
+is example in those examples.  The value is 
+
+<pre>        PROJECT which indicates the location of any user-specific code
+which will be accessing augustus resources.</pre>
+
+<h2>3. Overview of Augustus </h2>
+
+<p><span style="font-weight: bold;">Typical Use</span><br>
+
+Augustus is typically used to construct models and score data with
+models. Augustus includes a dedicated application for creating, or <span style="font-style: italic;">producing</span>, predictive models
+rendered as PMML-compliant files. Scoring is accomplished by <span style="font-style: italic;">consuming</span> PMML-compliant files
+describing an appropriate model. Augustus provides a dedicated
+application for scoring data with five classes of models,
+<span style="font-style: italic;">Baseline Models</span>,
+<span style="font-style: italic;">Tree Models</span>,
+<span style="font-style: italic;">Naive Bayes Models</span>,
+<span style="font-style: italic;">Regression Models</span> and
+<span style="font-style: italic;">RuleSet Models</span>. The typical
+model development and use cycle with Augustus is as follows:<br>
+
+</p>
+
+<ol>
+
+  <li>Identify suitable data with which to construct a new model.</li>
+
+  <li>Provide a model schema which proscribes the requirements for the
+model.</li>
+
+  <li>Run the Augustus producer to obtain a new model.</li>
+
+  <li>Run the Augustus consumer on new data to effect scoring.</li>
+
+</ol>
+
+A single consumer application handles all of the model type.  Separate
+producer applications are supplied for Baseline, Tree, Naive Bayes models,
+and RuleSet.  Augustus does not yet produce PMML 4.0 Regression Models
+(PMML 3.0-compliant Regression models can be produced by Augustus 0.3.3.1).
+The producer and consumer applications require
+configuration with XML-formatted files. The specification of the
+configuration files and model schema are detailed below.&nbsp; The
+consumers provide for some configurability of the output but
+users will often provide additional post-processing to render the
+output according to their needs. A variety of mechanisms exist for
+transmitting data but user's may need to provide their own
+preprocessing to accommodate their particular data source.<br>
+
+<br>
+
+In addition to the producer and consumer applications, Augustus is
+conceptually structured and provided with libraries which are relevant
+to the development and use of Predictive Models. Broadly speaking,
+these consist of components that address the use of PMML and components
+that are specific to Augustus.<br>
+
+<br>
+
+<p><b>PMML components.</b> Augustus uses the standard components of
+PMML to define the inputs, outputs, parameters, and transformations
+required by statistical and data mining models. In particular,
+Augustus supports the following PMML components:</p>
+
+<ul>
+
+  <li>
+    
+    <p><b>A data dictionary </b> is used to define the fields that are
+potential inputs or outputs of models. </p>
+
+  </li>
+
+  <li>
+    
+    <p><b>A mining schema </b> is used to identify the specific fields
+used by
+a model. The mining schema is a subset of the data dictionary that is
+specific for a given model, while the data dictionary contains
+information that does not vary from model to model. For example, the
+mining schema defines the dependent variable for a predictive model
+and specifies whether a given field should be used as input to a
+model. </p>
+
+  </li>
+
+  <li>
+    
+    <p><b>The transformation dictionary</b> defines derived fields
+using
+one or more mining fields. A number of different types of
+transformations are supported, including normalization,
+discretization, value mapping and aggregation. </p>
+
+  </li>
+
+  <li>
+    
+    <p><b>The specific parameters</b> required to define a model are
+defined using one or more PMML elements specific to that model.</p>
+
+  </li>
+
+</ul>
+
+<div style="margin-left: 40px;"><br>
+
+</div>
+
+<b>Augustus components.</b> The current version of Augustus
+consists of the following main components.
+<ul>
+
+  <li>
+    
+    <p><b>A data management component</b> called Unitable is is part of
+the Augustus kernel. A UniTable is broadly similar to a data frame in
+the R system [R:2006]. It contains data fields arranged in columns,
+that may be of different types, but all of which have the same number
+of rows.  This can be used as a tool without the rest of Augustus.
+More information is available at 
+<a class="link" href="../augustus-unitable.html" target="_blank">Universal Table documentation</a>
+</p>
+
+  </li>
+
+</ul>
+
+
+<ul>
+
+  <li>
+    
+    <p><b>Utilities for processing PMML files. </b> These are
+collected
+together in the pmmllib directory in the distribution. </p>
+
+  </li>
+
+</ul>
+
+
+<ul>
+
+  <li>
+    
+    <p><b>Components for shaping and transforming data. </b> These
+components are also part of the Augustus kernel.</p>
+
+  </li>
+
+</ul>
+
+
+<ul>
+
+  <li>
+    
+    <p><b>Model specific components. </b> Currently, Augustus supports
+baseline models, tree models, and naive bayes models [DMG:2006]. These are collected
+together in the modellib directory in the distribution. </p>
+
+  </li>
+
+</ul>
+
+
+<ul>
+
+  <li>
+    
+    <p><b>Run time support.</b> Augustus provides a general mechanism
+for
+reading data into Augustus and writing data out of Augustus called
+anyreader and anywriter, respectively. For example, anyreader can
+read data from a stream or a file and put it into a
+common format for further processing by Augustus. These are collected
+together in the runlib directory in the distribution. </p>
+
+  </li>
+
+</ul>
+
+
+<ul>
+
+  <li>
+    
+    <p><b>Miscellaneous tools.</b> The Augustus distribution also
+includes a number of auxiliary utilities, such as configuration
+utilities, utilities for working with date and time, etc. For
+example, there is a utility that will create a stub PMML data schema
+based upon an analysis of a data file.</p>
+
+  </li>
+
+</ul>
+
+
+<h2>4. Overview of PMML </h2>
+
+<p>The Predictive Model Markup Language or PMML is a vendor driven XML
+markup language for specifying statistical and data mining models. In
+other words, it is an XML language so that analytic models can be
+expressed in a in a platform and application independent fashion. </p>
+
+<p>PMML's approach to developing and deploying analytical applications
+is based upon a few key concepts:</p>
+
+<ul>
+
+  
+  <p></p>
+
+  <li><b> View analytic models as first class objects. </b> With
+PMML, statistical and data mining models can be thought of as first
+class objects described using XML. Applications or services can be
+thought of as producing PMML or consuming PMML. A PMML XML file
+contains enough information so that an application can process and
+score a data stream with a statistical or data mining model using only
+the information in the PMML file. </li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li><b>Provide an interface between model producers
+and model consumers. </b> Broadly speaking most analytic applications
+consist of a learning phase that creates a (PMML) model and a scoring
+phase that employs the (PMML) model to score a data stream or batch of
+records. The learning phase usually consists of the following
+sub-stages: exploratory data analysis, data preparation, event
+shaping, data modeling, &amp; model validation. The scoring phase is
+typically simpler and either a stream or batch of data is scored using
+a model. PMML is designed so that different systems and applications
+can be used for producing models (PMML Producers) and for consuming
+models (PMML Consumers).</li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li><b>View data as event based. </b> Many analytic applications
+can be naturally thought of as event based. Event based data presents
+itself as a stream of events that are transformed, integrated, or
+aggregated to produce the state vectors that are inputs to statistical
+or data mining models. The current version of PMML provides implicit
+support for event based processing of data; future versions are
+expected to provide explicit support.</li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li><b>Support data preparation. </b> As mentioned above, data
+preparation is often the most time consuming part of the data mining
+process. PMML provides explicit support for many common data
+transformations and aggregations used when preparing data. Once
+encapsulated in this way, data preparation can more easily be re-used
+and leveraged by different components and applications.</li>
+
+  
+  <p></p>
+
+</ul>
+
+<p>PMML consists of the following components: </p>
+
+<ol>
+
+  
+  <p></p>
+
+  <li><b> Data Dictionary.</b> The data dictionary defines the fields
+which
+are the inputs to models and specifies the type and value range for
+each field. </li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li><b> Mining Schema.</b> Each model contains one mining schema
+which
+lists the fields used in the model. These fields are a subset of the
+fields in the Data Dictionary. The mining schema contains information
+that is specific to a certain model, while the data dictionary
+contains data definitions which do not vary with the model. For
+example, the Mining Schema specifies the usage type of an attribute,
+which may be active (an input of the model), predicted (an output of
+the model), or supplementary (holding descriptive information and
+ignored by the model). </li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li><b> Transformation Dictionary. </b> The Transformation
+Dictionary
+defines derived fields. Derived fields may be defined by
+normalization, which maps continuous or discrete values to numbers; by
+discretization, which maps continuous values to discrete values; by
+value mapping, which maps discrete values to discrete values; or by
+aggregation, which summarizes or collects groups of values, for
+example by computing averages. </li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li> <b>Model Statistics.</b> The Model Statistics component
+contains basic univariate statistics about the model, such as the
+minimum, maximum, mean, standard deviation, median, etc. of numerical
+attributes. </li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li><b> Model Parameters.</b> PMML also specifies the actual
+parameters defining the statistical and data mining models per
+se. Models in PMML include regression models, clusters models, trees,
+neural networks, bayesian models, association rules, and sequence
+models. </li>
+
+  
+  <p></p>
+
+</ol>
+
+<p>The diagram below shows how input files to PMML models can be
+defined. </p>
+
+Data attributes are defined using the PMML data dictionary. Those data
+attributes used in a model are defined using the PMML Mining Schema. In
+addition, derived attributes can be defined that are inputs to a model
+using the PMML Transformation Dictionary or using PMML defined local
+transformations.
+<p></p>
+
+<br>
+
+<center>
+<p><img src="pmml-dictionaries.jpg"> </p>
+
+</center>
+
+<br>
+
+<h2>5. Model Segmentation </h2>
+
+<p>It is common in practice to build separate models for different
+segments of a population. Today, this is generally done in PMML by
+using separate PMML files. As the number of models grows, the lack of
+explicit support for segmented modeling can begin to be a problem.
+Moreover, since PMML is designed to encapsulate all the information
+required for scoring within a single XML file, it would be useful for
+many applications to have available a general mechanism in PMML for
+segmented modeling. </p>
+
+<p>Here is one approach for providing explicit support for segmented
+modeling that has been proposed to the PMML Working Group. It turns
+out that many common use cases are captured by the following
+segmentation methods: </p>
+
+<ul>
+
+  
+  <p></p>
+
+  <li><b>Regular Partitions.</b> With a regular partition, a field
+name,
+the left end point, the right end point, and the number of partitions
+is specified. Regular partitions in two or more dimensions can be
+defining by specifying the required data for each field
+independently. </li>
+
+  
+  <p></p>
+
+  
+  <p></p>
+
+  <li><b>Explicit Partitions.</b> With an explicit partition, the
+field name, the left end point, and the right end point are given for
+each interval in the partition. Note that with explicit partitions,
+the intervals may be overlapping. Again, multi-dimensional partitions
+are defined by defining each dimension independently.
+    
+    <p></p>
+
+    
+    <p></p>
+
+  </li>
+
+  <li><b>Implicit Partitions.</b> With an implicit partition, a
+field name is provided and then each value of the field is used to
+define a distinct partition. For example, assume that city is a field
+in a data set that is identified as an implicit partition field. In
+this case, a separate model would be created for each city.
+    
+    <p></p>
+
+    
+    <p></p>
+
+  </li>
+
+  <li><b>Bounding Box.</b> With a bounding box, the coordinates of a
+two-dimensional bounding box are provided. If a feature vector is
+within the bounding box, then it is included in the segment.
+
+    <p></p>
+
+    
+    <p></p>
+
+  </li>
+
+  <li><b>Spherical Partitions. </b> With a spherical partition, a
+center, radius and distance function is provided. Any feature vector
+whose distance from the center is less than or equal to the radius is
+included in the partition. Notice that a feature vector may be in
+more than one partition.
+
+    <p></p>
+
+  </li>
+
+</ul>
+
+<p><b>Augustus currently supports regular, explicit, implicit,
+and bounding box partitions, but not spherical partitions. </b></p>
+
+<p>Here is an <a class="link" href="../appendices/exampleSegmentation.html" target="_blank">example</a>
+of a regular partition where the user has broken up the data so that
+for every state and hour combination there is a different model. </p>
+
+<p> The segmentation tag denotes the definition of the segmentation for
+this model. Within it there may be any number of explicit and/or
+regular segment declarations; however, there may only be one
+declaration per field. </p>
+
+<p> The explicit segment declaration identifies the field the
+restriction is placed upon as the state field and then lists the
+possible values (there may be any number of these). The regular segment
+declaration declares the field the restriction is placed upon as the
+hour field and then states that the producer is to create 24 ranges of
+equal length between the numbers 0 and 24. There can be any number of
+these partition declarations.</p>
+
+<p></p>
+
+<p> When the producer creates the models, it will make a distinct model
+for all possible sets of the values (or ranges) choosing one from each
+declaration. In our example, this means that there will be 6 (# of
+states) * 24 (# of hours) = 144 (number of segments) different models. </p>
+
+<h2>6. Models</h2>
+
+<h3>6.1 Baseline Models </h3>
+
+<p><b>Baseline Producer.</b> The producer makes PMML baseline model. It
+requires a simple, stub PMML file as input upon which it bases the
+output file. It also requires a configuration file as input to tell it
+exactly how to make the output file.</p>
+
+<p><b>Stub PMML File.</b> Here is an <a class="link" href="../appendices/examplePmml.html" target="_blank">example</a> of a
+stub PMML file. The data dictionary section tells which fields are
+required as input. The baseline model section describes the model. The
+mining schema tells which fields are required for the actual scoring
+process or for output. TheTestDistributions section specifies the statistical
+test which will be used.</p>
+
+<p><b>Configuration File.</b> Here is an <a class="link" href="../appendices/exampleSegmentation.html" target="_blank">example</a>
+of a configuration file for a Baseline Producer. The configuration file
+specifies how to score the model. The batch element should be specified
+if you wish the scoring engine to produce all scores after all the
+events have been processed. The model element tells where to find the
+input file and where to produce the output file. The test element tells
+which field is to be scored, which statistic to use, which test to use,
+and gives a value for the threshold, if necessary. The baseline element
+tells which function and file should be used to be a basis for scoring
+and whether the file contains XML or UniTable formatted data. The
+alternate element is only required for the CUSUM statistic and
+specifies the function to be represented and either: </p>
+
+<pre>        - a file to be used to determine the mean and variance along with <br>        it's data type<br>
+        - a multiplier so that the mean is: [baseline's mean] + 
+        ([multiplier] * [baseline's variance])<br>
+</pre>
+
+The segmentation tag allows the user to utilize different tests for
+different input data. In the example, the user is specifying that they
+want to break a day up into different hours and they also want to break
+a country up into states. This means that the producer will find the
+necessary functions for (in this case) 6 states and 24 hrs for a total
+of 6*24 or 144 different conditions (like 1-2 am in Texas, 1-2 am in
+Illinois, 4-5 pm in California, etc.).
+<p></p>
+
+<p><b>Output PMML File. </b> A partial <a class="link" href="../appendices/producedPmml.html" target="_blank">example</a> is
+provided for the reader. Note that the comments from the input PMML and
+the configuration file were completely removed from the example before
+the output PMML file was created. The ability to transfer these
+comments may be added in a later version of Augustus.</p>
+
+<p> This PMML file specifies everything about a valid model. The data
+dictionary section tells which fields are required either as input or
+eventual output. The mining schema tells which fields are required for
+the actual scoring process.
+
+For each Segment, there is a baseline model section which describes the model,
+a test distribution section which describes a different test depending on the
+input conditions being correct, a Predicate which tells us which comparison was used.
+</p>
+
+<p><b>Unified Consumer</b> The Consumer scores data using a
+model defined by a PMML file. It requires a configuration file as input to tell it
+where to get the model and data and how to output the scores.</p>
+
+<p>To run the Consumer, use the command
+</p>
+
+<pre class="screen">AugustusPMMLConsumer -c config.xml<br></pre>
+
+where config.xml is the configuration file.  This works for all of the implemented models.
+
+
+<p>To run the Baseline Producer, use the command
+</p>
+
+<pre class="screen">&gt; AugustusBaselineProducer -c config.xml -t timing<br></pre>
+
+where config.xml is the configuration file. If the optional -t timing flag is present, the
+producer will output timing information when every timing of the data is
+processed.
+<p></p>
+
+<h3>6.2 Naive Bayes Models </h3>
+
+<b>Naive Bayes Producer.</b> The producer makes PMML naive bayes model. It
+requires a simple, stub PMML file as input upon which it bases the
+output file. It also requires a configuration file as input to tell it
+exactly how to make the output file.
+<p></p>
+
+<p><b>Stub PMML File.</b> Here is an <a class="link" href="../appendices/nbayes_exampleInput.pmml.html" target="_blank">example</a> of a
+stub PMML file. The data dictionary section tells which fields are
+required as input. The naive bayes model section describes the model, in particular,
+input fields, output field, and values of interest for each. The
+mining schema tells which fields are required for the actual scoring
+process or for output. </p>
+
+<p><b>Configuration File.</b> Here is an <a class="link" href="../appendices/nbayes_producerExample.xml.html" target="_blank">example</a>
+of a configuration file for a Naive Bayes Producer. The configuration file
+specifies how to score the model. The batch element should be specified
+if you wish the scoring engine to produce all scores after all the
+events have been processed. The model element tells where to find the
+input file and where to produce the output file. The data element
+tells which file contains data from which the model is to be constructed
+and whether the file contains XML or UniTable formatted data.
+In the example, the user is not using segmentation.
+</p>
+<p></p>
+
+<p><b>Output PMML File. </b> A partial <a class="link" href="../appendices/nbayes_example.pmml.html" target="_blank">example</a> is
+provided for the reader. Note that the comments from the input PMML and
+the configuration file were completely removed from the example before
+the output PMML file was created. The ability to transfer these
+comments may be added in a later version of Augustus.</p>
+
+<p> This PMML file specifies everything about a valid model. The data
+dictionary section tells which fields are required either as input or
+eventual output. The naive bayes model section describes the model. The
+mining schema tells which fields are required for the actual scoring
+process. And each naive bayes input section describes a different test
+depending on the input conditions being correct.
+</p>
+
+
+<p><b>Unified Consumer</b> The Consumer scores data using a
+model defined by a PMML file. It requires a configuration file as input to tell it
+where to get the model and data and how to output the scores.</p>
+
+<p>To run the Consumer, use the command
+</p>
+
+<pre class="screen">AugustusPMMLConsumer -c config.xml<br></pre>
+
+where config.xml is the configuration file.  This works for all of the implemented models.
+
+<p>To run the Naive Bayes Producer, use the command
+</p>
+
+<pre class="screen">&gt; AugustusNaiveBayesProducer -c config.xml -t timing<br></pre>
+
+where config is the configuration file. If the optional -t timing flag is present, the producer
+will output timing information when every timing of the data is processed.
+<p></p>
+
+
+<h3>6.3 Tree Models </h3>
+
+<b>Tree Producer.</b> The producer makes PMML tree model. It
+requires a simple, stub PMML file as input upon which it bases the
+output file. It also requires a configuration file as input to tell it
+exactly how to make the output file.
+<p></p>
+
+<p><b>Stub PMML File.</b> Here is an <a class="link" href="../appendices/tree_exampleInput.pmml.html" target="_blank">example</a> of a
+stub PMML file. The data dictionary section tells which fields are
+required as input. The tree model section describes the model, in particular,
+input fields, output field, and values of interest for each. The
+mining schema tells which fields are required for the actual scoring
+process or for output. </p>
+
+
+<p><b>Configuration File.</b> Here is an <a class="link" href="../appendices/tree_producerExample.xml.html" target="_blank">example</a>
+of a configuration file for a Tree Producer. The configuration file
+specifies how to score the model. The tree element specifies the type
+of tree we want to use, in this case a classification tree, and maximum depth, 4.
+The model element tells where to find the input file and where to produce the output file. The data element
+tells which file contains data from which the model is to be constructed and whether the file contains XML
+or UniTable formatted data. The segmentation tag allows the user to utilize different tests for
+different input data. In the example, the user is specifying that they
+want to confine this model to the segment defined by the the diet of the entity: carnivore or herbivore.
+Records with other values will not be scored.
+</p>
+<p></p>
+
+<p><b>Output PMML File. </b> A partial <a class="link" href="../appendices/tree_example.pmml.html" target="_blank">example</a> is
+provided for the reader. Note that the comments from the input PMML and
+the configuration file were completely removed from the example before
+the output PMML file was created. The ability to transfer these
+comments may be added in a later version of Augustus.</p>
+
+<p> This PMML file specifies everything about a valid model. The data
+dictionary section tells which fields are required either as input or
+eventual output. The tree model section describes the model. The
+mining schema tells which fields are required for the actual scoring
+process.
+</p>
+
+<p><b>Unified Consumer</b> The Consumer scores data using a
+model defined by a PMML file. It requires a configuration file as input to tell it
+where to get the model and data and how to output the scores.</p>
+
+<p>To run the Consumer, use the command
+</p>
+
+<pre class="screen">AugustusPMMLConsumer -c config.xml<br></pre>
+
+where config.xml is the configuration file.  This works for all of the implemented models.
+
+<p>To run the Tree Producer, use the command
+</p>
+
+<pre class="screen">&gt; AugustusTreeProducer -c config.xml -t timing<br></pre>
+
+where config is the configuration file. If the optional -t timing flag is present, the producer
+will output timing information when every timing of the data is processed.
+<p></p>
+
+
+<h3>6.4 Regresson Models </h3>
+
+<b>Regression Producer.</b> Currently, Ausgustus does not produce Regression
+models.
+<p></p>
+
+<p><b>Stub PMML File.</b> Will be defined in a later release </p>
+<p></p>
+
+<p><b>Configuration File.</b> A configuration file for running the
+Augustus Unified Consumer with a Regression model is shown in the folwing
+<a class="link" href="../appendices/regression_consumerExample.html" target="_blank">example</a>.
+<p></p>
+
+<p><b>Output PMML File. </b> A partial <a class="link" href="../appendices/regression_example.pmml.html" target="_blank">example</a> is
+provided for the reader. </p>
+
+<p> This PMML file specifies everything about a valid model. The data
+dictionary section tells which fields are required either as input or
+eventual output. The tree model section describes the model. The
+mining schema tells which fields are required for the actual scoring
+process.
+</p>
+
+<p><b>Unified Consumer</b> The Consumer scores data using a
+model defined by a PMML file. It requires a configuration file as input to tell it
+where to get the model and data and how to output the scores.</p>
+
+<p>To run the Consumer, use the command
+</p>
+
+<pre class="screen">AugustusPMMLConsumer -c config.xml<br></pre>
+
+where config.xml is the configuration file.  This works for all of the implemented models.
+<p></p>
+
+<h3>6.5 RuleSet Models </h3>
+
+<b>RuleSet Producer.</b> The producer makes PMML tree model. It
+requires a simple, stub PMML file as input upon which it bases the
+output file. It also requires a configuration file as input to tell it
+exactly how to make the output file.
+<p></p>
+
+<p><b>Stub PMML File.</b> Here is an <a class="link" href="../appendices/ruleset_exampleInput.pmml.html" target="_blank">example</a> of a
+stub PMML file. The data dictionary section tells which fields are
+required as input. The RuleSet model section describes the model, in particular,
+input fields, output field, and values of interest for each. The
+mining schema tells which fields are required for the actual scoring
+process or for output. </p>
+
+
+<p><b>Configuration File.</b> Here is an <a class="link" href="../appendices/ruleset_consumerExample.html" target="_blank">example</a>
+of a configuration file for a RuleSet consumer. The configuration file
+specifies the location of the model and the data to be scored.
+</p>
+<p></p>
+
+<p><b>Unified Consumer</b> The Consumer scores data using a
+model defined by a PMML file. It requires a configuration file as input to tell it
+where to get the model and data and how to output the scores.</p>
+
+<p>To run the Consumer, use the command
+</p>
+
+<pre class="screen">AugustusPMMLConsumer -c config.xml<br></pre>
+
+where config.xml is the configuration file.  This works for all of the implemented models.
+
+<p>To run the RuleSet Producer, use the command
+</p>
+
+<pre class="screen">&gt; AugustusRuleSetProducer -c config.xml -t timing<br></pre>
+
+where config is the configuration file. If the optional -t timing flag is present, the producer
+will output timing information when every timing of the data is processed.
+<p></p>
+
+
+<h2>7. Deployment Environment </h2>
+
+<p>Each consumer and producer application uses XML-based files,
+referred to as deployment files, to specify their configuration.<br>
+
+An example configuration file for the Baseline Consumer can be found <a href="appendices/exampleDeployment.html" target="_blank">here</a>.&nbsp;
+The following tags are used.<br>
+
+</p>
+
+<p><span style="font-weight: bold;">Producer Configuration Tags</span><br>
+
+</p>
+
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+
+  <tbody>
+
+    <tr>
+
+      <td style="vertical-align: top;">XML Tag<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Attributes<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Meaning<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;model&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;">input,output<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Specify Schema (input) and name
+of resulting model file (output)<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;test&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;">field,testStatistic,threshold<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Statistical test to employ,
+field to be scored, and threshold indicative of alert<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;baseline&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;">dir,file, dist<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Data sample from which to
+construct baseline model. For the CUSUM and GLR statistical test, the dist attribute
+shows the functional form assumed to describe the data. <br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;alternate&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;">dist<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Data sample from which to
+construct alternate test for baseline models which use the CUSUM
+statistical test. The dist attribute is the form of the distribution of
+the data which comprises the alternate test.<br>
+
+      </td>
+
+    </tr>
+
+     <tr>
+
+      <td style="vertical-align: top;">&lt;build&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;">dir,file<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Data sample from which to
+construct naive bayes model<br>
+
+      </td>
+
+    </tr>
+
+   <tr>
+
+      <td style="vertical-align: top;">&lt;explicitSegments&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;">field<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Beginning of list of values for
+a given segmenting field<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;segment&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;">value<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Value of field defining one
+coordinate of a specific segment<br>
+
+      </td>
+
+    </tr>
+
+  
+  </tbody>
+</table>
+
+<p style="font-weight: bold;">Producer Schema Tags</p>
+
+<p><span style="font-weight: bold;">Consumer Configuration Tags</span><br>
+
+</p>
+
+<p> The elements which make up a Consumer Configuration file are generally
+distributed among three sections set off by the following elements:</p>
+
+<!--
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2"> -->
+<table padding="2" border="1" width="100%">
+
+  <tbody>
+
+    <tr>
+
+      <td>inputModel element</td>
+
+      <td> The inputModel tag specifies where the
+model is located and what type of file it is. The name of a file,
+database, URL, standard input, or FIFO may
+be specified with the following elements &lt;fromFile&gt;,
+&lt;fromDatabase&gt; &lt;fromHTTP&gt; &lt;fromStandardInput&gt;
+&lt;fromFifo&gt; respectively. </td>
+
+    </tr>
+
+    <tr>
+
+      <td>inputData element </td>
+
+      <td> The inputData element specifies where the data is located
+and what type of file it is in. The options are the same as for the
+model, except that the manner in which the data is stored in the file
+is required as well. This is given as the type attribute of each
+possible element. The options for this type are, currently, unitable,
+xml, or Fixed record format. Files using fixed records are specified
+by a fromFixedRecordFile element with a name attribute and a set of
+Field child elements, each of which has a name, type, and length
+attribute. Read once should be specified (as its own element) if the
+type of data is unitable.  Batch scoring should be specified (as its
+own element) if you wish the scoring engine to produce all scores
+after all events have been processed. </td>
+
+    </tr>
+
+    <tr>
+
+      <td>output element </td>
+
+      <td> The output element specifies how output is generated by the PMML
+Consumer. If the eventBased element is in the file, the application
+will output a report for each event that is scored, whereas if it
+isn't, there will be a single report output which will wrap an output
+row for each event. The report element specifies what tag will be
+output to surround each report. The toFile element specifies where the
+output is to be placed. If the file already exists, then the
+application will append to the data that is in it; however, if it
+doesn't exist, then the application will create it and then place the
+data in it. The outputRow element specifies the name of the tag for
+each row to be output to the file. <br>
+
+Each of the following tags contains a name which specifies the tag to
+be output surrounding the data each represents. Each outputColumn
+element must contain either a fieldName which is one of the fields
+described in the data dictionary or a constant value to be output.
+These columns will be output in order for each event scored.<br>
+
+      <br>
+
+The score element specifies that the value the application receives for
+this event will be placed in this column.<br>
+
+      <br>
+
+The alert element specifies that the application will tell whether or
+not the given score broke the threshold given for this test.<br>
+
+      <br>
+
+The segments element specifies that the application will output
+information concerning which test produced the score.<br>
+
+      <br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+        <td>DirectoryStructure</td>
+        <td>
+The DirectoryStructure element encapsulates the deployment directories used with the
+models being run.  This is independent from the Augustus directories.  The locations
+specified are: the &lt;Producer&gt; element: the location of the producer, the
+&lt;Postprocessing&gt; element: the location of any post-processing scripts or applications,
+the &lt;Reports&gt; element: a directory for output, and the &lt;Temp&gt; element, which
+specifies a directory to be used for any temporary files generated during the process.<br>
+
+    <br>
+
+Although it does not seem natural, information about the producer is necessary because
+the pre- or post-processing that is defined may need information about the baseline data
+which was declared in the Producer configuration.  For example, if a plot is to be
+generated after scoring comparing the scored data to the test data.
+        </td>
+    </tr>
+
+    <tr>
+        <td>Processing</td>
+        <td>
+The Processing element specifies the commands (applications or scripts) that are to be
+run in the workflow.  The &lt;Preprocess&gt; and &lt;Postprocess&gt; elements both
+take 1 or more &lt;Instruction&gt;  element.  Instructions are the commands to be run,
+serially, during that stage of the work flow.  In a future release, we expect that
+Instructions will be able to be specified to run serially or in parallel.  This will
+require additional elements or attributes.<br>
+
+    <br>
+
+The &lt;Consumer&gt; and &lt;Producer&gt; elements are for future use.  They will contain
+Instruction elements.  The goal is to eventually be able to completely describe the workflow
+in a configuration file (outside of the Consumer Configuration).
+
+        </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<p><i>Note:</i> DirectoryStructure and Processing are <b>not</b> a part of the
+PMML <i>v</i>. 4 specification.  With the Augustus 0.4 release, we have begun to formalize
+the idea of a work flow for Augustus.  These two elements are used to in the
+configuration to specify pre- and post-processing steps that are to be carried out
+while running the consumer.  This is still under development, and as it is not a
+part of the PMML specification yet, it is subject to change.</p>
+
+<p> The child elements are specified as follows:</p>
+
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2" cellspacing="2">
+
+  <tbody>
+
+    <tr>
+
+      <td style="vertical-align: top;">XML Tag<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Attributes<br>
+
+      </td>
+
+      <td style="vertical-align: top;">Meaning<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;fromFile&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">name</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of inputData or inputModel. Specify Model (PMML file) or data file (within inputData section).<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;toFile&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">name</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of output. File with scoring results<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;ancillary&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">name</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of output. Include distribution of values
+scored with <span style="font-style: italic;">ddist</span> test (Baseline Models only). In the results, this will be set off by the element named <span style="font-style: italic;">name</span>.<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;OutputColumn&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">name,
+fieldName</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of output. Include value of the miningfield
+      <span style="font-style: italic;">fieldName</span> using xml
+element <span style="font-style: italic;">name</span> in results<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;score&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of output. XML element in output holding
+the score for an event. The <span style="font-style: italic;">name</span> attribute is the name of the element in the results file.<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;alert&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">name</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of output. XML element in output holding
+the alert status for an event (Baseline models only). The <span style="font-style: italic;">name</span> attribute is the name of the element in the results file.<br>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;Preprocess&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of Processing. XML element in Processing holding
+the scripts or applications to be run before the data is scores.  These values are held in &lt;Instruction&gt; elements which have no attribute and only
+hold the command to be run.<br>
+
+      </td>
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;Postprocess&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of Processing. XML element in Processing holding
+the scripts or applications to be run after the data is scores.  These values are held in &lt;Instruction&gt; elements which have no attribute and only
+hold the command to be run.<br>
+
+      </td>
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;Producer&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of Processing. Currently does have have to hold a value, but is required
+if the &lt;Processing&gt; element is used.  Use &lt;Producer/&gt;.<br>
+
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;">&lt;Consumer&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of Processing. Currently does have have to hold a value, but is required
+if the &lt;Processing&gt; element is used.  Use &lt;Consumer/&gt;.<br>
+
+      </td>
+    </tr>
+
+    <tr>
+
+      <td style="vertical-align: top;">&lt;Producer&gt;<br>
+
+      </td>
+
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of DirectoryStructure. There are no attributes.  It contains three child elements
+itself:<br>
+<br>&lt;Home&gt; either the absolute or relative path from the directory containing this configuration file, of the producer.<br>
+<br>&lt;Config&gt; the Producer's configuration file.<br>
+<br>&lt;ModelData&gt; either the absolute or relative path from the directory containing this configuration file, to the scores used to construct the model,
+<i>i.e</i> the scoring results from the baseline data.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;">&lt;Postprocessing&gt;<br>
+
+      </td>
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of DirectoryStructure. There are no attributes. The value specifies the
+directory where postprocessing will take place.  If the path is not absolute, it must be relative to the directory containing
+this config file.<br>
+       </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;">&lt;Reports&gt;<br>
+
+      </td>
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of DirectoryStructure. There are no attributes. The value specifies the
+directory where any reports generated during the workflow will be stored. If the path is not absolute, it must be relative
+to the directory containing this config file.<br>
+       </td>
+
+    </tr>
+  
+    <tr>
+      <td style="vertical-align: top;">&lt;Temp&gt;<br>
+
+      </td>
+      <td style="vertical-align: top;"><span style="font-style: italic;">none</span><br>
+
+      </td>
+
+      <td style="vertical-align: top;">Child element of DirectoryStructure. There are no attributes. The value specifies the
+directory to be used to store any temporary files that are generated during the workflow.  If the path is not absolute,
+it must be relative to the directory containing this config file.<br>
+       </td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<p><br>
+
+</p>
+
+<center>
+
+</center>
+
+<h2>8. Example </h2>
+
+<p><b>Step 1. Copy files. </b> Copy the files from <span class="directory">augustus/examples/projectExample</span> into a new
+directory not in the augustus directory tree. This new directory is the
+<span class="directory">project</span> directory.</p>
+
+<p><b>Step 2. Set environment variables. </b> Set the PROJECT
+environment variable to point to the <span class="directory">project</span>
+directory. Set the PYTHONPATH to point to <span class="directory">project</span>
+and <span class="directory">augustus</span>.</p>
+
+<p><b>Step 3. Download data. </b> Download the data file named
+traffic-24h-2007-11-01.gz from the <a class="link" href="http://highway.lac.uic.edu/snapshots/">web site</a>,  place it and unzip it
+in <span class="directory">project/data</span>. </p>
+
+<p><b>Step 4. Select a script. </b> Choose one of the following:
+</p>
+
+<pre class="screen">        Occupancy Example - Move to <span class="directory">project/occupancyExample/scripts</span>.<br>
+        Speed Example - Move to <span class="directory">project/speedExample/scripts</span>.<br>
+        Volume Example - Move to <span class="directory">project/volumeExample/scripts</span>.<br>
+</pre>
+
+<p><b>Step 5. Create a PMML Baseline model. </b> Enter:
+</p>
+
+<pre class="screen">  python produce.py -f traffic-24h-2007-11-01 -t 10<br></pre>
+to produce a PMML file while outputting timing information every 10% of
+the way through the data. Note that the script produce.py calls the
+producer included in the AugustusBaselineProducer. It additionally
+creates the required stub pmml and producer configuration files.
+
+<p></p>
+
+<p><b>Step 6. Score data using the PMML Baseline model you produced. </b>
+Enter:
+</p>
+
+<pre class="screen">  python consume.py -b traffic-24h-2007-11-01 -f traffic-24h-2007-11-01<br></pre>
+to score the same data you used to create the PMML file. Note that the
+script, consume.py, calls the consumer code contained in the
+AugustusBaselineConsumer code. It additionally creates the required
+configuration file.
+
+<p></p>
+
+<p><b>Getting help. </b>
+If you wish to see help for these programs enter<br>
+
+<br>
+
+</p>
+
+<pre class="screen">  python produce.py -h<br>  python consume.py -h<br></pre>
+
+<p></p>
+
+<br>
+
+<p><b>Virtual Instances.</b>
+If you want to try Augustus without having to to install it on a machine, you
+can try it on Amazon's Elastic Compute Cloud (EC2).  There are both 32- and 64-bit
+AMIs publicly available that have Augustus installed.
+
+<br>
+<p/>
+
+Currently, the 32-bit Public AMI is ami-bf608dd6 and the 64-bit is ami-c9618ca0.
+Both of these AMIs are linux instances.  Check the Augustus
+<a class="link" href="http://augustus.googlecode.com/">project site</a>
+for up-to-date information.
+
+<p></p>
+
+<h2>9. UniTable </h2>
+
+<p>The UniTable is an abbreviation for universal table and is one of
+the main components of the Augustus system. The data structure is
+analogous to an R frame: a table where the columns are vectors of
+equal length, but may be of different types. It is based on the
+Python numpy package and the programming interface attempts to
+maintain consistency with the style established therein.</p>
+
+<p>The design goal was to create a very fast, efficient object for data
+shaping, model building, and scoring, both in a batch and real-time
+context. The key features are:
+</p>
+
+<ul>
+
+  <li> A file format that matches the native machine memory storage of
+the data. This allows for memory-mapped access to the data, eliminating
+the need for data parsing or sequential reading. </li>
+
+  <li> Fast vector operations using any number of data columns.</li>
+
+  <li> Support for demand driven, rule based calculations. Derived
+columns can be defined in terms of operations on other columns,
+including other derived columns, and will be made available when
+referenced.</li>
+
+  <li> The ability to invoke calculations in scalar or vector mode
+transparently. Thus, one set of rule definitions can be applied to an
+entire data set in batch mode, or to individual rows incoming as
+real-time events.</li>
+
+  <li> The ability to handle huge real-time data rates by automatically
+switching to vector mode when behind, and scalar mode when keeping up
+with individual input events.</li>
+
+</ul>
+
+<p></p>
+
+<p><b>Command line tool. </b> Included in the bin directory,
+"unitable" converts between CSV and binary data formats. The input
+format is autodetected and may be binary or any flavor of well-formed
+CSV. Output formats are:
+</p>
+
+<pre class="programlisting">     unitable --csv	CSV output, use --sep for custom field delim<br>     unitable --bin	binary output<br>     unitable --tbl	pretty printed table for viewing<br>     unitable --tty	pretty-printed table with header repeated as<br>                        needed to always be visible in current terminal window<br>     unitable --html	HTML table<br>     unitable --xml	XML table<br></pre>
+
+<p></p>
+
+<p>Note that there may or may not be space savings by converting from
+CSV to binary format, depending on the data. The advantage of the
+binary format is in performance gains for subsequent processing.</p>
+
+<p><b>Binary file format (NAB). </b> The unitable binary file contains
+a brief text header describing field names and formats, followed by raw
+binary data. Each field is stored as a contiguous vector of native
+machine types. When "reading" a binary file, the data is not read in
+the traditional sense. Rather, a memory mapping is established to the
+disk location and data is made available on-demand.</p>
+
+<p>The performance gains are spectacular. For example, one huge CSV
+file that takes an hour to read, parse, and store as internal lists
+takes about 45 seconds to "read" in binary format.</p>
+
+<p><b>Python data structure. </b> See unitable.py for instructions and
+a large list of examples. Typical usage is:
+</p>
+
+<pre class="programlisting">     from augustus.kernel.unitable import UniTable<br>     tbl = UniTable()<br>     tbl.fromfile(filename)</pre>
+
+<p></p>
+
+<p>For simple needs, tbl can be considered a dictionary where each
+column in the table is stored as a separate list of values.</p>
+
+<p>For maximum benefit, it is necessary to understand the python
+numpy module. Each column is actually a numpy vector and supports
+a variety of vector operations. Also, the UniTable supports operations
+on the entire table in the style of numpy records.</p>
+
+<p><b>Example. </b> Here is an example using UniTable. </p>
+
+<pre class="programlisting">#!/usr/bin/env python2.6<br><br>"""Sample python usage of UniTable<br><br>  Lists top ten values for each field in a set of files.<br>  Works for enumeration files that contain a '_count_'<br>  field showing number of occurances of given record.<br>"""<br><br>import sys<br>from itertools import izip<br>from augustus.kernel import UniTable<br><br>def top_ten(filenames):<br><br>  # track values for each field<br>  seen_fields = {}<br>  total_recs = 0<br><br>  # read each file in turn<br>  for filename in filenames:<br>    tbl = UniTable()<br>    tbl.fromfile(filename)<br><br>    keys = tbl.keys()[:]<br>    keys.remove('_count_')<br>    total_recs += tbl['_count_'].sum()<br><br>    # read each column in turn<br>    for key in keys:<br>      seen_values = seen_fields.setdefault(key,{})<br><br>      # iterate over counts and values<br>      for cnt,value in izip(tbl['_count_'],tbl[key]):<br>        try:<br>          seen_values[value] += cnt<br>        except KeyError:<br>          seen_values[value] = cnt<br><br>  # report results<br>  for key,seen_values in seen_fields.items():<br><br>    # find top ten<br>    top_cnts = sorted(seen_values.values())<br>    cutoff = top_cnts[-10:][0]<br>    tmp = sorted([cnt,value] for (value,cnt) in seen_values.items() if cnt &gt;= cutoff)<br>    top = reversed(tmp[-10:])<br><br>    # report<br>    print 'Field:', key<br>    for (cnt,value) in top:<br>      percent = 100.0*cnt/float(total_recs)<br>      print '\t(%8.5f%%) %r' % (percent,value)<br><br>top_ten(sys.argv[1:])<br><br></pre>
+
+<h2>10. References </h2>
+
+<p>[1] The Augustus Project, augustus.googlecode.com. </p>
+
+<p>[2] The R Project for Statistical Computing, www.r-project.org. </p>
+
+<p>[3] The Predictive Model Markup Language (PMML), www.dmg.org. </p>
+
+<p>[4] Robert Grossman, PMML Models for Detecting Changes, Proceedings
+of ACM KDD Workshop on Data Mining Standards, Services, and Platforms
+(DM-SSP 2005), 2005. </p>
+
+<p>[5] John Chaves, Chris Curry, Robert L. Grossman , David Locke and
+Steve Vejcik, Augustus: The Design and Architecture of a PMML-Based
+Scoring Engine, Proceedings of ACM KDD Workshop on Data Mining
+Standards, Services, and Platforms (DM-SSP 2006), 2006. </p>
+
+</body>
+</html>

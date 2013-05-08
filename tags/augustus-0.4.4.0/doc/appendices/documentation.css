@@ -1,0 +1,63 @@
+h1
+{
+	text-align : center;
+}
+
+h2
+{
+	text-align : center;
+}
+
+.section
+{
+	padding-left : 30px;
+	width : 700px;
+}
+
+.link
+{
+	color : blue;
+}
+
+.command
+{
+	color : red;
+	font-style : italic;
+}
+
+.directory
+{
+	font-style : italic;
+}
+
+.quote
+{
+	font-family : monospace;
+}
+
+.error
+{
+	color : red;
+}
+
+.addme
+{
+	color : red;
+	text-decoration : blink;
+	font-weight : bold;
+}
+
+.option
+{
+	font-weight : bold;
+}
+
+.input
+{
+	font-style : italic;
+}
+
+.variable
+{
+	font-style : italic;
+}

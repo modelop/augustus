@@ -1,0 +1,27 @@
+augustus (0.2.5) sourceforge; urgency=low
+
+  [ John A Chaves ]
+  * Preparing for 0.2.6 release.
+
+ -- John A Chaves <jachaves@users.sourceforge.net>  Tue, 13 Feb 2007 23:10:26 -0600
+
+augustus (0.2.4) sourceforge; urgency=low
+
+  [ John A Chaves ]
+  * Added pmmllib, modellib, initital tree model, baseline
+    and naive-bayes examples.
+
+ -- Steve Vejcik <vejcik@odg1.opendatagroup.com>  Tue, 15 Aug 2006 06:25:39 -0500
+
+augustus (0.2.3) sourceforge; urgency=low
+
+  * Added runlib and tools modules
+
+ -- John A Chaves <jachaves@users.sourceforge.net>  Thu, 29 Dec 2005 22:16:42 -0600
+
+augustus (0.2.2) sourceforge; urgency=low
+
+  * Added unitable module
+  * Initial release to sourceforge.net
+
+ -- John A Chaves <jachaves@users.sourceforge.net>  Sun, 18 Dec 2005 10:00:00 -0600

@@ -1,0 +1,68 @@
+
+	This project directory contains four simple examples applying vector
+channel analysis to a single field of a stream of input records.  The
+examples use two types of data files in the data subdirectory.  The
+files training.nab and scoring.nab both have records with three entries:
+Date, Color, and Automaker.  The files wtraining.nab and wscoring.nab
+have an additional 'weight' column, named 'Count'.  The Count field
+records the number of occurences of identical tuples in the non-weighted
+data and collapses them into one record.
+
+	In all four examples, 'Automaker' is the test field, and the
+'Color' field is used for model segmentation.  The Automaker field can 
+take on only a handful of distinct values.  In each example the producer 
+accumulates frequency counts in each 'Color' segment for the various 
+'Automaker' values. These are the baseline distributions for the model. 
+
+The consumer collects the same frequency counts from a stream
+of input records and compares its count vectors to the baseline 
+distributions.
+
+Window vs. Batch
+_____________
+
+In two examples (Window and WeightedWindow), the consumer keeps counts 
+of the test field for sliding fixed length window of records that fall 
+within each segment.  As each new record enters the window and the oldest 
+one drops out, the updated count vector is compared to the baseline.  
+
+In the Batch and WeightedBatch examples, the consumer accumulates 
+frequency counts within each segment for the entire data stream 
+and compares the overall distributions from the scoring data
+with the baseline.  This is triggered by the 'batchScoring' subelement
+of inputData and the absence of a windowSize.
+
+Test Statistic
+_____________
+
+The test statistic is a 'distribution distance' that is a normalized 
+inner product of the two vectors of counts.  The consumer compares this
+statistic against a specified threshold to generate alerts.
+
+
+Running the examples
+
+_____________
+
+Set the PROJECT environment variable to the path of this directory, or
+the location at which a copy of it, including the data and example
+subdirectories, is located. 
+
+Change to the scripts subdirectory of one of the examples.  For instance,
+
+	% cd Window/scripts
+
+Invoke the producer to make a model from the data file 'training.nab'
+
+        % python produce.py -f training.nab -t5
+
+This will create xml and pmml files in both the Window/producer and
+Window/consumer subdirectories.
+
+Now invoke the consumer to score input from the data file 'scoring.nab'
+
+        % python consume.py -b training.nab -f scoring.nab
+
+The output of this process (event scores and alerts) will be in the 
+Window/postprocess directory.
+

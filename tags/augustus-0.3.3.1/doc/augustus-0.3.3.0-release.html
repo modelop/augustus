@@ -1,0 +1,86 @@
+<html>
+<head>
+  <link href="appendices/documentation.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<center>
+<h2>Augustus Version 0.3.3.0</h2>
+<h3>
+Point Release Notes v.0.3.3.0<br>
+July 2, 2009<br>
+</h3>
+</center>
+
+
+<h4><br>Contents</h4>
+<div class="section">
+<span>1 </span><a class="link" href="#1"> Overview</a><br />
+<span>2 </span><a class="link" href="#2"> Point release additions</a><br />
+<span>3 </span><a class="link" href="#3"> Bugs fixed</a><br />
+</div>
+
+
+<h4 id="1"><br>1. Overview</h4>
+<div class="section">
+<p>
+These are the point release notes that augment the <a class="link"
+href="augustus-docs-v1.html" target="_blank">documentation</a> for Augustus Version 0.3.3.0.
+</p>
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="2"><br>2. Point release additions</h4>
+<div class="section">
+<h5><br>
+Performance Improvements
+</h5>
+<p>
+A few methods were optimized after reviewing profiling information from Augustus
+runs against large datasets.
+</p>
+<h5><br>
+Fix Width input without new lines.
+</h5>
+<p>
+Fix-width input data can now be read when it does not have End of line
+characters.  Fix-width input files were added in the previous release and this
+is a feature enhancement.
+</p>
+
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="3"><br>3. Bugs fixed</h4>
+<div class="section">
+<h5><br>
+Problem scoring non-String data
+</h5>
+<p>
+In tree and Naive-bayes Producers, scoring a non-String field caused erroneous
+behavior.  This has been fixed.
+</p>
+
+<h5><br>
+Unnecessary print statements
+</h5>
+<p>
+Extra print statments were removed from the Producer.
+</p>
+
+<h5><br>
+Local Transformations
+</h5>
+<p>
+When local transforms are present, Regressions need to update itself (the
+segment) and the local transformations.  This was not being handled correctly in
+version 0.3.2.
+</p>
+
+</div>
+<a class="link" href="#">Top</a>
+
+</body>
+</html>

@@ -1,0 +1,72 @@
+<html>
+<head>
+  <link href="appendices/documentation.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<center>
+<h2>Augustus Version 0.3.3.1</h2>
+<h3>
+Point Release Notes v.0.3.3.1<br>
+July 10, 2009<br>
+</h3>
+</center>
+
+
+<h4><br>Contents</h4>
+<div class="section">
+<span>1 </span><a class="link" href="#1"> Overview</a><br />
+<span>2 </span><a class="link" href="#2"> Point release additions</a><br />
+<span>3 </span><a class="link" href="#3"> Bugs fixed</a><br />
+</div>
+
+
+<h4 id="1"><br>1. Overview</h4>
+<div class="section">
+<p>
+These are the point release notes that augment the <a class="link"
+href="augustus-docs-v1.html" target="_blank">documentation</a> for Augustus
+Version 0.3
+</p>
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="2"><br>2. Point release additions</h4>
+<div class="section">
+<h5><br>
+None
+</h5>
+<p>
+See the release notes for version 0.3.3.0.  Release version 0.3.3.1 only address
+a specific bug which is described below.
+</p>
+
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="3"><br>3. Bugs fixed</h4>
+<div class="section">
+<h5><br>
+Issue
+</h5>
+<p>
+This release addresses a change in behavior introduced with the previous version
+0.3.3.1.  While not necessarily a bug, the new behavior is different enough that
+it can cause unexpected results with certain types of models.  The change
+introduced is:  <em>In batch scoring, results are omitted for segments with no
+data</em>.
+<p/>
+If you are not using segments and batch scoring, then this change did not
+impact your results.
+<p/>
+This release gets rid of this behavior so that models acting with segments can
+be used without change.
+</p>
+
+</div>
+<a class="link" href="#">Top</a>
+
+</body>
+</html>

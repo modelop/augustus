@@ -1,0 +1,143 @@
+<html><head><link href="./documentation.css" rel="stylesheet" type="text/css" /></head><body><h1>UniTable</h1><h2 /><h2>A Universal Table</h2><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Overview</a><br /><span>2 </span><a class="link" href="#2">Command line tool</a><br /><span>3 </span><a class="link" href="#3">Binary file format</a><br /><span>4 </span><a class="link" href="#4">Python data structure</a><br /><span>5 </span><a class="link" href="#5">Known issues</a><br /></div><h3 id="1">1 Overview</h3><div class="section">
+   <p>The "UniTable" is an implementation of a conceptual "Universal Table" that
+is at the core of the Augustus scoring engine.  The data structure is analogous
+to an R frame: a table where the columns are vectors of equal length, but may be
+of different types.  It is based on the Python numpy package and the programming
+interface attempts to maintain consistency with the style established therein.
+   </p>
+
+   <p>The design goal was to create a very fast, efficient object for data
+shaping, model building, and scoring, both in a batch and real-time context.
+The key features are:
+<ul>
+<li> A file format that matches the native machine memory storage of the data.
+This allows for memory-mapped access to the data, eliminating the need for data
+parsing or sequential reading. </li>
+
+<li> Fast vector operations using any number of data columns.</li>
+
+<li> Support for demand driven, rule based calculations.  Derived columns can be
+defined in terms of operations on other columns, including other derived
+columns, and will be made available when referenced.</li>
+
+<li> The ability to invoke calculations in scalar or vector mode transparently.
+Thus, one set of rule definitions can be applied to an entire data set in batch
+mode, or to individual rows incoming as real-time events.</li>
+
+<li> The ability to handle huge real-time data rates by automatically switching
+to vector mode when behind, and scalar mode when keeping up with individual
+input events.</li>
+</ul>
+   </p>
+   </div>
+
+   <br /><a class="link" href="#">Top</a><h3 id="2">2 Command line tool</h3><div class="section">
+   <p>Included in the bin directory, "unitable" converts between CSV and binary
+data formats. The input format is autodetected and may be binary or any flavor
+of well-formed CSV.  Output formats are:
+
+<pre>
+     unitable --csv    CSV output, use --sep for custom field delim
+     unitable --bin    binary output
+     unitable --tbl    pretty printed table for viewing
+     unitable --tty    pretty-printed table with header repeated as
+                       needed to always be visible in current terminal window
+     unitable --html   HTML table
+     unitable --xml    XML table
+</pre>
+   </p>
+
+   <p>Note that there may or may not be space savings by converting from CVS to
+binary format, depending on the data.  The advantage of the binary format is in
+performance gains for subsequent processing.
+   </p>
+   </div>
+
+   <br /><a class="link" href="#">Top</a><h3 id="3">3 Binary file format</h3><div class="section">
+   <p>The unitable binary file contains a brief text header describing field
+names and formats, followed by raw binary data.  Each field is stored as a
+contiguous vector of native machine types.  When "reading" a binary file, the
+data is not read in the traditional sense.  Rather, a memory mapping is
+established to the disk location and data is made available on-demand.
+   </p>
+
+   <p>The performance gains are spectacular.  For example, one huge CSV file
+that takes an hour to read, parse, and store as internal lists takes about 45
+seconds to "read" in binary format.
+   </p>
+   </div>
+
+   <br /><a class="link" href="#">Top</a><h3 id="4">4 Python data structure</h3><div class="section">
+   <p>See unitable.py for instructions and a large list of examples.  Typical
+usage is:
+
+<pre>
+     from augustus.kernel.unitable import UniTable
+     tbl = UniTable()
+     tbl.fromfile(filename)
+</pre>
+   </p>
+
+   <p>For simple needs, tbl can be considered a dictionary where each column in
+the table is stored as a separate list of values.
+   </p>
+   
+   <p>For maximum benefit, it is necessary to understand the python numpy
+module.  Each column is actually a numpy vector and supports a variety of vector
+operations.  Also, the UniTable supports operations on the entire table in the
+style of numpy records.
+   </p>
+   </div>
+
+   <br /><a class="link" href="#">Top</a><h3 id="5">5 Known issues</h3><div class="section">
+   <p>Unitable is aggressive in choosing the most appropriate data type for
+records. This can cause unexpected behavior. One situation is that the
+individual records in a file may not be preserved when read into unitable and
+then written back to disk.
+   </p>
+
+   <p>An example which results incorrect behavior is:
+
+<ul>
+<li>Start with a csv file that has a column that consists of the strings "0" and
+"1".</li>
+
+<li>Read that file into a unitable using from_csv_file() and you will get a
+column of type Bool.</li>
+
+<li>For the data in this column, unitable chose between the integers 0 and 1,
+the strings "0" and "1", and logical false and true. If the column would have
+contained, say, the values "0" and "5", the the decision would have been between
+literal strings and integers.</li>
+
+<li>Write that unitable back to a file using to_csv_file() and the original
+values of "0" and "1" are written as the strings "False" and "True"
+respectively. These are the values that unitable uses when writing records of
+type Bool to file.</li>
+</ul>
+   </p>
+
+   <p>If unitable is again used to read the second file, then the behavior is
+still undesirable:
+   </p>
+
+<ul>
+<li>Read the new file back in and the column will be of type char(5) when it was
+originally Bool. char(5) is the minimum size to hold the literal Strings "False"
+and "True".</li>
+</ul>
+
+   <p>Unlike with the case when the values are "0" and "1", unitable does not
+decide that this column should denote logical false and logical true.
+   </p>
+
+   <p>We are currently looking at different ways to resolve this issue.
+   </p>
+
+   <p>There are other cases that we are considering as well. For example, input
+data from a spreadsheet could be intended to be treated numerically but contain
+values like "INF" and "NaN".
+   </p>
+   </div>
+
+<br /><a class="link" href="#">Top</a></body></html>

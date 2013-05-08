@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+
+
+  
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+
+
+  
+  
+  <title>Installing Augustus</title>
+</head>
+
+
+<body>
+
+
+
+<h1>Installing Augustus on Linux</h1>
+
+
+
+<hr style="width: 100%; height: 2px;">
+<h2>Introduction</h2>
+
+
+
+This document details the installation of Augustus on Linux. The
+following instructions are targeted at the Ubuntu Linux distribution,
+but should be applicable to other distributions with minor changes.
+<hr style="width: 100%; height: 2px;">
+<h2>Install Dependencies</h2>
+
+
+
+<h3 style="margin-left: 40px;">Install Python2.5 and
+Python2.5-dev packages:</h3>
+
+
+
+<div style="margin-left: 40px;">Augustus requires Python 2.5. If 2.5 isn't currently installed on your system, it&nbsp;can be installed
+from the&nbsp;distribution or though apt-get. To install
+through apt-get:</div>
+
+
+
+<ul>
+
+
+
+  
+  
+  <ul>
+
+
+
+    <li>
+      
+      
+      <pre>sudo apt-get install python2.5</pre>
+
+
+
+    </li>
+
+
+
+    <li>
+      
+      
+      <pre>sudo apt-get install python2.5-dev</pre>
+
+
+
+    </li>
+
+
+
+  
+  
+  </ul>
+
+
+
+</ul>
+
+
+
+<div style="margin-left: 40px;">To install from the
+distribution:<br>
+
+
+
+</div>
+
+
+
+<ul>
+
+
+
+  
+  
+  <ul>
+
+
+
+    <li>Download the current version of Python 2.5 from:
+&nbsp;<a href="http://python.org/download/">http://python.org/download/</a></li>
+
+
+
+    <li>
+Unpack and install the distribution:<span style="font-family: monospace;"></span></li>
+
+
+    
+    
+    <ul>
+
+
+      <li>
+        
+        
+        <pre><span style="font-family: monospace;"></span>tar -zxvf Python-&lt;version&gt;.tgz</pre>
+
+
+      </li>
+
+
+      <li>
+        
+        
+        <pre>cd Python-&lt;version&gt;</pre>
+
+
+      </li>
+
+
+      <li>
+        
+        
+        <pre>./configure</pre>
+
+
+      </li>
+
+
+      <li>
+        
+        
+        <pre>make</pre>
+
+
+      </li>
+
+
+      <li>
+        
+        
+        <pre>sudo make install</pre>
+
+
+      </li>
+
+
+    
+    
+    </ul>
+
+
+
+  
+  
+  </ul>
+
+
+
+</ul>
+
+
+
+<h3 style="margin-left: 40px;">Ensure Python symbolic link
+points to Python 2.5:</h3>
+
+
+
+<ul>
+
+
+
+  
+  
+  <ul>
+
+
+
+    <li>
+      
+      
+      <pre>cd /usr/bin</pre>
+
+
+
+    </li>
+
+
+
+    <li>
+      
+      
+      <pre>sudo rm python</pre>
+
+
+
+    </li>
+
+
+
+    <li>
+      
+      
+      <pre>sudo ln -s python2.5 python</pre>
+
+
+
+    </li>
+
+
+
+  
+  
+  </ul>
+
+
+
+</ul>
+
+
+
+<h3 style="margin-left: 40px;">Download and Install Numpy:</h3>
+
+
+
+<ul>
+
+
+
+  
+  
+  <ul>
+
+
+
+    <li>Download the current version of Numpy from <a href="http://sourceforge.net/project/showfiles.php?group_id=1369&amp;package_id=175103">http://sourceforge.net/project/showfiles.php?group_id=1369&amp;package_id=175103</a></li>
+
+
+
+  
+  
+  </ul>
+
+
+
+  
+  
+  <ul>
+
+
+
+    <li>Unpack the distribution:&nbsp;
+      
+      
+      <ul>
+
+
+
+        <li>
+          
+          
+          <pre>tar -zxvf numpy-&lt;version&gt;.tar.gz&nbsp;</pre>
+
+
+
+        </li>
+
+
+
+      
+      
+      </ul>
+
+
+
+    </li>
+
+
+
+    <li>Install Numpy</li>
+
+
+
+    
+    
+    <ul>
+
+
+
+      <li>
+        
+        
+        <pre>cd numpy-&lt;version&gt;</pre>
+
+
+
+      </li>
+
+
+
+      <li>
+        
+        
+        <pre>sudo python setup.py install</pre>
+
+
+
+      </li>
+
+
+
+    
+    
+    </ul>
+
+
+
+    <li>Alternatively, use apt-get to install numpy:</li>
+
+
+
+    
+    
+    <ul>
+
+
+
+      <li>
+        
+        
+        <pre>sudo apt-get install python-numpy</pre>
+
+
+
+      </li>
+
+
+
+    
+    
+    </ul>
+
+
+
+  
+  
+  </ul>
+
+
+
+</ul>
+
+
+<h2>Install Augustus</h2>
+
+
+
+<div style="margin-left: 40px;">
+<ul>
+
+
+
+  <li>Download Augustus from SourceForge: <a href="http://sourceforge.net/projects/augustus">http://sourceforge.net/projects/augustus</a></li>
+
+
+
+  <li>Unpack and install the distribution:</li>
+
+
+
+  
+  
+  <ul>
+
+
+
+    <li>
+      
+      
+      <pre>tar -zxvf augustus-0.3.3.1.tar.gz</pre>
+
+
+
+    </li>
+
+
+
+    <li>
+      
+      
+      <pre>cd augustus-0.3.3.1</pre>
+
+
+
+    </li>
+
+
+
+    <li>
+      
+      
+      <pre>sudo python setup.py install</pre>
+
+
+
+    </li>
+
+
+
+  
+  
+  </ul>
+
+
+
+</ul>
+
+
+
+</div>
+
+
+
+<h2>Test Installation</h2>
+<div style="margin-left: 40px;">The instructions for running the <a href="augustus-project-example.html">project examples</a> can be used to ensure that Augustus is installed properly.</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2006-2009  Open Data ("Open Data" refers to
+# one or more of the following companies: Open Data Partners LLC,
+# Open Data Research LLC, or Open Data Capital LLC.)
+#
+# This file is part of Augustus.
+#
+# Augustus is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+import subprocess
+import logging
+import sys
+import gc
+from optparse import OptionParser, make_option
+from augustus.pmmllib.pmmlConsumer import main as consumer_main
+from augustus.runlib.parseDeployment import getInstructions
+import augustus.const as AUGUSTUS_CONSTS
+
+def main():
+  logger = logging.getLogger('Augustus')
+  logger.setLevel(logging.INFO)
+
+  gc.disable()
+  if not gc.isenabled():
+    logger.info('Garbage Collecting of Circular References Disabled')
+
+  usage = "usage: %prog [options]"
+  version = "%prog " + AUGUSTUS_CONSTS._AUGUSTUS_VER
+  description = "Augustus is a model producing, scoring, and postprocessing application. It takes one argument, the name of a configuration file."
+
+  options = [
+      make_option("-c","--config",metavar="config",default="config.xml",help="The configuration file name"),
+      make_option("-o","--outfile",metavar="outfile",help="The output file name"),
+      make_option("-p","--port",metavar="num",help="The port number for the HTTP server")]
+
+  parser = OptionParser(usage=usage, version=version, description=description, option_list=options)
+  (options, arguments) = parser.parse_args()
+
+  config = options.config
+
+  # parse deployment and figure out what to do.
+  instructions = getInstructions(config)
+  if 'preprocessing' in instructions.keys():
+    logger.info('%s\n'%(15*'>'+' Preprocess '+15*'<'))
+    for step in instructions['preprocessing']:
+      logger.info('%s\n'%step)
+      subprocess.call(step.split(' '))
+  if 'consumer' in instructions.keys():
+    logger.info('%s\n'%(15*'>'+' Consumer '+15*'<'))
+    consumer_main(config, options.outfile, options.port)
+  if 'postprocessing' in instructions.keys():
+    logger.info('%s\n'%(15*'>'+' Postprocess '+15*'<'))
+    for step in instructions['postprocessing']:
+      logger.info('%s\n'%step)
+      try:
+        subprocess.call(step.split(' '))
+      except OSError:
+        return 0
+
+if __name__ == "__main__":  
+  sys.exit(main())

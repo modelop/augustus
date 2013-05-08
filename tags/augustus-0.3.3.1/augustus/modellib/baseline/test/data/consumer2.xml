@@ -1,0 +1,21 @@
+<pmmlDeployment>
+  <inputData>
+    <batchScoring />
+    <fromFile name="data/events2.nab" type="UniTable" />
+  </inputData>
+  <inputModel>
+    <fromFile name="_out/out2.pmml" />
+  </inputModel>
+  <output>
+    <report name="report">
+    <toFile name="_out/scores2.xml" />
+    <outputRow name="event">
+      <alert name="alert" />
+      <score name="score" />
+    </outputRow>
+    </report>
+  </output>
+  <logging>
+    <toStandardError />
+  </logging>
+</pmmlDeployment>

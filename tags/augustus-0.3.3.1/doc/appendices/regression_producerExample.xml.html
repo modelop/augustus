@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Regression Model Example Producer Configuration</title>
+</head>
+<body>
+&lt;model input="/opt/proj/testRegression/producer/testInput.pmml"
+output="/opt/proj/testRegression/consumer/testRegression_output.pmml"&gt;<br>
+&lt;test field="Y"&gt;<br>
+&nbsp; &lt;build file="/tmp/sampleRegressionData.nab"
+type="UniTable"/&gt;<br>
+&nbsp; &lt;segmentation&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;explicitSegments field="month"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;segment value="December"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;segment value="November"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/explicitSegments&gt;<br>
+&nbsp; &lt;/segmentation&gt;<br>
+&lt;/test&gt;<br>
+&lt;/model&gt;<br>
+<br>
+</body>
+</html>

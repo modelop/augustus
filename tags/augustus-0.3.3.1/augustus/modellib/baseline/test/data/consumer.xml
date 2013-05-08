@@ -1,0 +1,21 @@
+<pmmlDeployment>
+  <inputData>
+    <readOnce />
+    <fromFile name="data/events.nab" type="UniTable" />
+  </inputData>
+  <inputModel>
+    <fromFile name="_out/out.pmml" />
+  </inputModel>
+  <output>
+    <report name="report">
+    <toFile name="_out/scores.xml" />
+    <outputRow name="event">
+      <alert name="alert" />
+      <outputColumn name="taxableIncome" fieldName="taxableIncome" />
+    </outputRow>
+    </report>
+  </output>
+  <logging>
+    <toStandardError />
+  </logging>
+</pmmlDeployment>

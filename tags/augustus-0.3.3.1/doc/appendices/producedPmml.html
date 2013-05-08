@@ -1,0 +1,117 @@
+<html>
+  <body>
+    &lt;PMML <font color="green">version=</font><font color="red">"3.1"</font>&gt;<br />
+    &nbsp;&nbsp;&lt;Header <font color="green">copyright=</font><font color="red">"Automobiles 4Sale@Home, Inc."</font> /&gt;<br />
+    &nbsp;&nbsp;&lt;DataDictionary&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;DataField <font color="green">name=</font><font color="red">"state"</font> <font color="green">optype=</font><font color="red">"string"</font> <font color="green">dataType=</font><font color="red">"string"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;DataField <font color="green">name=</font><font color="red">"hour"</font> <font color="green">optype=</font><font color="red">"float"</font> <font color="green">dataType=</font><font color="red">"float"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;DataField <font color="green">name=</font><font color="red">"num"</font> <font color="green">optype=</font><font color="red">"integer"</font> <font color="green">dataType=</font><font color="red">"integer"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;DataField <font color="green">name=</font><font color="red">"make"</font> <font color="green">optype=</font><font color="red">"string"</font> <font color="green">dataType=</font><font color="red">"string"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;DataField <font color="green">name=</font><font color="red">"model"</font> <font color="green">optype=</font><font color="red">"string"</font> <font color="green">dataType=</font><font color="red">"string"</font> /&gt;<br />
+    &nbsp;&nbsp;&lt;/DataDictionary&gt;<br />
+    &nbsp;&nbsp;&lt;BaselineModel <font color="green">functionName=</font><font color="red">"baseline"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;MiningSchema&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;MiningField <font color="green">name=</font><font color="red">"num"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/MiningSchema&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"6.30232876712"</font> <font color="green">variance=</font><font color="red">"4.0038206042"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Texas"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"0.0"</font> <font color="green">high=</font><font color="red">"1.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"9.981351841351"</font> <font color="green">variance=</font><font color="red">"3.5613469813"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Arizona"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"0.0"</font> <font color="green">high=</font><font color="red">"1.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"4.841348946586"</font> <font color="green">variance=</font><font color="red">"3.98465316984"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Oklahoma"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"0.0"</font> <font color="green">high=</font><font color="red">"1.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"4.894561984531"</font> <font color="green">variance=</font><font color="red">"5.5849135189"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"California"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"0.0"</font> <font color="green">high=</font><font color="red">"1.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"5.56113513265"</font> <font color="green">variance=</font><font color="red">"0.1698165481"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Mississippi"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"0.0"</font> <font color="green">high=</font><font color="red">"1.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"7.15648913526"</font> <font color="green">variance=</font><font color="red">"6.1548126849"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Illinois"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"0.0"</font> <font color="green">high=</font><font color="red">"1.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"3.45861234156"</font> <font color="green">variance=</font><font color="red">"2.2154468521"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Texas"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"1.0"</font> <font color="green">high=</font><font color="red">"2.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"5.00004468342"</font> <font color="green">variance=</font><font color="red">"1.5462849167"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Arizona"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"1.0"</font> <font color="green">high=</font><font color="red">"2.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+<font color="grey">&lt;!--###################################################<br />
+...<br />
+This file would normally continue in a like fashion until the end; however,<br />
+it has been cut in this example for the sake of brevity.<br />
+<br />
+This comment takes the place of 134 TestDistributions elements<br />
+...<br />
+###################################################--&gt;</font><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"6.11114589777"</font> <font color="green">variance=</font><font color="red">"3.0238505088"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Mississippi"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"23.0"</font> <font color="green">high=</font><font color="red">"24.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;TestDistributions <font color="green">field=</font><font color="red">"num"</font> <font color="green">testStatistic=</font><font color="red">"zValue"</font> <font color="green">testType=</font><font color="red">"threshold"</font> <font color="green">threshold=</font><font color="red">"10"</font>&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;GaussianDistribution <font color="green">mean=</font><font color="red">"5.18562876712"</font> <font color="green">variance=</font><font color="red">"4.0031584042"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Baseline&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ExplicitSegment <font color="green">field=</font><font color="red">"state"</font> <font color="green">value=</font><font color="red">"Illinois"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;RegularSegment <font color="green">field=</font><font color="red">"num"</font> <font color="green">low=</font><font color="red">"23.0"</font> <font color="green">high=</font><font color="red">"24.0"</font> /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/Segments&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TestDistributions&gt;<br />
+    &nbsp;&nbsp;&lt;/BaselineModel&gt;<br />
+    &lt;/PMML&gt;<br />
+  </body>
+</html>

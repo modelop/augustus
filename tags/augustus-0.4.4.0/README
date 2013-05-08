@@ -1,0 +1,6 @@
+Branch / Trunk flip-flop
+
+branches/augustus-pmml-4 has been moved into the trunk at r. 162.  If you had
+modified code and performed an update, it might be difficult to unwind.
+
+What was in the trunk is now in branches/augustus-pmml-3.  

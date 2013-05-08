@@ -1,0 +1,54 @@
+<PMML version="3.1">
+  <Header copyright=" " />
+  <DataDictionary>
+    <DataField dataType="float" name="children" optype="continuous" />
+    <DataField dataType="float" name="averageAge" optype="continuous" />
+    <DataField dataType="double" name="income" optype="continuous" />
+    <DataField dataType="dateTime" name="birthday" optype="continuous" />
+    <DataField dataType="dateTime" name="marriageDate" optype="continuous" />
+    <DataField dataType="dateTime" name="alarmTime" optype="continuous" />
+    <DataField dataType="string" name="name" optype="categorical" />
+    <DataField dataType="string" name="queue" optype="categorical" />
+    <DataField dataType="string" name="list" optype="categorical" />
+  </DataDictionary>
+  <TransformationDictionary>
+    <EventCount name="queuedList" segmentField="list" />
+  </TransformationDictionary>
+  <BaselineModel functionName="baseline">
+    <MiningSchema>
+      <MiningField name="children" />
+      <MiningField name="averageAge" />
+      <MiningField name="income" />
+      <MiningField name="birthday" />
+      <MiningField name="marriageDate" />
+      <MiningField name="alarmTime" />
+      <MiningField name="name" />
+      <MiningField name="queue" />
+      <MiningField name="list" />
+      <MiningField name="queuedList" />
+    </MiningSchema>
+    <LocalTransformations>
+      <DerivedField name="sumQueuedList" dataType="integer" optype="continuous">
+        <Aggregate field="queuedList" function="sum" />
+      </DerivedField>
+      <DerivedField name="cntQueuedList" dataType="integer" optype="continuous">
+        <Aggregate field="queuedList" function="count" />
+      </DerivedField>
+      <DerivedField name="avgQueuedList" dataType="integer" optype="continuous">
+        <Aggregate field="queuedList" function="average" />
+      </DerivedField>
+      <DerivedField name="lstQueuedList" dataType="integer" optype="continuous">
+        <Aggregate field="queuedList" function="multiset" />
+      </DerivedField>
+      <DerivedField name="keysQueuedList" dataType="integer" optype="continuous">
+        <Aggregate field="queuedList" function="keys" />
+      </DerivedField>
+      <DerivedField name="minQueuedList" dataType="integer" optype="continuous">
+        <Aggregate field="queuedList" function="min" />
+      </DerivedField>
+      <DerivedField name="maxQueuedList" dataType="integer" optype="continuous">
+        <Aggregate field="queuedList" function="max" />
+      </DerivedField>
+    </LocalTransformations>
+  </BaselineModel>
+</PMML>

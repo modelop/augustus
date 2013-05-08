@@ -1,0 +1,85 @@
+<html>
+<head>
+  <link href="appendices/documentation.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<center>
+<h2>Augustus Version 0.2.6.6</h2>
+<h3>
+Point Release Notes v.0.2.6.6<br>
+April 23, 2008<br>
+</h3>
+</center>
+
+
+<h4><br>Contents</h4>
+<div class="section">
+<span>1 </span><a class="link" href="#1"> Overview</a><br />
+<span>2 </span><a class="link" href="#2"> Point release additions</a><br />
+<span>3 </span><a class="link" href="#3"> Bugs fixed</a><br />
+</div>
+
+
+<h4 id="1"><br>1. Overview</h4>
+<div class="section">
+<p>
+These are the point release notes that augment the <a class="link" href="augustus-docs-v1.html" target="_blank">documentation</a> for Augustus Version 0.2.6.6.
+</p>
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="2"><br>2. Point release additions</h4>
+<div class="section">
+<h5><br>
+Introducing user defined field types for csv reads
+</h5>
+<p>
+Unitable previously read in CSV files and associated a variable type with each column which minimizes the memory storage alloted. Thus, a CSV file in which all data can be interpreted as an integer would be associated with a unitable column with integer type. There are some instances (ex. when reading in a column from a fixed width format where the column values are usually of the form "01") where it is preferable to force a column to be a string type.
+</p>
+<p>
+This new feature allows the user to specify the types of the columns in a CSV file. This is useful when the baseline consumer reads data from a csv file into a unitable; similarly for the baseline producer and any other function in Augustus which uses anyReader.
+</p>
+</div>
+<a class="link" href="#">Top</a>
+
+
+<h4 id="3"><br>3. Bugs fixed</h4>
+<div class="section">
+<h5><br>
+Corrected producer using local transforms
+</h5>
+<p>
+Previously, scoring raw data in batch mode required that the raw data be wrapped in a local transform. An error was induced under following circumstances:
+<ul>
+<li>Local Transformation essentially renames raw field <i>A</i> as <i>B</i>.</li>
+<li>Global Transformation exists, but renames raw field <i>A</i> as <i>C</i>.</li>
+<li>If a global transformation references new field with same name as local transformation, no error is incurred.</li>
+</ul>
+</p>
+<p>
+This bug affected anyone who tried to use a local transformation without batch scoring. This is now fixed.
+</p>
+
+<h5><br>
+Corrected MapValues to work with non-string input
+</h5>
+<p>
+pmmlElements explicitly casts the values from a InlineTable row to str.  This str value is then used for a dictionary key. Any input to the MapValues that was not a string would fail the dictionary lookup. This bug is now fixed.
+</p>
+
+<h5><br>
+Corrected heterogeneous statistics from crashing consumer on output from baseline models with different test statistics
+</h5>
+<p>
+When a pmml file includes TestDistributions with two different test statistics, the output structure can be appropriate for one but possibly not for the other. When this happens, the consumer would crash.
+</p>
+<p>
+The consumer will now cease to crash if you ask for an ancillary value which the distribution does not support.  Adding ancillary values for models other than dDist may be added in a future release.
+</p>
+</div>
+<a class="link" href="#">Top</a>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+<html>
+<head>
+  <link href="./release.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<center>
+<h2><span>Augustus Version 0.4</span></h2>
+<h3>
+Point Release Notes v.0.4.2.0<br>
+August 30, 2010<br>
+</h3>
+</center>
+
+
+<h4><br>Contents</h4>
+<div class="section">
+<p/>
+<a class="local" href="#1">Overview</a><br/>
+<a class="local" href="#2">Point release additions</a><br/>
+<a class="local" href="#3">Bugs fixed</a><br/>
+<a class="local" href="#4">Test Cases</a><br/>
+<a class="local" href="#5">Documentation</a><br/>
+</div>
+
+
+<h4 id="1"><br>1. Overview</h4>
+<div class="section">
+<p>
+As with all releases since 0.4, this version of Augustus is compliant with
+PMML 4.  This release adds new models and improves on ways of getting data into
+Augustus from Standard I/O.  It also disables the optional garbage collection
+check for circular references in the consumer.
+<p/>
+
+See the Augustus v 0.4
+<a class="link" href="augustus-v4-docs.html" target="_blank">documentation</a>
+for more information.
+<p/>
+
+</div>
+<a class="local" href="#">Top</a>
+
+
+<h4 id="2"><br>2. Point release additions</h4>
+<div class="section">
+<p/>
+<ul>
+    <li>Added a new model consumer, RuleSet.  See the <a class="link"
+    href="http://dmg.org/v4-0/RuleSet.html" target="_blank">PMML spec</a> at the
+    Data Mining Groups's 
+    <a class="link" href="http://dmg.org/" target="_blank">website</a> for
+    details about the model specification.</li>
+    <li>Disabled the optional garbage collection in the consumer.  This was done
+    for performance reasons.  See the <a class="link"
+    href="http://code.google.com/p/augustus/wiki/OptionalGarbageCollection"
+    target="_blank">writeup</a> on the Google Code Project site for details.
+    <i>Note</i>: we have not disabled it on the various Producers, because those
+    usually do not have the time constraints when running as the consumers an
+    we have not tested all of them and verified that no circular references or
+    stuctures exist.</li>
+    <li>Improved how data can be read into Augustus.</li>
+    <li>Continued work on the collection of  metadata at various spots in the
+    code</li>
+</ul>
+<p/>
+
+</div>
+<a class="local" href="#">Top</a>
+
+
+<h4 id="3"><br>3. Bugs fixed</h4>
+<div class="section">
+<p/>
+<ul>
+    <li><a class="link"
+    href="http://code.google.com/p/augustus/issues/detail?id=2"
+    target="_blank">Bug 2</a> Crash when converting an empty UniTable to csv.</li>
+    <li><a class="link"
+    href="http://code.google.com/p/augustus/issues/detail?id=3"
+    target="_blank">Bug 3</a> UniTable.compact fails on an empty table.</li>
+    <li><a class="link"
+    href="http://code.google.com/p/augustus/issues/detail?id=4"
+    target="_blank">Bug 4</a> File execRow revert doesn't revert stored
+    values.</li>
+    <li><a class="link"
+    href="http://code.google.com/p/augustus/issues/detail?id=5"
+    target="_blank">Bug 5</a> Calling execRow.reset() will always raise an
+    exception.</li>
+    <li><a class="link"
+    href="http://code.google.com/p/augustus/issues/detail?id=30"
+    target="_blank">Bug 30</a> Use of type() built-in function.</li>
+    <li><a class="link"
+    href="http://code.google.com/p/augustus/issues/detail?id=31"
+    target="_blank">Bug 31</a> Problem running occupancyExample.</li>
+    <li><a class="link"
+    href="http://code.google.com/p/augustus/issues/detail?id=32"
+    target="_blank">Bug 32</a> GLR implementation possibly incorrect.</li>
+</ul>
+
+</div>
+<a class="local" href="#">Top</a>
+
+<h4 id="4"><br>4. Test Cases</h4>
+<div class="section">
+<p/>
+<ul>
+    <li>Added simple scripts test/events.py and test/events2.py to generate
+    events for testing</li>
+    <li>Added files to test and time different IO capabilities: test/timeIO.sh
+    and test/timeIO_file_uni.sh</li>
+    <li>Included a configuration file for testing standard IO:
+    test_io_stdin_uni2.xml</li>
+    <li>Created a new regression package for testing.  It is available as a
+    download from the google code site <a class="link"
+    href="http://code.google.com/p/augustus/downloads/detail?name=XXXXXXXXXX"
+    target="_blank">here</a>.</li>
+</ul>
+<p/>
+
+</div>
+<a class="local" href="#">Top</a>
+
+
+<h4 id="5"><br>5. Documentation</h4>
+<div class="section">
+<p/>
+<ul>
+    <li>Created <a class="link" href="augustus-ruleset-model.html"
+    target="_blank">documentation</a> for the Ruleset consumer.</li>
+    <li>Updated the READMEs for examples/auto, examples/basic, and
+    examples/highway.  These can be viewed online under the <a class="link"
+    href="http://code.google.com/p/augustus/source/browse/#svn/trunk/examples"
+    target="_blank">source tab</a>.
+</ul>
+
+</div>
+<a class="local" href="#">Top</a>
+
+
+</body>
+</html>

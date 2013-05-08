@@ -1,0 +1,101 @@
+<html><head><link href="appendices/documentation.css" rel="stylesheet" type="text/css" /></head><body><h1>Augustus 0.3.3</h1><h2>Baseline Scoring User's Guide</h2><h3>Contents</h3><div class="section"><span>1 </span><a class="link" href="#1">Description</a><br /><span>2 </span><a class="link" href="#2">Producer</a><br /><div class="section"><span>2.1 </span><a class="link" href="#2.1">Description</a><br /><span>2.2 </span><a class="link" href="#2.2">Input PMML File</a><br /><span>2.3 </span><a class="link" href="#2.3">Configuration File</a><br /><span>2.4 </span><a class="link" href="#2.4">Output PMML File</a><br /><span>2.5 </span><a class="link" href="#2.5">Usage</a><br /></div><span>3 </span><a class="link" href="#3">Consumer</a><br /><div class="section"><span>3.1 </span><a class="link" href="#3.1">Description</a><br /></div><span>4 </span><a class="link" href="#4">Frequently Asked Questions</a><br /><span>5 </span><a class="link" href="#5">Troubleshooting</a><br /></div><h3 id="1">1 Description</h3><div class="section">
+    This document describes modeling with baselines in Augustus.
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="2">2 Producer</h3><div class="section">
+    <h4 id="2.1">2.1 Description</h4><div class="section">
+      The producer makes <a class="link" href="appendices/pmml.html">PMML</a> files.  It requires 
+      a simple PMML file as input upon which it bases the output file.  It also 
+      requires a configuration file as input to tell it exactly how to make the 
+      output file.<br /><br />
+    </div>
+    <h4 id="2.2">2.2 Input PMML File</h4><div class="section">
+      An <a class="link" href="appendices/examplePmml.html" target="_blank">example</a> is provided 
+      for the reader.<br /><br />
+      The data dictionary section tells which fields are required as input.  
+      The baseline model section describes the model.  The mining schema tells 
+      which fields are required for the actual scoring process or for output.
+    </div>
+    <h4 id="2.3">2.3 Configuration File</h4><div class="section">
+      An <a class="link" href="appendices/exampleSegmentation.html" target="_blank">example</a> is 
+      provided for the reader.<br /><br />
+      The configuration file specifies how to score the model.  The batch 
+      element should be specified if you wish the scoring engine to produce 
+      all scores after all the events have been processed.  The model 
+      element tells where to find the input file and where to produce the
+      output file.  The test element tells which field is to be scored, 
+      which statistic to use, which test to use, and gives a value for the 
+      threshold, if necessary.  The baseline element tells which function 
+      and file should be used to be a basis for scoring and whether the 
+      file contains XML or UniTable formatted data.  The alternate element 
+      is only required for the CUSUM statistic and specifies the function 
+      to be represented and either:<br /><br />
+      <div class="section">
+        - a file to be used to determine the mean and variance along with 
+        it's data type<br />
+        - a multiplier so that the mean is: [baseline's mean] + 
+        ([multiplier] * [baseline's variance])<br />
+      </div><br />
+      The <a class="link" href="appendices/segmentation.html">segmentation</a> tag allows 
+      the user to utilize different tests for different input data.  In 
+      the example, the user is specifying that they want to break a day up 
+      into different hours and they also want to break a country up into 
+      states.  This means that the producer will find the necessary 
+      functions for (in this case) 6 states and 24 hrs for a total of 6*24 
+      or 144 different conditions (like 1-2 am in Texas, 1-2 am in Illinois, 
+      4-5 pm in California, etc.).
+    </div>
+    <h4 id="2.4">2.4 Output PMML File</h4><div class="section">
+      A partial <a class="link" href="appendices/producedPmml.html" target="_blank">example</a> 
+      is provided for the reader.  Note that the comments from the input 
+      PMML and the configuration file were completely removed from the 
+      example before the output PMML file was created.  The ability to 
+      transfer these comments may be added in a later version of Augustus.<br /><br />
+      This PMML file specifies everything about a valid model.  The data 
+      dictionary section tells which fields are required either as input or
+      eventual output.  The baseline model section describes the model.  
+      The mining schema tells which fields are required for the actual 
+      scoring process.  And each test distribution section describes a 
+      different test depending on the input conditions being correct.
+    </div>
+    <h4 id="2.5">2.5 Usage</h4><div class="section">
+      Assuming that the environment variables are specified correctly (as 
+      given in the installation guide and in the FAQ toward the end of this 
+      document) the following command will run the producer:<br /><br />
+      <span class="command">AugustusBaselineProducer -c config -t timing</span><br /><br />
+      Where config is the configuration file.  If timing is present, the producer
+      will output timing information when every timing% of the data is processed.
+    </div>
+  </div>
+  
+  <br /><a class="link" href="#">Top</a><h3 id="3">3 Consumer</h3><div class="section">
+    <h4 id="3.1">3.1 Description</h4><div class="section">
+      The consumer scores data according to a model.  For a description
+      of how to consume a baseline model, please see the documentation for
+      the <a class="link" href="augustus-pmml-consumer.html" target="_blank">Augustus PMML Consumer</a>.<br /><br />
+    </div>
+  </div>
+
+  <br /><a class="link" href="#">Top</a><h3 id="4">4 Frequently Asked Questions</h3><div class="section">
+    Do I have to specify environment variables?<br /><br />
+    <div class="section">
+      Yes:
+      <div class="section">
+        PROJECT must point to <span class="directory">project</span><br />
+        PYTHONPATH must point to <span class="directory">augustus</span> and 
+        <span class="directory">project</span><br />
+      </div>
+    </div><br />
+    How many variables may I use for segmentation?<br /><br />
+    <div class="section">
+      As many as you would like.
+    </div>
+  </div>
+
+  <br /><a class="link" href="#">Top</a><h3 id="5">5 Troubleshooting</h3><div class="section">
+    <span class="error">nan</span><br /><br />
+    <div class="section">
+      This means you have overflowed the maximum size for the given variable.
+    </div>
+  </div><br /><a class="link" href="#">Top</a><br />
+</body></html>

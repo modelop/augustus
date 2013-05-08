@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Generator" content="Kate, the KDE Advanced Text Editor" />
+<title>spore-segmented-tree-config.xml</title>
+</head>
+<body>
+<pre>
+<span style="font-weight: bold;color: #000000;">&lt;model</span><span style="color: #008000;"> input=</span><span style="color: #aa0000;">"spore-segmented-tree-input.pmml"</span><span style="color: #008000;"> output=</span><span style="color: #aa0000;">"_out/spore-segmented-tree-model.pmml"</span><span style="font-weight: bold;color: #000000;">&gt;</span>
+<span style="color: #000000;">  </span><span style="font-weight: bold;color: #000000;">&lt;tree</span><span style="color: #008000;"> functionName=</span><span style="color: #aa0000;">"classification"</span><span style="color: #008000;"> maxdepth=</span><span style="color: #aa0000;">"4"</span><span style="font-weight: bold;color: #000000;">&gt;</span>
+<span style="color: #000000;">    </span><span style="font-weight: bold;color: #000000;">&lt;data</span><span style="color: #008000;"> file=</span><span style="color: #aa0000;">"../data/10k-spore.csv"</span><span style="color: #008000;"> type=</span><span style="color: #aa0000;">"UniTable"</span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;">    </span><span style="font-weight: bold;color: #000000;">&lt;segmentation&gt;</span>
+<span style="color: #000000;">      </span><span style="font-weight: bold;color: #000000;">&lt;explicitSegments</span><span style="color: #008000;"> field=</span><span style="color: #aa0000;">"carnivore"</span><span style="font-weight: bold;color: #000000;">&gt;</span>
+<span style="color: #000000;">        </span><span style="font-weight: bold;color: #000000;">&lt;segment</span><span style="color: #008000;"> value=</span><span style="color: #aa0000;">"0.0"</span><span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;">        </span><span style="font-weight: bold;color: #000000;">&lt;segment</span><span style="color: #008000;"> value=</span><span style="color: #aa0000;">"1.0"</span><span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;">      </span><span style="font-weight: bold;color: #000000;">&lt;/explicitSegments&gt;</span>
+<span style="color: #000000;">      </span><span style="font-weight: bold;color: #000000;">&lt;explicitSegments</span><span style="color: #008000;"> field=</span><span style="color: #aa0000;">"herbivore"</span><span style="font-weight: bold;color: #000000;">&gt;</span>
+<span style="color: #000000;">        </span><span style="font-weight: bold;color: #000000;">&lt;segment</span><span style="color: #008000;"> value=</span><span style="color: #aa0000;">"0.0"</span><span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;">        </span><span style="font-weight: bold;color: #000000;">&lt;segment</span><span style="color: #008000;"> value=</span><span style="color: #aa0000;">"1.0"</span><span style="color: #000000;"> </span><span style="font-weight: bold;color: #000000;">/&gt;</span>
+<span style="color: #000000;">      </span><span style="font-weight: bold;color: #000000;">&lt;/explicitSegments&gt;</span>
+<span style="color: #000000;">    </span><span style="font-weight: bold;color: #000000;">&lt;/segmentation&gt;</span>
+<span style="color: #000000;">  </span><span style="font-weight: bold;color: #000000;">&lt;/tree&gt;</span>
+<span style="font-weight: bold;color: #000000;">&lt;/model&gt;</span>
+</pre></body>
+</html>
