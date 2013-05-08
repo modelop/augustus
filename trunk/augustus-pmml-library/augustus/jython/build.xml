@@ -1,0 +1,15 @@
+<project default="jar">
+    <target name="clean">
+        <delete dir="build"/>
+        <delete file="NumpySubset.jar"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build"/>
+        <javac srcdir="src" destdir="build" includeantruntime="true"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar jarfile="NumpySubset.jar" basedir="build"/>
+    </target>
+</project>
