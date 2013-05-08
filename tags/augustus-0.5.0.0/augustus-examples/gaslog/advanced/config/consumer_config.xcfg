@@ -1,0 +1,16 @@
+<AugustusConfiguration>
+    <EventSettings score="true" output="true" />
+
+    <ModelInput>
+        <FromFile name="_out/postproducer_output.pmml" />
+    </ModelInput>
+
+    <DataInput>
+        <ReadOnce />
+        <FromFile name="../data/gaslog.xml" />
+    </DataInput>
+
+    <Output>
+        <ToFile name="_out/consumer_output.xml" overwrite="true" />
+    </Output>
+</AugustusConfiguration>

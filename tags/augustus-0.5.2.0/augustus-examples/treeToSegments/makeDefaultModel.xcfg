@@ -1,0 +1,28 @@
+<PmmlSed>
+    <Pattern>
+	<REPLACEME />
+    </Pattern>
+
+    <Replacement>
+	<BaselineModel functionName="regression">
+	    <Extension extender="ODG">
+		<X-ODG-CustomProcessingConstants>
+		    <X-ODG-CustomProcessingConstant name="kurtosis">
+			<Constant dataType="double">0.</Constant>
+		    </X-ODG-CustomProcessingConstant>
+		</X-ODG-CustomProcessingConstants>
+	    </Extension>
+	    <MiningSchema>
+		<MiningField name="BUYER_SPEND" />
+	    </MiningSchema>
+	    <TestDistributions field="BUYER_SPEND" testStatistic="zValue">
+		<Baseline>
+		    <GaussianDistribution mean="0." variance="0." />
+		</Baseline>
+	    </TestDistributions>
+	</BaselineModel>
+    </Replacement>
+
+    <StandardInput validate="false" />
+    <StandardOutput validate="true" />
+</PmmlSed>

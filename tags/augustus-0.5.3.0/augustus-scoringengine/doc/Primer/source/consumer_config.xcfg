@@ -1,0 +1,134 @@
+<AugustusConfiguration>
+    <!-- Note: XML elements have to appear in the same order as below. -->
+
+    <Logging
+        formatString="%(name)-9s: %(levelname)-8s %(message)s" level="INFO">
+        <ToStandardError/>
+
+        <!-- <Logging /> **********************************************
+            level = one of DEBUG, INFO, WARNING, ERROR
+                    (in descending order of verbosity)
+
+            formatString = a string passed directly to Python logging.
+                    The formats obey the rules in: http://docs.python.org/ 
+                    library/logging.html#logrecord-attributes
+
+            The output options are:
+            <ToStandardError />
+            <ToLogFile name="fname.txt" />
+            <ToStandardOut />
+
+            The Metadata options are the same as the logging options,
+            except that metadata levels are either DEBUG or INFO
+
+            Both Logging and Metadata are optional.  There will be no
+            logging output if they are both omitted.
+        ******************************************************************
+        -->
+    </Logging>
+
+    <Metadata
+        formatString="META %(levelname)-8s $(message)s" level="DEBUG">
+        <ToLogFile name="META.txt"/>
+    </Metadata>
+
+    <EventSettings score="true" output="true" />
+        <!-- <EventSettings /> *******************************************
+
+            score = "true" or "false" : calculate the score
+            output = "true" or "false" : create output
+
+        The alternate tag is <AggregationSettings /> with the exact same
+        attributes 'score' and 'output'.  Aggregate objects collect data
+        over all of the input stream, such as the total number of
+        observations, or the average of the observed value.
+
+        When <AggregationSettings /> is used, the score is calculated at
+        the end of the test instead of after every event.
+        When both <EventSettings /> and AggregationSettings /> are used,
+        the score is calculated both at the end of the test and after
+        every event.
+        ******************************************************************
+        -->
+
+    <ModelInput>
+        <!-- <ModelInput /> **********************************************
+         The ModelInput element is always required. It must contain
+         a FromFile element that locates the input model file.
+
+        ++++++ <FromFile /> ++++++++++++++++++++++++++++++++++++++++++++++
+            name = path to the model file; can include a '*'
+                    character for globbing
+            selectmode = one of "lastAlphabetic"(default) or "mostRecent"
+        ******************************************************************
+        -->
+        <FromFile name="../models/example_model.pmml" />
+
+    </ModelInput>
+
+    <DataInput>
+        <!-- <DataInput /> ***********************************************
+        The DataInput element is always required.  It must contain an
+        element that locates the input data file(s).
+
+        ++++++ <ReadOnce /> ++++++++++++++++++++++++++++++++++++++++++++++
+        The ReadOnce element is required when reading from a file.
+        In future releases, there will be options to read forever from
+        a file pipe, or from an HTTP port; for those cases the ReadOnce
+        option could be omitted.
+
+        ++++++ <FromFile /> ++++++++++++++++++++++++++++++++++++++++++++++
+
+            The input options are:
+            <FromFile name="../../data/other.csv" type="CSV" />
+            type = XML (default), CSV, or UniTable
+
+            <FromCSVFile name="../../data/other.csv"
+                         header="col1,col2,col3" sep="," />
+
+            <FromFixedRecordFile name="../../data/other.fixed">
+                <RecordField name="col1" length="3"/>
+                <RecordField name="col2" length="1"/>
+                <RecordField name="col3" length="2"/>
+            </FromFixedRecordFile>
+
+            <FromStandardIn /> (CSV format only)
+
+            <Interactive />
+
+        ******************************************************************
+        -->
+        <ReadOnce />
+        <FromFile name="../../data/gaslog.xml" />
+
+    </DataInput>
+
+    <Output>
+        <!-- <Output /> ***************************************************
+        The Output element is required when creating output (scores). It must
+        contain a <ToFile /> element that describes where to put the results.
+        or else direct results to <ToStandardError /> or <ToStandardOut />; both
+        tags do not have any other attributes.
+
+        ++++++ <ToFile /> +++++++++++++++++++++++++++++++++++++++++++++++++
+            name = location of the output file
+            overwrite = 'true' or 'false' (default)
+
+        ++++++ <ReportTag /> ++++++++++++++++++++++++++++++++++++++++++++++
+            The ReportTag is optional.  If omitted, there will be no tags wrapping
+            the output, meaning the file will not itself be a valid XML file.
+            The reason this is allowed is so that multiple test runs can append
+            more output to the same file.
+
+        ++++++ <EventTag /> ++++++++++++++++++++++++++++++++++++++++++++++
+            The EventTag is optional. If omitted, the name of the tags wrapping
+            each event will be 'Event'.  Otherwise it will be whatever is
+            in the 'name' attribute.
+        ******************************************************************
+        -->
+        <ToFile name="../results/example_scores.xml" overwrite="true" />
+        <ReportTag name="output" />
+        <EventTag name="Event" />
+
+    </Output>
+</AugustusConfiguration>

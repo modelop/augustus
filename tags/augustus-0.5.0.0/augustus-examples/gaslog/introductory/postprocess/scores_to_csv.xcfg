@@ -1,0 +1,75 @@
+<ScoresAwk>
+  <FileInput fileName="../results/example_scores.xml" excludeTag="output" />
+
+  <PythonFunction condition="BEGIN" action="makeHeader">
+    <![CDATA[
+
+# The code goes here, between the braces.
+# It should be exactly the same as in a Python script.
+# Whatever is returned will be written to the output file.
+
+def makeHeader():
+    print "You can modify the string to make different headers."
+    print "The spaces between the commas in the CSV are just for humans..."
+    print "instead you could put the '\\t' (for tab) character."
+
+    return "event, date, price, price_score, price_alert, gallons, gallons_score\n"
+
+    ]]>
+  </PythonFunction>
+
+  <PythonFunction condition="notEmpty" action="getRow">
+    <![CDATA[
+
+def notEmpty(event):
+    return len(event.children) > 0
+
+def getContent(seg, tagName):
+    return seg.child(tagName).content()
+
+def getRow(event):
+    event_no = event["number"]
+    the_date = " "
+    price = " "
+    price_score = " "
+    price_alert = " "
+    gallons = " "
+    gallons_score = " "
+
+    for segment in event:
+        if segment["id"] == "pricePerGal-zValue":
+            the_date = getContent(segment, "date")
+            price = getContent(segment, "pricePerGal")
+            price_score = getContent(segment, "score")
+            price_alert = getContent(segment, "alert")
+
+        elif segment["id"] == "gallons":
+            gallons = getContent(segment, "gallons")
+            gallons_score = getContent(segment, "score")
+
+    if int(event_no) % 10 == 0:
+        print ".",
+
+    return ", ".join([
+        event_no,
+        the_date,
+        price,
+        price_score,
+        price_alert,
+        gallons,
+        gallons_score]) + "\n"
+
+    ]]>
+  </PythonFunction>
+
+  <PythonFunction condition="END" action="printDone">
+    <![CDATA[
+
+def printDone():
+    print "Done! Congratulations!"
+
+    ]]>
+  </PythonFunction>
+
+  <FileOutput fileName="../results/example_scores.csv" />
+</ScoresAwk>

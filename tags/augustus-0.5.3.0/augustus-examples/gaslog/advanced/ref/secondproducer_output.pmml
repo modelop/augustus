@@ -1,0 +1,261 @@
+<PMML version="4.1">
+    <Header>
+        <Extension>
+            <X-ODG-Eventstamp number="186" />
+        </Extension>
+        <Timestamp>2011-10-31T15:21:56.037189</Timestamp>
+    </Header>
+    <DataDictionary>
+        <DataField dataType="date" optype="continuous" name="date" />
+        <DataField dataType="double" optype="continuous" name="gallons" />
+        <DataField dataType="double" optype="continuous" name="mileage" />
+        <DataField dataType="double" optype="continuous" name="miles" />
+        <!-- miles = this_mileage minus previous_mileage -->
+        <DataField dataType="double" optype="continuous" name="price" />
+        <DataField dataType="string" optype="categorical" name="car" />
+    </DataDictionary>
+    <MiningModel functionName="regression">
+        <MiningSchema>
+            <MiningField name="date" />
+            <MiningField name="gallons" />
+            <MiningField name="mileage" />
+            <MiningField name="miles" />
+            <MiningField name="price" />
+            <MiningField name="car" />
+            <MiningField usageType="predicted" name="score" />
+        </MiningSchema>
+        <Output>
+            <OutputField name="date" />
+            <OutputField name="gallons" />
+            <OutputField name="mileage" />
+            <OutputField name="miles" />
+            <OutputField name="price" />
+            <OutputField name="mpg" />
+            <OutputField name="score" feature="predictedValue" />
+        </Output>
+        <LocalTransformations>
+            <DerivedField dataType="integer" optype="continuous" name="year">
+                <Apply function="formatDatetime">
+                    <FieldRef field="date" />
+                    <Constant dataType="string">%Y</Constant>
+                </Apply>
+            </DerivedField>
+            <DerivedField dataType="string" optype="continuous" name="month">
+                <Apply function="formatDatetime">
+                    <FieldRef field="date" />
+                    <Constant dataType="string">%b</Constant>
+                </Apply>
+            </DerivedField>
+            <DerivedField dataType="string" optype="continuous" name="dayOfWeek">
+                <Apply function="formatDatetime">
+                    <FieldRef field="date" />
+                    <Constant dataType="string">%a</Constant>
+                </Apply>
+            </DerivedField>
+            <DerivedField dataType="integer" optype="continuous" name="dayOfWeekNumber">
+                <Apply function="formatDatetime">
+                    <FieldRef field="date" />
+                    <Constant dataType="string">%w</Constant>
+                </Apply>
+            </DerivedField>
+            <DerivedField dataType="double" optype="continuous" name="mpg">
+                <Apply function="/">
+                    <FieldRef field="miles" />
+                    <FieldRef field="gallons" />
+                </Apply>
+            </DerivedField>
+        </LocalTransformations>
+        <Segmentation multipleModelMethod="selectAll">
+            <Segment id="receipts">
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="car" value="new" />
+                    <SimplePredicate operator="greaterOrEqual" field="date" value="2009-06-01" />
+                    <SimplePredicate operator="lessOrEqual" field="date" value="2010-06-01" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression" algorithmName="streaming">
+                    <Extension>
+                        <X-ODG-ModelMaturity numUpdates="136" locked="false" />
+                    </Extension>
+                    <MiningSchema>
+                        <MiningField name="date" />
+                    </MiningSchema>
+                    <TestDistributions field="month" testStatistic="chiSquareDistribution">
+                        <Baseline>
+                            <CountTable sample="136.0">
+                                <FieldValueCount count="20.0" field="month" value="Jan" />
+                                <FieldValueCount count="9.0" field="month" value="Feb" />
+                                <FieldValueCount count="7.0" field="month" value="Mar" />
+                                <FieldValueCount count="8.0" field="month" value="Apr" />
+                                <FieldValueCount count="12.0" field="month" value="May" />
+                                <FieldValueCount count="15.0" field="month" value="Jun" />
+                                <FieldValueCount count="12.0" field="month" value="Jul" />
+                                <FieldValueCount count="16.0" field="month" value="Aug" />
+                                <FieldValueCount count="7.0" field="month" value="Sep" />
+                                <FieldValueCount count="10.0" field="month" value="Oct" />
+                                <FieldValueCount count="13.0" field="month" value="Nov" />
+                                <FieldValueCount count="7.0" field="month" value="Dec" />
+                            </CountTable>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+            <Segment id="gallons">
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="car" value="new" />
+                    <SimplePredicate operator="greaterOrEqual" field="date" value="2009-06-01" />
+                    <SimplePredicate operator="lessOrEqual" field="date" value="2010-06-01" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression" algorithmName="streaming">
+                    <Extension>
+                        <X-ODG-ModelMaturity numUpdates="134" locked="false" />
+                    </Extension>
+                    <MiningSchema>
+                        <MiningField name="date" />
+                        <MiningField name="gallons" />
+                    </MiningSchema>
+                    <TestDistributions field="month" testStatistic="chiSquareDistribution" weightField="gallons">
+                        <Baseline>
+                            <CountTable sample="1631.374">
+                                <FieldValueCount count="248.014" field="month" value="Jan" />
+                                <FieldValueCount count="125.775" field="month" value="Feb" />
+                                <FieldValueCount count="83.985" field="month" value="Mar" />
+                                <FieldValueCount count="102.02" field="month" value="Apr" />
+                                <FieldValueCount count="143.329" field="month" value="May" />
+                                <FieldValueCount count="155.971" field="month" value="Jun" />
+                                <FieldValueCount count="127.244" field="month" value="Jul" />
+                                <FieldValueCount count="198.211" field="month" value="Aug" />
+                                <FieldValueCount count="83.92" field="month" value="Sep" />
+                                <FieldValueCount count="116.411" field="month" value="Oct" />
+                                <FieldValueCount count="160.316" field="month" value="Nov" />
+                                <FieldValueCount count="86.178" field="month" value="Dec" />
+                            </CountTable>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+            <Segment id="dollars">
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="car" value="new" />
+                    <SimplePredicate operator="greaterOrEqual" field="date" value="2009-06-01" />
+                    <SimplePredicate operator="lessOrEqual" field="date" value="2010-06-01" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression" algorithmName="streaming">
+                    <Extension>
+                        <X-ODG-ModelMaturity numUpdates="89" locked="false" />
+                    </Extension>
+                    <MiningSchema>
+                        <MiningField name="date" />
+                        <MiningField name="price" />
+                    </MiningSchema>
+                    <TestDistributions field="month" testStatistic="chiSquareDistribution" weightField="price">
+                        <Baseline>
+                            <CountTable sample="2917.51">
+                                <FieldValueCount count="297.46" field="month" value="Jan" />
+                                <FieldValueCount count="208.54" field="month" value="Feb" />
+                                <FieldValueCount count="140.27" field="month" value="Mar" />
+                                <FieldValueCount count="188.86" field="month" value="Apr" />
+                                <FieldValueCount count="250.12" field="month" value="May" />
+                                <FieldValueCount count="241.93" field="month" value="Jun" />
+                                <FieldValueCount count="308.19" field="month" value="Jul" />
+                                <FieldValueCount count="418.05" field="month" value="Aug" />
+                                <FieldValueCount count="249.16" field="month" value="Sep" />
+                                <FieldValueCount count="247.16" field="month" value="Oct" />
+                                <FieldValueCount count="283.11" field="month" value="Nov" />
+                                <FieldValueCount count="84.66" field="month" value="Dec" />
+                            </CountTable>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+            <Segment id="miles">
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="car" value="new" />
+                    <SimplePredicate operator="greaterOrEqual" field="date" value="2009-06-01" />
+                    <SimplePredicate operator="lessOrEqual" field="date" value="2010-06-01" />
+                    <SimplePredicate operator="greaterThan" field="mpg" value="0.0" />
+                    <!-- 0 < mpg < 40 means that there were no missing receipts -->
+                    <SimplePredicate operator="lessThan" field="mpg" value="40.0" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression" algorithmName="streaming">
+                    <Extension>
+                        <X-ODG-ModelMaturity numUpdates="58" locked="false" />
+                    </Extension>
+                    <MiningSchema>
+                        <MiningField name="date" />
+                        <MiningField name="miles" />
+                    </MiningSchema>
+                    <TestDistributions field="month" testStatistic="chiSquareDistribution" weightField="miles">
+                        <Baseline>
+                            <CountTable sample="20377.0">
+                                <FieldValueCount count="3763.0" field="month" value="Jan" />
+                                <FieldValueCount count="2290.0" field="month" value="Feb" />
+                                <FieldValueCount count="1146.0" field="month" value="Mar" />
+                                <FieldValueCount count="1849.0" field="month" value="Apr" />
+                                <FieldValueCount count="1233.0" field="month" value="May" />
+                                <FieldValueCount count="695.0" field="month" value="Jun" />
+                                <FieldValueCount count="687.0" field="month" value="Jul" />
+                                <FieldValueCount count="2110.0" field="month" value="Aug" />
+                                <FieldValueCount count="1435.0" field="month" value="Sep" />
+                                <FieldValueCount count="2101.0" field="month" value="Oct" />
+                                <FieldValueCount count="2316.0" field="month" value="Nov" />
+                                <FieldValueCount count="752.0" field="month" value="Dec" />
+                            </CountTable>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+            <Segment id="mpg-zeromissing">
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="car" value="new" />
+                    <SimplePredicate operator="greaterOrEqual" field="date" value="2009-06-01" />
+                    <SimplePredicate operator="lessOrEqual" field="date" value="2010-06-01" />
+                    <SimplePredicate operator="greaterThan" field="mpg" value="0.0" />
+                    <SimplePredicate operator="lessThan" field="mpg" value="40.0" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression" algorithmName="streaming">
+                    <Extension>
+                        <X-ODG-ModelMaturity numUpdates="57" locked="false" />
+                    </Extension>
+                    <MiningSchema>
+                        <MiningField name="mpg" />
+                    </MiningSchema>
+                    <TestDistributions field="mpg" testStatistic="zValue">
+                        <Baseline>
+                            <GaussianDistribution variance="22.4523753302" mean="28.7961615106">
+                                <Extension>
+                                    <X-ODG-PartialSums SUMXX="49374.4826231" SUM1="58.0" SUMX="1670.17736762" />
+                                </Extension>
+                            </GaussianDistribution>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+            <Segment id="mpg-onemissing">
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="car" value="new" />
+                    <SimplePredicate operator="greaterOrEqual" field="date" value="2009-06-01" />
+                    <SimplePredicate operator="lessOrEqual" field="date" value="2010-06-01" />
+                    <SimplePredicate operator="greaterThan" field="mpg" value="40.0" />
+                    <SimplePredicate operator="lessThan" field="mpg" value="80.0" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression" algorithmName="streaming">
+                    <Extension>
+                        <X-ODG-ModelMaturity numUpdates="14" locked="false" />
+                    </Extension>
+                    <MiningSchema>
+                        <MiningField name="mpg" />
+                    </MiningSchema>
+                    <TestDistributions field="mpg" testStatistic="zValue">
+                        <Baseline>
+                            <GaussianDistribution variance="104.714331284" mean="57.988976464">
+                                <Extension>
+                                    <X-ODG-PartialSums SUMXX="51906.8215081" SUM1="15.0" SUMX="869.834646959" />
+                                </Extension>
+                            </GaussianDistribution>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+        </Segmentation>
+    </MiningModel>
+</PMML>

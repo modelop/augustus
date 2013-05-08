@@ -1,0 +1,228 @@
+Gaslog example (uses model updating)
+====================================
+
+This example shows how to do the following things:
+
+    * produce a segmented model from a dataset (which is to say,
+      several models in the same PMML file)
+
+    * modify the model (post-producing)
+
+    * score a different dataset using the model
+
+    * update the model (adding more training data to the same model).
+
+The dataset
+-----------
+
+The file gaslog.xml contains a record of gasoline that I purchased
+from June 2003 through September 2011.  It has the following fields:
+
+    * date: date in an ISO 8601 format: YYYY/MM/DD
+
+    * gallons: number of gallons purchased
+
+    * mileage: mileage on the car's odometer
+
+    * miles: difference in miles between this purchase and the
+      previous one--- in principle, the number of miles driven on one
+      tank of gas, but missing N receipts can make this number a
+      factor of N too large!
+
+    * price: price in dollars
+
+    * car: whether this corresponds to a new car or an old car, a
+      categorical variable with two values.
+
+Some receipts are missing (probably lost under the seat) and some
+fields are missing (not recorded or the ink smudged), so this is a
+realistic case to demonstrate Augustus's handling of missing data.
+
+The file is formatted as an XML table and is indented for
+human-readability.  The tag names "table" and "row" are arbitrary, but
+the other tag names ("date", "gallons", etc.) define the data fields.
+
+Producing a segmented model
+---------------------------
+
+The XML-based configuration file producer_config.xcfg builds a model
+from the producer_template.pmml skeleton, gaslog.xml dataset, and
+writes a new model to _out/producer_output.pmml, completely replacing
+existing values in producer_template.pmml.  To invoke it, run::
+
+    Augustus config/producer_config.xcfg
+
+The skeleton is a valid PMML file that defines data fields and types,
+derived fields (transformations), six segments.  Each segment selects
+a subset of the data and defines a different type of model.  In this
+case, all segments select::
+
+    car == "old" and 2004 <= year <= 2008
+
+The first four segments are chiSquaredDistribution models, the
+distribution of fill-ups (receipts), gallons of gas, dollars spent,
+and miles driven (see caveat above) per month.  Each model contains a
+<CountTable> (a histogram) binned by month (a categorical field,
+derived from the date).  The fact that the counts start at zero is
+unimportant, since the model values will all be replaced in this run.
+It is also unnecessary to enumerate all months; new values would be
+added to the histogram as they are seen.
+
+The last two segments are z-value tests, in which the miles per gallon
+(mpg, a continuous derived field) is modeled with a Gaussian
+distribution.  The first segment selects mpg between 0 and 40 (the
+case in which no receipts are missing) and the second selects mpg
+between 40 and 80 (the case in which exactly one receipt is missing).
+The mean and variance of the <GaussianDistribution> will be replaced
+in this run.
+
+The resulting model is in _out/producer_output.pmml.  It differs from
+the skeleton in the following ways:
+
+    * The <Header> contains a <Timestamp> (time when the model was
+      produced) and an <X-ODG-Eventstamp> (the event number when the
+      model was produced).  The event stamp is an ODG extension, so it
+      is inside of an <Extension> block for PMML conformance.
+
+    * All models have an <X-ODG-ModelMaturity> indicating the number
+      of times they were updated (also in <Extension> blocks).
+
+    * All <CountTables> are updated with the observed number of
+      counts.
+
+    * All <GaussianDistributions> are updated with the observed means
+      and variances.
+
+    * Gaussian distributions also contain <X-ODG-PartialSums> in an
+      <Extension> to keep track of the numberators and denominators
+      used to compute the means and variances.  This is for updating
+      the model later.
+
+The <CountTables> shows the most gas consumption in January/February
+and the summer (the car was primarily used for vacations and road
+trips, not local driving).
+
+Modifying the model
+-------------------
+
+This model was produced using the old car with incomplete years
+trimmed to avoid biasing the month-by-month distributions.  We would
+like to apply it to the new car, so that the production dataset is
+different from the training dataset.  In our case, both datasets are
+in the same file, gaslog.xml, so we select them with segment
+predicates.
+
+Model producing can introduce new segments (that feature is not used
+in this example), but it cannot change the segment predicates.  To
+change the segment predicates, we use PmmlSed, which is a model
+post-processor, a flexible tool for making arbitrary changes to PMML
+files.  The name is reminiscent of sed, the UNIX tool, because most
+PMML changes are pattern-replacements.
+
+To invoke it, run::
+
+    PmmlSed manipulation/postproducer_replacements.xcfg
+
+It creates a new file, _out/postproducer_output.pmml, with the
+following replacements:
+
+    * car == "old" becomes car == "new"
+
+    * year >= 2004 becomes date >= 2009/06/01
+
+    * year <= 2008 becomes date <= 2010/06/01
+
+(see postproducer_replacements.xcfg).  Unlike sed, which replaces text
+strings (can cause mistakes if unintended strings match the pattern),
+PmmlSed replaces XML elements, in this case, <SimplePredicate> elements.
+
+Scoring with the new model
+--------------------------
+
+The Augustus consumer (scoring engine) is started with::
+
+    Augustus config/consumer_config.xcfg
+
+This configuration uses _out/postproducer_output.pmml as a model,
+reads data from gaslog.xml, and writes to _out/consumer_output.xml
+(overwriting whatever is there).  The scored output is a stream of XML
+fragments, one per line, with tag name <Event>.  If any segments
+match, the <Event> contains a <Segment> with results of the PMML's
+<OutputFields> as tags within the <Segment>.
+
+The PMML file specifies a unique id for each segment, so that segments
+in the output can be matched to segments in the model.  If it hadn't,
+unique ids would have been assigned by Augustus.  To make the output
+easier to read, each <Segment> also has an expression that summarizes
+its predicate.
+
+Most of the output fields are simple pass-throughs of the input
+fields--- these are <OutputFields> without a feature attribute in the
+PMML model.  If data are missing, the output value is the string
+"Missing".  The calculated score is called "score", an <OutputField>
+with feature="predictedValue".
+
+For chiSquareDistribution models, the score is the consistency of the
+new-car observed distribution with the old-car training distribution,
+expressed as the value of the cumulative distribution function of
+chi^2 and the number of degrees of freedom.  Zero is perfect
+consistency, one is the limit of statistical inconsistency, and if the
+observed data match the training data, they would be uniformly
+distributed between zero and one (they aren't).
+
+For zValue models, the score is the z-value, the distance between the
+observed data and the mean of the Gaussian model, divided by the
+number of standard deviations (square root of variance).  For more
+detail on interpreting models, see the PMML specification on dmg.org.
+
+Updating the model
+------------------
+
+Suppose that we now want to update the model to include new-car data.
+The configuration file secondproducer_config.xcfg produces a model
+using the "updateExisting" mode, rather than "replaceExisting".  This
+directs Augustus to combine values in the input PMML file with new
+data on an equal footing.  Augustus initializes its internal
+<CountTables> using the values it finds in the input PMML and
+initializes its mean and variance calculations using the
+<X-ODG-PartialSums> that it finds.  If these elements are not present,
+the default initialization to zero would be used.
+
+Two Augustus runs, the second using "updateExisting", is equivalent to
+one Augustus run on a combined dataset.  The following commands (only
+the third hasn't been run yet)::
+
+    Augustus config/producer_config.xcfg              # old car, replaceExisting
+    PmmlSed manipulationpostproducer_replacements.xcfg   # change predicates: old -> new
+    Augustus config/secondproducer_config.xcfg        # new car, updateExisting
+
+are equivalent to::
+
+    Augustus config/bothproducer_config.xcfg     # both cars, replaceExisting
+
+To prove this, we can compare them using PmmlDiff, which is like UNIX
+diff but it makes comparisons at the level of XML structures, rather
+than text strings.  First, we must strip the predicates because
+secondproducer_config.xcfg leaves the model with predicates that
+select car == "new", while bothproducer_config.xcfg leaves the model
+with predicates that select any car.  The commands::
+
+    PmmlSed manipulation/stripboth_for_comparison.xcfg < _out/secondproducer_output.pmml > _out/secondproducer_stripped.pmml
+    PmmlSed manipulation/stripboth_for_comparison.xcfg < _out/bothproducer_output.pmml > _out/bothproducer_stripped.pmml
+
+simplify all <CompoundPredicates> to <True> for comparison.  Then::
+
+    PmmlDiff --validate --sigfigs 8 _out/secondproducer_stripped.pmml _out/bothproducer_stripped.pmml
+
+performs the comparison.  No output is good.
+
+All commands in a Makefile
+--------------------------
+
+All of the above commands can be invoked at once with::
+
+    make clean
+    make
+
+to check Augustus on your system.  It also compares the output of each
+step with reference data.

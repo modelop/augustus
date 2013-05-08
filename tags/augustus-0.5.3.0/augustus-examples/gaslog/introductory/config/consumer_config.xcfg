@@ -1,0 +1,19 @@
+<AugustusConfiguration>
+    <Logging
+        formatString="%(name)-9s: %(levelname)-8s %(message)s" level="INFO">
+        <ToStandardError/>
+    </Logging>
+
+    <EventSettings score="true" output="true" />
+
+    <ModelInput fileLocation="../models/example_model.pmml" />
+
+    <DataInput>
+        <FromFile fileLocation="../../data/gaslog.xml" format="XML" />
+    </DataInput>
+
+    <Output>
+        <ToFile name="../results/example_scores.xml" overwrite="true" />
+        <ReportTag name="output" />
+    </Output>
+</AugustusConfiguration>

@@ -1,0 +1,113 @@
+<PMML version="4.1">
+    <Header copyright="Open Data Group, 2011" description="example" />
+    <DataDictionary numberOfFields="6">
+        <DataField dataType="date" optype="continuous" name="date" />
+        <DataField dataType="double" optype="continuous" name="gallons" />
+        <DataField dataType="double" optype="continuous" name="mileage" />
+        <DataField dataType="double" optype="continuous" name="miles" />
+        <!-- miles = this_mileage minus previous_mileage -->
+        <DataField dataType="double" optype="continuous" name="price" />
+        <DataField dataType="string" optype="categorical" name="car" />
+    </DataDictionary>
+    <MiningModel functionName="regression">
+        <MiningSchema>
+            <MiningField name="date" />
+            <MiningField name="gallons" />
+            <MiningField name="miles" />
+            <MiningField name="price" />
+            <MiningField name="car" />
+        </MiningSchema>
+        <Output>
+            <OutputField name="date" />
+        </Output>
+        <LocalTransformations>
+            <DerivedField name="year" optype="continuous" dataType="integer">
+                <Apply function="formatDateTime">
+                    <FieldRef field="date" />
+                    <Constant dataType="string">%Y</Constant>
+                </Apply>
+            </DerivedField>
+            <DerivedField name="month" optype="continuous" dataType="string">
+                <Apply function="formatDateTime">
+                    <FieldRef field="date" />
+                    <Constant dataType="string">%b</Constant>
+                </Apply>
+            </DerivedField>
+            <DerivedField dataType="double" optype="continuous" name="pricePerGal">
+                <Apply function="/">
+                    <FieldRef field="price" />
+                    <FieldRef field="gallons" />
+                </Apply>
+            </DerivedField>
+        </LocalTransformations>
+        <Segmentation multipleModelMethod="selectAll">
+            <Segment id="pricePerGal-zValue">
+                <True />
+                <BaselineModel functionName="regression">
+                    <MiningSchema>
+                        <MiningField name="pricePerGal" />
+                        <MiningField usageType="predicted" name="score" />
+                        <MiningField usageType="predicted" name="alert" />
+                    </MiningSchema>
+                    <Output>
+                        <OutputField name="pricePerGal" />
+                        <OutputField name="score" feature="predictedValue" />
+                        <OutputField name="alert" feature="transformedValue">
+                            <Apply function="if">
+                                <Apply function="greaterThan">
+                                    <Apply function="abs">
+                                        <FieldRef field="score"/>
+                                    </Apply>
+                                    <Constant>2</Constant>
+                                </Apply>
+                                <Constant>"Alert"</Constant>
+                                <Constant>"OK"</Constant>
+                            </Apply>
+                        </OutputField>
+                    </Output>
+                    <TestDistributions field="pricePerGal" testStatistic="zValue">
+                        <Baseline>
+                            <GaussianDistribution mean="2.5" variance="0.3" />
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+            <Segment id="gallons">
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="car" value="old" />
+                    <SimplePredicate operator="greaterOrEqual" field="year" value="2004" />
+                    <SimplePredicate operator="lessOrEqual" field="year" value="2008" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression">
+                    <MiningSchema>
+                        <MiningField name="date" />
+                        <MiningField name="gallons" />
+                        <MiningField usageType="predicted" name="score" />
+                    </MiningSchema>
+                    <Output>
+                        <OutputField name="gallons" />
+                        <OutputField name="score" feature="predictedValue" />
+                    </Output>
+                    <TestDistributions field="month" testStatistic="chiSquareDistribution" weightField="gallons">
+                        <Baseline>
+                            <CountTable sample="1001.477">
+                                <FieldValueCount count="134.16" field="month" value="Jan" />
+                                <FieldValueCount count="86.1" field="month" value="Feb" />
+                                <FieldValueCount count="50.264" field="month" value="Mar" />
+                                <FieldValueCount count="51.863" field="month" value="Apr" />
+                                <FieldValueCount count="90.668" field="month" value="May" />
+                                <FieldValueCount count="93.123" field="month" value="Jun" />
+                                <FieldValueCount count="81.501" field="month" value="Jul" />
+                                <FieldValueCount count="153.12" field="month" value="Aug" />
+                                <FieldValueCount count="38.96" field="month" value="Sep" />
+                                <FieldValueCount count="63.644" field="month" value="Oct" />
+                                <FieldValueCount count="91.858" field="month" value="Nov" />
+                                <FieldValueCount count="66.216" field="month" value="Dec" />
+                            </CountTable>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+        </Segmentation>
+    </MiningModel>
+</PMML>

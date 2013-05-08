@@ -1,0 +1,65 @@
+Brief Augustus Installation
+
+Note: the project structure has changed in the trunk.  If you want to download
+a tar.gz file, please follow the instructions contained in that archive.
+Releases can be found on the 'Download' tab on the project site:
+
+    http://code.google.com/p/augustus/wiki/CustomDownload
+
+0. Get
+Check out from Subversion.  The entire project can be checkout via:
+
+    $ svn co http://augustus.googlecode.com/svn/trunk/  augustus-trunk
+
+Alternatively, you may want just the scoring engine (the tests require an
+additional 1.5 GB and the examples are in the 10s of MBs):
+
+    $ svn co http://augustus.googlecode.com/svn/trunk/augustus-scoringengine \
+        augustus-scoringengine
+
+Make sure you have Python 2.5, 2.6, or 2.7 installed as well as numPy.  We
+recommend Python 2.7 with NumPy 1.5.1.
+
+1. Install
+There are two standard ways of using Augustus:
+
+Run from source
+--- ---- ------
+Set the appropriate environment variables.  For example:
+
+If augustus-scoringengine is in /home/odg, then add the following lines to your
+.bashrc (or similar) file:
+
+    AUGUSTUS_HOME=/home/odg/augustus/augustus-scoringengine
+    export PYTHONPATH=${PYTHONPATH}:${AUGUSTUS_HOME}
+    export  PATH=${PATH}:${AUGUSTUS_HOME}/augustus/bin
+
+No compilation or setup step is necessary.
+
+Python Install
+------ -------
+You can also use setup.py.   By default, all files are installed to locations
+already in PATH and PYTHONPATH.
+
+From the Augustus directory, run:
+
+    $ python setup.py install
+
+The installation destination can be modified by using options such as --prefix.
+You may have to set environmental variables if the location used in not in the
+paths by default.  Run
+
+    $ python setup.py --help
+
+for a list of other options.
+
+2. Examples
+If you checked out augustus-examples, then you can test your Augustus
+installation by following either of the examples.  There are READMEs
+provided with the email and gaslog examples.
+
+3. Questions
+Please refer to Augustus_Installation.pdf for the complete installation
+instructions.  Documentation is in augustus-scoringengine/doc.
+
+See the project website for more information: http://augustus.googlecode.com

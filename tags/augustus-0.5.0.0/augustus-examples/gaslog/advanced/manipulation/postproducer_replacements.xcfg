@@ -1,0 +1,25 @@
+<PmmlSed>
+  <Pattern>
+    <SimplePredicate field="car" operator="equal" value="old" />
+  </Pattern>
+  <Replacement>
+    <SimplePredicate field="car" operator="equal" value="new" />
+  </Replacement>
+
+  <Pattern>
+    <SimplePredicate field="year" operator="greaterOrEqual" value="2004" />
+  </Pattern>
+  <Replacement>
+    <SimplePredicate field="date" operator="greaterOrEqual" value="2009/06/01" />
+  </Replacement>
+
+  <Pattern>
+    <SimplePredicate field="year" operator="lessOrEqual" value="2008" />
+  </Pattern>
+  <Replacement>
+    <SimplePredicate field="date" operator="lessOrEqual" value="2010/06/01" />
+  </Replacement>
+  
+  <FileInput fileName="_out/producer_output.pmml" />
+  <FileOutput fileName="_out/postproducer_output.pmml" />
+</PmmlSed>

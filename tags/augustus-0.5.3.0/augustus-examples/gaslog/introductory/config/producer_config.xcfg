@@ -1,0 +1,36 @@
+<AugustusConfiguration>
+    <Logging
+        formatString="%(name)-9s: %(levelname)-8s %(message)s" level="INFO">
+        <ToStandardError />
+    </Logging>
+
+    <Metadata
+        formatString="META %(levelname)-8s %(message)s" level="INFO">
+        <ToStandardError />
+    </Metadata>
+
+    <ModelInput fileLocation="../models/model_template.pmml" />
+
+    <DataInput>
+        <FromFile fileLocation="../../data/gaslog.xml" format="XML" />
+    </DataInput>
+
+    <ModelSetup outputFilename="../models/produced_model.pmml" mode="replaceExisting" updateEvery="event">
+        <SegmentationSchema>
+            <GenericSegment>
+                <EnumeratedDimension field="car" />
+                <EnumeratedDimension field="month" />
+
+                <!--
+                <PartitionedDimension field="intmonth">
+                    <Partition low="0" high="5" />
+                    <Partition low="6" high="8" closure="closedClosed" />
+                    <Partition low="8" high="12" divisions="2" closure="openClosed" />
+                </PartitionedDimension>
+                -->
+
+            </GenericSegment>
+        </SegmentationSchema>
+    </ModelSetup>
+
+</AugustusConfiguration>

@@ -1,0 +1,85 @@
+<PMML version="4.1">
+    <Header>
+        <Extension>
+            <X-ODG-Eventstamp number="109999" />
+        </Extension>
+        <Timestamp>2011-11-22T19:04:32.769599</Timestamp>
+    </Header>
+    <DataDictionary>
+        <DataField dataType="integer" optype="continuous" name="date" />
+        <DataField dataType="string" optype="categorical" name="mailinglist" />
+        <DataField dataType="double" optype="continuous" name="headerLength" />
+    </DataDictionary>
+    <MiningModel functionName="regression">
+        <MiningSchema>
+            <MiningField name="date" />
+            <MiningField name="headerLength" />
+            <MiningField name="mailinglist" />
+        </MiningSchema>
+        <Segmentation multipleModelMethod="selectFirst">
+            <Segment>
+                <CompoundPredicate booleanOperator="and">
+                    <SimplePredicate operator="equal" field="mailinglist" value="T" />
+                    <SimplePredicate operator="greaterThan" field="headerLength" value="2220.0" />
+                    <SimplePredicate operator="lessThan" field="headerLength" value="3000.0" />
+                </CompoundPredicate>
+                <BaselineModel functionName="regression">
+                    <Extension>
+                        <X-ODG-ModelMaturity numUpdates="1000" locked="false" />
+                    </Extension>
+                    <MiningSchema>
+                        <MiningField name="date" />
+                        <MiningField name="headerLength" />
+                        <MiningField usageType="predicted" name="chi2" />
+                        <MiningField usageType="predicted" name="ndf" />
+                        <MiningField usageType="predicted" name="prob" />
+                    </MiningSchema>
+                    <Output>
+                        <OutputField name="date" />
+                        <OutputField name="headerLength" />
+                        <OutputField name="headerBin" />
+                        <X-ODG-OutputField name="chi2" feature="chiSquare" />
+                        <X-ODG-OutputField name="ndf" feature="degreesOfFreedom" />
+                        <OutputField name="prob" feature="predictedValue" />
+                    </Output>
+                    <LocalTransformations>
+                        <DerivedField dataType="string" optype="categorical" name="headerBin">
+                            <Discretize field="headerLength" defaultValue="overflow">
+                                <DiscretizeBin binValue="bin01">
+                                    <Interval closure="closedOpen" rightMargin="2330.0" leftMargin="2220.0" />
+                                </DiscretizeBin>
+                                <DiscretizeBin binValue="bin02">
+                                    <Interval closure="closedOpen" rightMargin="2430.0" leftMargin="2330.0" />
+                                </DiscretizeBin>
+                                <DiscretizeBin binValue="bin03">
+                                    <Interval closure="closedOpen" rightMargin="2510.0" leftMargin="2430.0" />
+                                </DiscretizeBin>
+                                <DiscretizeBin binValue="bin04">
+                                    <Interval closure="closedOpen" rightMargin="2630.0" leftMargin="2510.0" />
+                                </DiscretizeBin>
+                                <DiscretizeBin binValue="bin05">
+                                    <Interval closure="closedOpen" rightMargin="2820.0" leftMargin="2630.0" />
+                                </DiscretizeBin>
+                                <DiscretizeBin binValue="bin06">
+                                    <Interval closure="closedOpen" rightMargin="3000.0" leftMargin="2820.0" />
+                                </DiscretizeBin>
+                            </Discretize>
+                        </DerivedField>
+                    </LocalTransformations>
+                    <TestDistributions field="headerBin" testStatistic="chiSquareDistribution">
+                        <Baseline>
+                            <CountTable sample="1000.0">
+                                <FieldValueCount count="0.0" field="headerBin" value="bin01" />
+                                <FieldValueCount count="0.0" field="headerBin" value="bin02" />
+                                <FieldValueCount count="0.0" field="headerBin" value="bin03" />
+                                <FieldValueCount count="118.0" field="headerBin" value="bin04" />
+                                <FieldValueCount count="877.0" field="headerBin" value="bin05" />
+                                <FieldValueCount count="5.0" field="headerBin" value="bin06" />
+                            </CountTable>
+                        </Baseline>
+                    </TestDistributions>
+                </BaselineModel>
+            </Segment>
+        </Segmentation>
+    </MiningModel>
+</PMML>

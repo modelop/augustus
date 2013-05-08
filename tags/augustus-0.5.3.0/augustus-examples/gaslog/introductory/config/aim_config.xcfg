@@ -1,0 +1,50 @@
+<AugustusConfiguration>
+
+    <Metadata
+        formatString="META %(levelname)-8s %(message)s" level="INFO">
+        <ToStandardError />
+    </Metadata>
+
+    <EventSettings output="true" score="true" />
+
+    <ModelInput fileLocation="../models/model_template.pmml" />
+
+    <DataInput>
+        <FromFile fileLocation="../../data/gaslog.xml" format="XML" />
+    </DataInput>
+
+    <Output>
+        <ToFile name="../results/scores.xml" overwrite="true"/>
+        <ReportTag name="Report" />
+    </Output>
+
+    <ModelSetup outputFilename="../models/produced_model.pmml" mode="replaceExisting" updateEvery="event">
+        <ProducerBlending method="unweighted">
+            <MaturityThreshold threshold="3" />
+        </ProducerBlending>
+
+        <SegmentationSchema>
+            <BlacklistedSegments>
+                <PartitionedDimension field="mpg">
+                    <Partition high="5" closure="openClosed" />
+                    <Partition low="100" closure="closedOpen" />
+                </PartitionedDimension>
+            </BlacklistedSegments>
+            <GenericSegment>
+                <EnumeratedDimension field="car" />
+                <!--
+                <EnumeratedDimension field="month">
+                    <Selection value="Jan" />
+                    <Selection value="Feb" />
+                </EnumeratedDimension>
+                -->
+                <PartitionedDimension field="intmonth">
+                    <Partition low="0" high="5" />
+                    <Partition low="6" high="8" closure="closedClosed" />
+                    <Partition low="8" high="12" divisions="2" closure="openClosed" />
+                </PartitionedDimension>
+            </GenericSegment>
+        </SegmentationSchema>
+    </ModelSetup>
+
+</AugustusConfiguration>

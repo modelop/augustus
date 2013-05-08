@@ -1,0 +1,10 @@
+<AugustusConfiguration>
+    <ModelInput fileLocation="models/producer_template.pmml" />
+
+    <DataInput>
+        <FromFile fileLocation="../data/gaslog.xml" format="XML" />
+    </DataInput>
+
+    <ModelSetup outputFilename="_out/producer_output.pmml" mode="replaceExisting" />
+
+</AugustusConfiguration>

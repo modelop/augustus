@@ -1,0 +1,65 @@
+<PMML version="4.1">
+  <Header />
+  <DataDictionary>
+    <DataField name="date" optype="continuous" dataType="integer" />
+    <DataField name="mailinglist" optype="categorical" dataType="string" />
+    <DataField name="headerLength" optype="continuous" dataType="double" />
+  </DataDictionary>
+  <MiningModel functionName="regression">
+    <MiningSchema>
+      <MiningField name="date" />
+      <MiningField name="headerLength" />
+      <MiningField name="mailinglist" />
+    </MiningSchema>
+    <Segmentation multipleModelMethod="selectFirst">
+      <Segment>
+	<CompoundPredicate booleanOperator="and">
+	  <SimplePredicate field="mailinglist" operator="equal" value="T"/>
+	  <SimplePredicate field="headerLength" operator="greaterThan" value="2220."/>
+	  <SimplePredicate field="headerLength" operator="lessThan" value="3000."/>
+	</CompoundPredicate>
+	<BaselineModel functionName="regression">
+	  <MiningSchema>
+	    <MiningField name="date" />
+	    <MiningField name="headerLength" />
+	    <MiningField name="chi2" usageType="predicted" />
+	    <MiningField name="ndf" usageType="predicted" />
+	    <MiningField name="prob" usageType="predicted" />
+	  </MiningSchema>
+	  <Output>
+	    <OutputField name="date" />
+	    <OutputField name="headerLength" />
+	    <OutputField name="headerBin" />
+	    <X-ODG-OutputField name="chi2" feature="chiSquare" />
+	    <X-ODG-OutputField name="ndf" feature="degreesOfFreedom" />
+	    <OutputField name="prob" feature="predictedValue" />
+	  </Output>
+	  <LocalTransformations>
+	    <DerivedField name="headerBin" optype="categorical" dataType="string">
+	      <Discretize field="headerLength" defaultValue="overflow">
+		<DiscretizeBin binValue="bin01"><Interval leftMargin="2220." rightMargin="2330." closure="closedOpen" /></DiscretizeBin>
+		<DiscretizeBin binValue="bin02"><Interval leftMargin="2330." rightMargin="2430." closure="closedOpen" /></DiscretizeBin>
+		<DiscretizeBin binValue="bin03"><Interval leftMargin="2430." rightMargin="2510." closure="closedOpen" /></DiscretizeBin>
+		<DiscretizeBin binValue="bin04"><Interval leftMargin="2510." rightMargin="2630." closure="closedOpen" /></DiscretizeBin>
+		<DiscretizeBin binValue="bin05"><Interval leftMargin="2630." rightMargin="2820." closure="closedOpen" /></DiscretizeBin>
+		<DiscretizeBin binValue="bin06"><Interval leftMargin="2820." rightMargin="3000." closure="closedOpen" /></DiscretizeBin>
+	      </Discretize>
+	    </DerivedField>
+	  </LocalTransformations>
+	  <TestDistributions field="headerBin" testStatistic="chiSquareDistribution">
+	    <Baseline>
+	      <CountTable>
+		<FieldValueCount field="headerBin" value="bin01" count="0" />
+		<FieldValueCount field="headerBin" value="bin02" count="0" />
+		<FieldValueCount field="headerBin" value="bin03" count="0" />
+		<FieldValueCount field="headerBin" value="bin04" count="0" />
+		<FieldValueCount field="headerBin" value="bin05" count="0" />
+		<FieldValueCount field="headerBin" value="bin06" count="0" />
+	      </CountTable>
+	    </Baseline>
+	  </TestDistributions>
+	</BaselineModel>
+      </Segment>
+    </Segmentation>
+  </MiningModel>
+</PMML>

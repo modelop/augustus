@@ -1,0 +1,11 @@
+<PmmlSed>
+  <Pattern>
+    <CompoundPredicate />
+  </Pattern>
+  <Replacement>
+    <True />
+  </Replacement>
+
+  <StandardInput />
+  <StandardOutput />
+</PmmlSed>

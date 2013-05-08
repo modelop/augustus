@@ -1,0 +1,33 @@
+gaslog examples (Introduces Augustus)
+=====================================
+
+This example shows how to do the following things:
+
+    * consume a model
+
+    * post-process output data
+
+    * produce a model
+
+The directories
+---------------
+
+The directory structure is:
+
+    gaslog
+    ├── advanced
+    ├── data 
+    ├── introductory
+    └── README
+
+The "advanced" directory contains a readme that walks
+an advanced user through producing, consuming, post-processing,
+and some of Augustus's PMML editing tools.
+
+The "data" directory contains the gaslog data that will
+be used for both the "advanced" and the "introductory" examples.
+
+The "introductory" directory is meant to be used in conjunction
+with Augustus's primer. The primer walks a novice user
+through producing, consuming, and post-processing.  The novice
+user does not need to be familiar with Python or PMML.

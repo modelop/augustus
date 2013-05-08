@@ -1,0 +1,27 @@
+Metadata-Version: 1.0
+Name: Augustus
+Version: 0.5.2.0-trunk
+Summary: Augustus - A scoring engine based on PMML 4.1
+Home-page: http://augustus.googlecode.com
+Author: Open Data Group
+Author-email: support@opendatagroup.com
+License: Apache2.0
+Download-URL: http://code.google.com/p/augustus/wiki/CustomDownload?tm=2
+Description: 
+        Augustus - A scoring engine for statistical and data mining models
+        based on the Predictive Model Markup Language (PMML).
+        
+Platform: ANY
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: UNIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Topic :: Scientific/Engineering :: Mathematics

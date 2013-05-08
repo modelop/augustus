@@ -1,0 +1,571 @@
+<PMML version="4.1">
+<!-- <PMML />: [1] ###################################
+   The meaning of the top line of this comment, "<PMML />: [1]"
+   indicates that the <PMML /> element must occur exactly once...
+   every PMML document must have <PMML /> as its root element.
+
+   ## Attributes ##
+      - `version`: Required.
+      Identifies the version number of the PMML standard used.
+      Currently one of:
+      "4.1", "4.0", "3.2", "3.1", "3.0", "2.1", "2.0", "1.1"
+
+      Augustus is PMML 4.1 compliant. Use Augustus 0.4.4.1 for
+      models written in PMML 4.0 and Augustus 0.3.1 for models
+      written in PMML 3.
+
+   ## Introduction ##
+   This is an example PMML file that describes a model
+      of type: `MiningModel`
+      for: the gaslog example in
+      {Install-Dir}/augustus-examples/gaslogprimer/
+
+   It identifies mandatory elements of a PMML document,
+   and all of the commonly used options for the Mining Model.
+   It is meant to be copied and modified.  More details
+   are available in the Augustus documentation.
+
+   The Mining Model is one of the types of statistical models that
+   Augustus can produce and consume.  PMML version 4.1 can describe
+   fourteen types.  For the other models, refer to the PMML schema
+   description: www.dmg.org/v4-1/pmml-4-1.xsd
+
+  Augustus can produce and consume segmented models.
+ ###################################################################
+ --> 
+  <Header copyright="Open Data Group, 2011" description="example" />
+  <!-- <Header />: [1] *********************************************
+  The header element is required, but is only informational; nothing
+  that goes in the strings affects the model or the data.
+
+     ** Attributes **
+        - `copyright`: Optional.
+        - `description`: Optional.
+  ******************************************************************
+  -->
+  <!-- <MiningBuildTask />: [0-1] **********************************
+    Not currently used by Augustus.
+  ******************************************************************
+  -->
+  <DataDictionary numberOfFields="6">
+  <!-- <DataDictionary />: [1] *************************************
+     The elements inside <DataDictionary /> identify each column
+     in the input data set.
+
+     ** Attributes **
+        - `numberOfFields`: Optional.
+  ******************************************************************
+  -->
+    <DataField dataType="date" optype="continuous" name="date" />
+    <DataField dataType="double" optype="continuous" name="gallons" />
+    <DataField dataType="double" optype="continuous" name="mileage" />
+    <DataField dataType="double" optype="continuous" name="miles" />
+    <DataField dataType="double" optype="continuous" name="price" />
+    <DataField dataType="string" optype="categorical" name="car" />
+    <!-- <DataField />: [1-inf] ====================================
+       Define the data fields here.  Each <DataField /> corresponds
+       to a column in the data set.
+
+       == Attributes ==
+        - `name` is Required.
+          corresponds to the column name in the data set
+
+        - `optype` is Required.
+          one of OPTYPE, (one of the following strings):
+          "categorical"  "ordinal"  "continuous"
+
+        - `dataType` is Required.
+          one of DATATYPE, (one of the following strings):
+          "boolean"  "string"
+          "integer"  "float"  "double
+          "date"     "time"   "dateTime"
+          "dateDaysSince[0]"    "dateDaysSince[1960]"
+          "dateDaysSince[1970]" "dateDaysSince[1980]"
+          "timeSeconds"
+          "dateTimeSecondsSince[0]"     "dateTimeSecondsSince[1960]"
+          "dateTimeSecondsSince[1970]"  "dateTimeSecondsSince[1980]"
+
+        - `displayName` Optional.
+          a string
+
+        - `taxonomy` Optional.
+          a string
+
+        - `isCyclic` Optional; defaults to "0"
+          one of "0" or "1"
+
+       == Optional Elements ==
+       The options <Interval />,  <Value />, and <Taxonomy /> 
+       are not relevant to Augustus.
+    ================================================================
+    -->
+  </DataDictionary>
+  <!-- <TransformationDictionary />: [0-1] *************************
+    Functions and derived fields are defined in this optional section.
+    They are then available to be used in the statistical model
+    defined below.
+
+     ** Optional Elements **
+     <DefineFunction /> and <DerivedField />
+
+     as many of these elements as needed are allowed; all of the
+     <DefineFunction /> elements must come before the <DerivedField />
+     elements.  For brevity, all of the optional sub-elements and 
+     attributes for each of these items will not be described here.
+
+     A good place to look for simple examples, and for definitions
+     of functions assumed to be handled by any program that used
+     PMML is:
+        http://www.dmg.org/v4-0-1/BuiltinFunctions.html
+
+     (search for DefineFunction and DerivedField to see examples
+      on the lower section of the page.)
+
+     Example function definition:
+        <DefineFunction name="calculate_cylinder_volume"
+                        optype="continuous"
+                        dataType="double">
+            <ParameterField name="radius" optype="continuous" />
+            <ParameterField name="height" optype="continuous" />
+            <Apply function = "*" >
+                <Constant dataType="double"> 3.14159 </Constant>
+                <Apply function = "*" >
+                    <FieldRef field="height" />
+                    <Apply function="pow">
+                        <FieldRef field="radius" />
+                        <Constant dataType="double"> 2 </Constant>
+                    </Apply>
+                </Apply>
+            </Apply>
+        </DefineFunction>
+
+     The <DefineFunction /> attributes specify the function's
+     name(`name`) and its return type (`dataType`).
+     The <ParameterField /> elements specify the function's arguments;
+     they will be referred to by their `name` in the function
+     definition.  There are eight types of expression elements
+     available to define the function body:
+     <Constant /> <FieldRef /> <NormContinuous /> <NormDiscrete />
+     <Discretize /> <MapValues /> <Apply /> <Aggregate />
+
+
+    Example definition of a derived field:
+    (Also shows how to call a function)
+        <DerivedField name="volume_of_cylinder1"
+                      optype="continuous"
+                      dataType="double">
+            <Apply function="calculate_cylinder_volume">
+                <FieldRef field="r1" />
+                <FieldRef field="h1" />
+            </Apply>
+        </DerivedField>
+    Function arguments are identified using the <FieldRef />
+    element. Arguments are expected to be in the same order
+    as in the function definition, and `field` should be equal to
+    the `name` in either a <DataField /> in the <DataDictionary />
+    or as another <DerivedField />.
+
+     ** Attributes **
+       none.
+  ******************************************************************
+  -->
+  <MiningModel functionName="regression">
+  <!-- <MiningModel />: [0-inf] of one choice **********************
+    For brevity, only the MiningModel option is explained in this
+    file.
+
+    The MiningModel is the only top-level model that can use
+    segmentation.  A segment can contain other types of models,
+    as described in <BaselineModel /> below.
+
+     ** Attributes **
+       - `modelName`: Optional.
+         a string.
+
+       - `functionName`: Required.
+         one of MINING-FUNCTION, (one of the following strings):
+         "associationRules"  "sequences"  "classification"
+         "regression"  "clustering"  "timeSeries"
+
+        - `algorithmName`: Optional.
+          a string.
+  ******************************************************************
+  -->
+    <MiningSchema>
+    <!-- <MiningSchema />: [1] =====================================
+      The Mining schema identifies every <DataField /> from the
+      <DataDictionary /> and every <DerivedField /> from the
+      <TransformationDictionary /> that will be used in the
+      statistical model, and (optionally) how it will be used.
+
+       == Attributes ==
+         none.
+     ===============================================================
+     -->
+
+      <MiningField name="date" />
+      <MiningField name="gallons" />
+      <MiningField name="miles" />
+      <MiningField name="price" />
+      <MiningField name="car" />
+      <!-- <MiningField />: [1-inf] ++++++++++++++++++++++++++++++++
+        Each entry identifies a single <DataField />
+        or <DerivedField /> that will be used in the model.
+
+         ++ Attributes ++
+           `name`: Required.
+           a string that matches the name of a previously
+           defined <DataField /> or <DerivedField />.
+
+           `usageType`: Optional; defaults to "active"
+           one of FIELD-USAGE-TYPE, (one of the following strings):
+           "active"  "predicted"  "supplementary"  "group"
+           "order"   "frequencyWeight"    "analysisWeight"
+
+           `optype`: Optional.
+           one of OPTYPE, (one of the following strings):
+           "categorical"  "ordinal"  "continuous"
+
+           `importance`: Optional.
+           type is PROB-NUMBER
+           (basically a double/the widest available floating point number)
+
+           `outliers`: Optional; defaults to "asIs"
+           one of OUTLIER-TREATMENT-METHOD, (one of the following):
+           "asIs"  "asMissingValues"  "asExtremeValues"
+
+           `lowValue`: Optional.
+           a double.
+
+           `highValue`: Optional.
+           a double.
+
+           `missingValueReplacement`: Optional.
+           a string.
+
+           `missingValueTreatment`: Optional.
+           one of MISSING-VALUE-TREATMENT-METHOD, (one of the following):
+           "asIs"  "asMean"  "asMode"  "asMedian"  "asValue"
+
+           `invalidValueTreatment`: Optional; default: "returnInvalid"
+           one of INVALID-VALUE-TREATMENT-METHOD, (one of the following):
+           "returnInvalid"  "asIs"  "asMissing"
+       +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+       -->
+     </MiningSchema>
+     <Output>
+    <!-- <Output />: [0-1] =====================================
+      The Output identifies every <MiningField /> from the
+      <MiningSchema /> that will be written to the output
+      file.  Each is listed as a separate <OutputField />
+      child element.
+
+       == Attributes ==
+         none.
+     ===============================================================
+     -->
+
+      <OutputField name="date" />
+      <!-- <OutputField />: [1-inf] ++++++++++++++++++++++++++++++++
+        Each entry identifies a single <MiningField />
+        whose values will be printed
+
+         ++ Attributes ++
+           `name`: Required.
+
+           `displayName`: Optional.
+           if present, the displayName will be the tag name for the
+           output (which is in XML format) instead of the actual
+           field name.
+
+           `feature`: Optional.
+           This is only used with the MiningField that names the
+           predicted value; an example is shown below.
+       +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+       -->
+     </Output>
+    <!-- ===========================================================
+      The following are not currently used by Augustus, but
+      they would appear in order if used.
+         <ModelStats />: [0-1]  ... Descriptive information.
+         <ModelExplanation />: [0-1] ... Descriptive information.
+         <Targets />: [0-1]
+     ===============================================================
+     -->
+
+    <LocalTransformations>
+    <!-- <LocalTransformations />: [0-1] ===========================
+      Contains a list of <DerivedField /> elements to supplement
+      the ones in the <TransformationDictionary />, if desired.
+
+       == Attributes ==
+         none.
+     ===============================================================
+    -->
+        <DerivedField name="year" optype="continuous" dataType="integer">
+            <Apply function="formatDateTime">
+                <FieldRef field="date" />
+                <Constant dataType="string">%Y</Constant>
+            </Apply>
+        </DerivedField>
+        <DerivedField name="month" optype="continuous" dataType="string">
+            <Apply function="formatDateTime">
+                <FieldRef field="date" />
+                <Constant dataType="string">%b</Constant>
+            </Apply>
+        </DerivedField>
+        <DerivedField dataType="double" optype="continuous" name="pricePerGal">
+            <Apply function="/">
+                <FieldRef field="price" />
+                <FieldRef field="gallons" />
+            </Apply>
+        </DerivedField>
+    </LocalTransformations>
+
+    <Segmentation multipleModelMethod="selectAll">
+    <!-- <Segmentation />: [0-1] ===================================
+      Allows the model to be split. For example, to score different
+      categories separately.
+      
+       == Attributes ==
+         `multipleModelMethod`: Required.
+         one of MULTIPLE-MODEL-METHOD, (one of the following strings):
+         "selectFirst"    "selectAll" (the remaining methods are
+         currently not available in Augustus:
+         "majorityVote"  "weightedMajorityVote"  "average"
+         "weightedAverage"    "median"    "max"  "sum" )
+     ===============================================================
+    -->
+      <Segment id="pricePerGal-Zvalue">
+       <!-- <Segment />: [1-inf] +++++++++++++++++++++++++++++++++++
+          Defines one segment of a segmented model.
+
+          ++ Attributes ++
+            `id`: Optional.
+           a string
+
+           `weight`: Optional.
+           a double.
+        ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+       -->
+       <True />
+       <!-- <True />: [1] +++++++++++++++++++++++++++++++
+         One PREDICATE element is required in each <Segment />.
+         The options are:
+            <SimplePredicate /> <CompoundPredicate />
+            <SimpleSetPredicate />
+            <True /> <False />
+
+
+         ++ <SimplePredicate /> ++
+          + Attributes +
+           `field`: Required.
+           a string corresponding to the `name` attribute of a
+           <DataField /> or of a <DerivedField />.
+
+           `operator`: Required.
+           one of the following strings:
+           "equal"  "notEqual"  "lessThan"  "lessOrEqual"
+           "greaterThan"  "greaterOrEqual"  "isMissing"
+           "isNotMissing"
+
+           `value`: Optional.
+           a string.
+
+
+         ++ <CompoundPredicate /> ++
+          + Elements +
+           Contains [2-inf] <SimplePredicate /> elements.
+
+          + Attributes +
+           `booleanOperator`: Required.
+           one of the following strings:
+           "or"  "and"  "xor"  "surrogate"
+
+
+         ++ <SimpleSetPredicate /> ++
+          + Elements +
+           Contains [1] <Array /> element. (not described for brevity.)
+
+          + Attributes +
+           `field`: Required.
+           a string corresponding to the `name` attribute of a
+           <DataField /> or of a <DerivedField />.
+
+           `booleanOperator`: Required.
+           one of the strings:  "isIn"  "isNotIn"
+       
+         ++ <True /> or <False /> ++
+           no elements or attributes.
+        ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+       -->
+        <BaselineModel functionName="regression">
+        <!-- <BaselineModel />: [1] ................................
+        The PMML standard does not allow all types of models inside
+        of a segment>.
+          The ones that are allowed and supported by Augustus are:
+          <BaselineModel /> <TreeModel /> <RuleSetModel />
+          <ClusteringModel />
+
+          For brevity, only the attributes for
+          <BaselineModel /> are described.
+
+          .. Attributes ..
+            `modelName`: Optional.
+            a string
+
+            `functionName`: Required.
+            one of MINING-FUNCTION, (one of the following strings):
+            "associationRules"  "sequences"  "classification"
+            "regression"  "clustering"  "timeSeries"
+
+            `algorithmName`: Optional.
+            a string
+         ...........................................................
+         -->
+          <MiningSchema>
+          <!-- <MiningSchema />: [1] ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+             Same definition as above. No attributes.
+           ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+           -->
+            <MiningField name="pricePerGal" />
+            <MiningField usageType="predicted" name="score" />
+          </MiningSchema>
+          <Output>
+              <OutputField name="pricePerGal" />
+              <OutputField name="score" feature="predictedValue" />
+          </Output>
+          <!-- ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+             As before, these elements can appear, in order, but are
+             not used.
+               <ModelStats />: [0-1]  ... Descriptive information.
+               <ModelExplanation />: [0-1] ... Descriptive information.
+               <Targets />: [0-1] 
+             Augustus would use the following, if present:
+               <LocalTransformations />: [0-1]
+           ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+           -->
+          <TestDistributions field="pricePerGal" testStatistic="zValue" >
+          <!-- <TestDistributions >: [1] ,,,,,,,,,,,,,,,,,,,,,,,,,,,
+             Defines the distributions for the data used in this segment.
+
+             ,, Attributes ,,
+               `field`: Optional.
+               would identify a field name defined in the data dictionary
+               or the translation dictionary
+
+               `testStatistic`: Required.
+               one of BASELINE-TEST-STATISTIC, (one of the following):
+               "zValue"  "chiSquaredIndependence" "chiSquaredDistribution"
+               "CUSUM" "scalarProduct"
+
+               `resetValue`: Optional; defaults to 0.0.
+               a double
+
+               `windowSize`: Optional; defaults to 0
+               an integer
+
+               `weightField`: Optional
+               a Field Name. An example for this is in the second segment,
+               below. it is the name of the field that will be accumulated
+               in the "count" attribute of the <FieldValueCount /> element.
+
+               `threshold`: Required.
+               a double.
+           ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+           -->
+            <Baseline>
+            <!-- <Baseline />: [1] """""""""""""""""""""""""""""""""
+               Contains the baseline distribution.
+             """""""""""""""""""""""""""""""""""""""""""""""""""""""
+             -->
+              <GaussianDistribution mean="2.5" variance="0.3" />
+              <!-- <GaussianDistribution />: [1] or other ~~~~~~~~~~
+                 One of the following options for a continuous distribution are
+                 allowed:
+                 <AnyDistribution mean={double} variance={double} />
+                 <GaussianDistribution mean={double} variance={double} />
+                 <PoissonDistribution mean={double} />
+                 <UniformDistribution lower={double} upper={double} />
+
+                 Plus a set of options for discrete distributions;
+                 the Chi squared distribution is described in the second
+                 segment, below.
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+               -->
+            </Baseline>
+            <!-- <Alternate />: [0-inf] """"""""""""""""""
+               An alternate distribution is allowed when
+               using the CUSUM test statistic. It would have the
+               same contents as are allowed in <Baseline /> above.
+             """""""""""""""""""""""""""""""""""""""""""""""""""""""
+             -->
+          </TestDistributions>
+        </BaselineModel>
+      </Segment>
+      <Segment>
+       <!-- <Segment />: [1-inf] +++++++++++++++++++++++++++++++++++
+          This segment gives an example of the chiSquareDistribution.
+          Outside of the description of the distribution, and the type of
+          predicate that determines which data will be scored in this segment,
+          the contents of the two segments are similar.
+        ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        -->
+        <CompoundPredicate booleanOperator="and">
+            <SimplePredicate operator="equal" field="car" value="old" />
+            <SimplePredicate operator="greaterOrEqual" field="year" value="2004" />
+            <SimplePredicate operator="lessOrEqual" field="year" value="2008" />
+        </CompoundPredicate>
+
+        <BaselineModel functionName="regression">
+          <MiningSchema>
+            <MiningField name="date" />
+            <MiningField name="gallons" />
+            <MiningField name="score" usageType="predicted" />
+            </MiningSchema>
+
+            <Output>
+              <OutputField name="gallons" />
+              <OutputField name="score" feature="predictedValue" />
+            </Output>
+
+            <TestDistributions field="month" testStatistic="chiSquareDistribution"
+                               weightField="gallons">
+              <Baseline>
+                <CountTable sample="1001.477">
+              <!-- <CountTable />: [1] or other ~~~~~~~~~~
+                 One of the following options for a discrete distribution are
+                 allowed:
+                 <CountTable sample={double} />
+                 <NormalizedCountTable sample={double} />
+
+                 The contents of either of these are basically the bins in
+                 a histogram that will define the distribution. These contents
+                 are either
+                     <FieldValue field={field name} value={the value} />
+                 or
+                 <FieldValue field={field name} value={the value} 
+                             count={weight field sum}/>
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+               -->
+                  <FieldValueCount count="134.16" field="month" value="Jan" />
+                  <FieldValueCount count="86.1" field="month" value="Feb" />
+                  <FieldValueCount count="50.264" field="month" value="Mar" />
+                  <FieldValueCount count="51.863" field="month" value="Apr" />
+                  <FieldValueCount count="90.668" field="month" value="May" />
+                  <FieldValueCount count="93.123" field="month" value="Jun" />
+                  <FieldValueCount count="81.501" field="month" value="Jul" />
+                  <FieldValueCount count="153.12" field="month" value="Aug" />
+                  <FieldValueCount count="38.96" field="month" value="Sep" />
+                  <FieldValueCount count="63.644" field="month" value="Oct" />
+                  <FieldValueCount count="91.858" field="month" value="Nov" />
+                  <FieldValueCount count="66.216" field="month" value="Dec" />
+                </CountTable>
+              </Baseline>
+            </TestDistributions>
+
+        </BaselineModel>
+      </Segment>
+    </Segmentation>
+  </MiningModel>
+</PMML>

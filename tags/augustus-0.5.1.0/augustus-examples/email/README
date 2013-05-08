@@ -1,0 +1,198 @@
+E-mail example (uses incremental updating, or AIM)
+==================================================
+
+This example shows how to do the following things:
+
+    * produce a model and use it to score data at the same time
+      (Automatically Incremented Model, or AIM)
+
+    * output models at regular intervals
+
+    * extract data from the model and the scores to make plots, and
+      convert the scores to different formats with ScoresAwk.
+
+The dataset
+-----------
+
+The file jims_email.nab contains an anonymized summary of all of my
+e-mails since 1995.  (I've deleted the text and addresses, of course!)
+It has the following fields:
+
+    * date: number of seconds since 1970 (integer, Jan 1, 1995 is
+      789014499)
+
+    * fromMe, toMe: one of my e-mail addresses is in the To: or From:
+      field, respectively (character, 'T' means true, 'F' means false)
+
+    * undergrad, grad, postdoc: the address in question is a school
+      address, from a particular era (character, 'T' or 'F')
+
+    * mailinglist: e-mail came from a particularly active suite of
+      mailing lists (character, 'T' or 'F')
+
+    * headerLength: length of the header in bytes
+
+    * bodyLength: length of the body in bytes, including all
+      attachments (header + body = whole message)
+
+    * nonquoteLength, quoteLength: length of the unquoted or quoted
+      part of the text (nonquoteLength + quoteLength == bodyLength if
+      there are no attachments)
+
+    * textParts: number of MIME parts that are text/plain (not usually
+      thought of as "attachments", but parts of the message)
+
+    * htmlParts: number of MIME parts that are text/html (a formatted
+      copy of the e-mail)
+
+    * otherParts: number of MIME parts that have a different types
+      (attachments)
+
+This example will use only date, mailinglist (select only mailinglist
+== 'T' for regularity), and headerLength (study changes in header
+length over time).
+
+A '.nab' file is a numeric binary, produced by NumPy.  A numeric
+binary was used instead of text-based CSV or XML for efficiency (the
+dataset contains 153,607 records).
+
+Producing and scoring at the same time
+----------------------------------------
+
+Augustus 0.5 has the ability to score data using a model that is being
+trained at the same time.  This allows the model to adapt to changing
+conditions.  In this case, the conditions are length of e-mail
+headers, which change every few years as the software that handles
+e-mail traffic gets reconfigured or replaced.  We want to produce a
+model that is sensitive to a change in header length, but then adapts
+to the new length, to be sensitive to further changes.
+
+We cannot use exactly the same data for both training and scoring,
+since such a procedure would be statistically meaningless (it would
+conclude that the data are always consistent with the model!).  We
+therefore define non-overlapping windows:
+
+    * model production: c - 2000 through c - 1000, where c is the
+      current event
+
+    * scoring: c - 1000 through c, where c is the current event
+
+Semi-recent data are used to train the model that is applied to recent
+data.
+
+This example has only one configuration file,
+email_headers_config.xcfg.  It inputs a model from email_headers.pmml
+and data from jims_email.nab.  It writes scores to _out/scoresout.xml
+and models to _out/modelout*.pmml.  The scoring (consumer) window is
+defined with <ConsumerBlending>, and the training (producer) window is
+defined with <ProducerBlending>.  The <Serialization> element is used
+to write out models at regular intervals, described in more detail
+below.
+
+The model skeleton
+------------------
+
+The email_headers.pmml file contains the initial model.  It defines
+the structure of the output, but its values are replaced by Augustus.
+It contains one segment, used merely to select events with mailinglist
+== 'T' and 2200 < headerLength < 3000::
+
+        <CompoundPredicate booleanOperator="and">
+          <SimplePredicate field="mailinglist" operator="equal" value="T"/>
+          <SimplePredicate field="headerLength" operator="greaterThan" value="2220."/>
+          <SimplePredicate field="headerLength" operator="lessThan" value="3000."/>
+        </CompoundPredicate>
+
+Restricting to the mailing list (a single source of e-mail traffic)
+and cutting outliers makes the data regular enough to have regions of
+stability.  It also limits the date range to 2006-2011.
+
+The headerLength distribution is not Gaussian, so we construct a
+histogram.  The "headerBin" derived field is a discretization of the
+headerLength, with non-uniform bin edges set between the observed
+peaks in the distribution.  See ref/headerLength.png for the
+distribution and the choice of bin edges.
+
+The model is a chiSquareDistribution over headerBin.  The "prob"
+output field is the chi^2 probability of the consistency between the
+scored distribution and the training distribution, while "chi2" and
+"ndf" are the raw chi^2 and number of degrees of freedom.  Since
+"chiSquare" and "degreesOfFreedom" are not valid feature values in
+PMML, we use <X-ODG-OutputField> instead of <OutputField>.  This ODG
+extension is not inside of an <Extension> block, so the file is not a
+valid PMML file.
+
+Running it
+----------
+
+Execute the following line::
+
+    Augustus email_headers_config.xcfg
+
+to start the training and scoring cycle.  It should take about 10-20
+seconds.
+
+The scoring output
+------------------
+
+The scores are written to a stream of XML fragments in
+_out/scoresout.xml.  Events that matched the segment contain all of
+the output.  It has been plotted in ref/plot.png.  The top half of
+ref/plot.png shows the headerLength versus date (with headerBin
+boundaries as horizontal lines), and the bottom half shows the reduced
+chi^2 versus date.
+
+As you can see, the distribution of headerLengths changes abruptly on
+several dates.  Immediately after those dates, the normalized chi^2
+peaks above 100 (statistically consistent data have a normalized chi^2
+of 1.0).  If these data were scored with a single model, only one
+change could be detected.  Since the model is automatically
+incremented, it resets itself within each new regime.
+
+The models output
+-----------------
+
+The model used to score the data is always changing, so only snapshots
+of it are written to disk.  The _out/modelout*.pmml files are
+snapshots taken once every 1000 events (a window size), as specified
+in the configuration file.  Each is a complete PMML file.  The
+<X-ODG-Eventstamp> indicates the current event number, allowing you to
+match models with scores.
+
+The file ref/model_plot.png is a plot of each model's <CountTable> as
+a histogram.  Since there are 30 models, there are 30 plots.
+
+Making plots
+------------
+
+Cassius the plotter is outside the scope of this documentation, but
+the scripts used to draw plots are included in this directory.  All of
+them produce SVG images that were converted to PNG by Inkscape.  
+
+    * cassius_data_plot.py loads jims_email.nab and draws a histogram
+
+    * cassius_plot.py loads the scored output, _out/scoresout.xml, and
+      draws two time-series
+
+    * cassius_model_plot.py loads all of the models,
+      _out/modelout*.pmml, and draws 30 histograms.
+
+All commands in a Makefile
+--------------------------
+
+This example only requires one command.  However, the Makefile
+performs four.
+
+    * It runs Augustus.
+
+    * It checks Augustus on your system by comparing Augustus's output
+      with reference data.
+
+    * It runs ScoresAwk with two configuration files,
+      scores_to_unitable.xcfg and scores_to_csv.xcfg, which convert
+      the output to different formats.
+
+It can be invoked with::
+
+    make clean
+    make

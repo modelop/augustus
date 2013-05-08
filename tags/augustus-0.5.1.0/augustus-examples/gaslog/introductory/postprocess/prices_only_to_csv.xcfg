@@ -1,0 +1,52 @@
+<ScoresAwk>
+  <FileInput fileName="../results/example_scores.xml" excludeTag="output" />
+
+  <PythonFunction condition="BEGIN" action="makeHeader">
+    <![CDATA[
+
+# The code goes here, between the braces.
+# It should be exactly the same as in a Python script.
+# Whatever is returned will be written to the output file.
+
+def makeHeader():
+    print "Starting..."
+    return "date\tprice\tprice_score\tprice_alert\n"
+
+    ]]>
+  </PythonFunction>
+
+  <PythonFunction condition="notEmpty" action="getRow">
+    <![CDATA[
+
+def notEmpty(element):
+    # note: line continuation in Python is done with a backslash.
+    # The element will only be selected for action if
+    # it is a segment, with the name 'pricePerGal-zValue'
+    return element.tag == "Segment" and \
+        element["id"] == "pricePerGal-zValue"
+
+def getContent(seg, tagName):
+    return seg.child(tagName).content()
+
+def getRow(pricePerGalSegment):
+    the_date = getContent(pricePerGalSegment, "date")
+    price = getContent(pricePerGalSegment, "pricePerGal")
+    price_score = getContent(pricePerGalSegment, "score")
+    price_alert = getContent(pricePerGalSegment, "alert")
+
+    return "\t".join([the_date, price, price_score, price_alert]) + "\n"
+
+    ]]>
+  </PythonFunction>
+
+  <PythonFunction condition="END" action="printDone">
+    <![CDATA[
+
+def printDone():
+    print "Done! Congratulations!"
+
+    ]]>
+  </PythonFunction>
+
+  <FileOutput fileName="../results/prices_only_example_scores.csv" />
+</ScoresAwk>

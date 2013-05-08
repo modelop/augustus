@@ -1,0 +1,38 @@
+<ScoresAwk>
+  <FileInput fileName="_out/scoresout.xml" excludeTag="Report">
+    <Context library="augustus.core.pmml41" as="pmml" />
+
+    <CastAttribute tag="Event" attribute="number" type="int" />
+    <CastContent tag="date" type="pmml.DateTimeSecondsSince1970" />
+    <CastContent tag="headerLength" type="str" />
+    <CastContent tag="chi2" type="float" />
+    <CastContent tag="ndf" type="int" />
+  </FileInput>
+
+  <PythonFunction condition="BEGIN" action="action">
+    <![CDATA[
+
+def action():
+    return "date, headerLength, redchi2\n"
+
+    ]]>
+  </PythonFunction>
+
+  <PythonFunction condition="condition" action="action">
+    <![CDATA[
+
+def condition(event):
+    return event.matches(lambda x: x.tag == "Segment" and x["id"] == "Untitled-1" and x.child("chi2").value is not None)
+
+def action(segment):
+    d = segment.child("date").value.t
+    h = segment.child("headerLength").value
+    c = segment.child("chi2").value/segment.child("ndf").value
+
+    return ", ".join([str(d), h, str(c)]) + "\n"
+
+    ]]>
+  </PythonFunction>
+
+  <FileOutput fileName="_out/scoresout.csv" />
+</ScoresAwk>

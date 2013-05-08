@@ -1,0 +1,4 @@
+include INSTALL LICENSE-2.0.txt *.py
+recursive-include doc README* *.txt *.html *.css Makefile *.py *.jpg
+recursive-include examples README* *.py *.csv *.xml* *.c *.awk *.nab *.pmml
+recursive-include augustus *.py *.xsd Makefile

@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+{% set title = _('Index') %}
+
+{% block body %}
+{#- TS:
+    Exclude source code index if there are no references to source code.
+    Use SourceRefCounter as a flag to turn off the Source Code index.
+ -#}
+{% set SourceCodeRefExists = false %}
+{% for key, entries in genindexentries %}
+    {% for entryname, (links, subitems) in entries %}
+        {%- if links and links[0][0:10] == 'sourcecode' -%}
+            {% set SourceCodeRefExists = true %}
+        {%- endif -%}
+    {% endfor %}
+{% endfor %}
+
+   <p><b>{{ _('Index of main documentation: ') }}</b>
+
+   {% for key, dummy in genindexentries -%}
+   <a href="#{{ key }}_main"><strong>{{ key }}</strong></a> {% if not loop.last %}| {% endif %}
+   {%- endfor %}</p>
+
+   {% if SourceCodeRefExists %}
+   <p><b>{{ _('Index of source code: ') }}</b>
+
+   {% for key, dummy in genindexentries -%}
+   <a href="#{{ key }}_source"><strong>{{ key }}</strong></a> {% if not loop.last %}| {% endif %}
+   {%- endfor %}</p>
+   {% endif %}
+
+   <hr />
+
+   <h1 id="index">{{ _('Index of main documentation') }}</h1>
+
+<div class="twocolumn">
+
+   {% for key, entries in genindexentries %}
+<h2 id="{{ key }}_main">{{ key }}</h2>
+<table width="100%" class="indextable"><tr><td width="33%" valign="top">
+<dl>
+{%- set breakat = genindexcounts[loop.index0] // 2 %}
+{%- set numitems = 0 %}
+{% for entryname, (links, subitems) in entries %}
+{%- if links and links[0][0:10] != 'sourcecode' -%}
+<dt>{%- if links -%}<a href="{{ links[0] }}">{{ entryname|e }}</a>
+  {%- for link in links[1:] %}, <a href="{{ link }}">[{{ loop.index }}]</a>{% endfor -%}
+  {%- else -%}
+{{ entryname|e }}
+  {%- endif -%}</dt>
+  {%- if subitems %}
+  <dd><dl>
+    {%- for subentryname, subentrylinks in subitems %}
+    <dt><a href="{{ subentrylinks[0] }}">{{ subentryname|e }}</a>
+    {%- for link in subentrylinks[1:] %}, <a href="{{ link }}">[{{ loop.index }}]</a>{% endfor -%}
+    </dt>
+    {%- endfor %}
+  </dl></dd>
+  {%- endif -%}
+{%- set numitems = numitems + 1 + (subitems|length) -%}
+{%- endif -%}
+{%- endfor %}
+</dl></td></tr></table>
+{% endfor %}
+
+</div>
+
+
+   {% if SourceCodeRefExists %}
+   <hr />
+
+   <h1>{{ _('Index of source code') }}</h1>
+
+   {% for key, entries in genindexentries %}
+<h2 id="{{ key }}_source">{{ key }}</h2>
+<table width="100%" class="indextable"><tr><td width="33%" valign="top">
+<dl>
+{%- set breakat = genindexcounts[loop.index0] // 2 %}
+{%- set numitems = 0 %}
+{% for entryname, (links, subitems) in entries %}
+  {%- if links and links[0][0:10] == 'sourcecode' -%}
+    <dt>
+    {%- if links -%}<a href="{{ links[0] }}">{{ entryname|e }}</a>
+        {%- for link in links[1:] %},
+            <a href="{{ link }}">[{{ loop.index }}]</a>
+        {% endfor -%}
+    {%- else -%}
+        {{ entryname|e }}
+    {%- endif -%}</dt>
+    {%- if subitems %}
+        <dd><dl>
+        {%- for subentryname, subentrylinks in subitems %}
+          <dt><a href="{{ subentrylinks[0] }}">{{ subentryname|e }}</a>
+          {%- for link in subentrylinks[1:] %},
+            <a href="{{ link }}">[{{ loop.index }}]</a>
+          {% endfor -%}
+          </dt>
+        {%- endfor %}
+        </dl></dd>
+    {%- endif -%}
+    {%- set numitems = numitems + 1 + (subitems|length) -%}
+  {%- endif -%}
+{%- endfor %}
+</dl></td></tr></table>
+   {% endfor %}{# end for key, entries in genindexentries #}
+
+{%- endif -%} {#- end if SourceCodeRefExists -#}
+
+{% endblock %}
+
+{% block sidebarrel %}
+{% if split_index %}
+   <h4>{{ _('Index') }}</h4>
+   <p>{% for key, dummy in genindexentries -%}
+   <a href="{{ pathto('genindex-' + key) }}"><strong>{{ key }}</strong></a>
+     {% if not loop.last %}| {% endif %}
+   {%- endfor %}</p>
+
+   <p><a href="{{ pathto('genindex-all') }}"><strong>{{ _('Full index on one page') }}</strong></a></p>
+{% endif %}
+   {{ super() }}
+{% endblock %}

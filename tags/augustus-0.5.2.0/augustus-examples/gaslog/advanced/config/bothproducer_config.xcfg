@@ -1,0 +1,13 @@
+<AugustusConfiguration>
+    <ModelInput>
+        <FromFile name="models/bothproducer_template.pmml" />
+    </ModelInput>
+
+    <DataInput>
+        <ReadOnce />
+        <FromFile name="../data/gaslog.xml" />
+    </DataInput>
+
+    <ModelSetup outputFilename="_out/bothproducer_output.pmml" mode="replaceExisting" />
+
+</AugustusConfiguration>

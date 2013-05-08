@@ -1,0 +1,217 @@
+<AugustusConfiguration>
+
+    <Logging
+        formatString="%(name)-9s: %(levelname)-8s %(message)s" level="INFO">
+        <ToStandardError/>
+
+        <!-- <Logging /> **********************************************
+            level = one of DEBUG, INFO, WARNING, ERROR
+                    (in descending order of verbosity)
+
+            formatString = a string passed directly to Python logging.
+                    The formats obey the rules in: http://docs.python.org/ 
+                    library/logging.html#logrecord-attributes
+
+            The output options are:
+            <ToStandardError />
+            <ToLogFile name="fname.txt" />
+            <ToStandardOut />
+
+            The Metadata options are the same as the logging options,
+            except that metadata levels are either DEBUG or INFO
+
+            Both Logging and Metadata are optional.  There will be no
+            logging output if they are both omitted.
+        ******************************************************************
+        -->
+    </Logging>
+
+    <Metadata
+        formatString="META %(levelname)-8s %(message)s" level="DEBUG">
+        <ToLogFile name="META.txt" />
+    </Metadata>
+
+    <ModelInput>
+        <!-- <ModelInput />***********************************************
+         The ModelInput element is always required. It must contain a
+         a FromFile element that locates the input model file.
+
+        ++++++ <FromFile /> ++++++++++++++++++++++++++++++++++++++++++++++
+            name = path to the model file; can include a '*'
+                    character for globbing
+            selectmode = one of "lastAlphabetic"(default) or "mostRecent"
+        ******************************************************************
+        -->
+        <FromFile name="models/model_template.pmml" />
+    </ModelInput>
+
+    <DataInput>
+        <!-- <DataInput /> ***********************************************
+        The DataInput element is always required.  It must contain an
+        element that locates the input data file(s).
+
+        ++++++ <ReadOnce /> ++++++++++++++++++++++++++++++++++++++++++++++
+        The ReadOnce element is required when reading from a file.
+        In future releases, there will be options to read forever from
+        a file pipe, or from an HTTP port; for those cases the ReadOnce
+        option could be omitted.
+
+        ++++++ <FromFile /> ++++++++++++++++++++++++++++++++++++++++++++++
+        The input options are:
+            <FromFile name="../../data/other.csv" type="CSV" />
+            type = XML (Default), CSV, or UniTable
+
+            <FromCSVFile name="../../data/other.csv" header="col1,col2,col3" sep="," />
+
+            <FromFixedRecordFile name="../../data/other.fixed">
+                <RecordField name="col1" length="3"/>
+                <RecordField name="col2" length="1"/>
+                <RecordField name="col3" length="2"/>
+            </FromFixedRecordFile>
+
+            <FromStandardIn /> (CSV format only)
+
+            <Interactive />
+        ******************************************************************
+        -->
+        <ReadOnce />
+        <FromFile name="../data/gaslog.xml" />
+    </DataInput>
+
+    <ModelSetup outputFilename="models/produced_model.pmml" mode="replaceExisting"
+                updateEvery="event">
+        <!-- <ModelSetup /> ***********************************************
+            outputFilename = path to the output model.
+
+            mode = 'replaceExisting' (default) or 'updateExisting' or 'lockExisting';
+                The mode identifies what to do with the probability distributions
+                currently in the model.
+                    replaceExisting: delete the existing properties of the distribution
+                    updateExisting: in the first run, will delete the existing properties
+                        of the distribution, and in subsequent runs will continue to
+                        add to them using new data
+                    lockExisting: freeze the existing properties of the distribution
+                        and only use the training data for the automatically-generated
+                        segments.
+
+            updateEvery = 'event' (default) or 'aggregate'
+                When to update the properties of the distributions; either every
+                event, or upon an aggregation.
+
+        ++++++ <ProducerBlending /> ++++++++++++++++++++++++++++++++++++++
+            The ProducerBlending element sets up how the AIM mode,
+            Automatic Incremental Model updating, will occur.  It has
+            the following attributes:
+
+            method = 'exponential' 'unweighted' 'window' 'computerTimeWindowSeconds'
+                the Producer Blending method determines how the current observation
+                will be combined with prior data to update the properties of the model.
+                'exponential' means exponential weighting,
+                'unweighted' means pure averaging,
+                'window' means average over the given window (number of events)
+                'computerTimeWindowSeconds' means average over the events that
+                    have been seen in the past window (number of seconds) based
+                    on the computer's clock time.
+
+            alpha = a double.
+                The attenuation rate of information used in the exponential
+                weighting method.  This can mean different things for different
+                applications, and we recommend you either examine
+                augustus-scoringengine/augustus/algorithms/eventweighting.py
+                to completely understand what is happening, or contact us.
+                It is an error to specify alpha when the method is not 'exponential'.
+
+            windowSize = an integer.
+                The number of events or number of seconds to be used if the
+                'window' or 'computerTimeWindowSeconds' options are selected.
+                It is an error to specify windowSize when the method is not
+                'window' or 'computerTimeWindowSeconds'
+
+
+            ProducerBlending also can contain one sub element:
+
+                <MaturityThreshold threshod="1"/>, which indicates when a model is
+                sufficiently trained to return a valid score.  Until the
+                MaturityThreshold is reached, the score will be 'Invalid'.
+                MaturityThreshold has two attributes:
+
+                threshold = an integer.
+                    The number of observations required before the model's scores
+                    are considered valid.
+
+                lockingThreshold = an integer.
+                    For performance, when in AIM mode, updating will be turned
+                    off after this number of observations have been seen.  The
+                    caveat here is that the model will no longer be updating,
+                    meaning any drift will not be captured.
+
+
+        ++++++ <SegmentationSchema /> ++++++++++++++++++++++++++++++++++++
+            The SegmentationSchema element sets up how automatic segment
+            generation will occur; the details are in its sub elements:
+
+              <BlacklistedSegments /> Matching records will be ignored.
+              <SpecificSegments /> Matching non-blacklisted records will be added.
+              <GenericSegment /> Matching non-blacklisted non-added records are added.
+
+            The BlacklistedSegments, SpecificSegments, and GenericSegment
+            entries all have the same two types of sub-elements:
+                <EnumeratedDimension />
+                <PartitionedDimension />
+
+            ... <EnumeratedDimension /> ..................................
+                field = The name of a MiningField element that appears in
+                        the MiningSchema of the MiningModel in the input
+                        PMML file.
+
+                At least one <Selection /> element is required in every
+                EnumeratedDimension unless it is in the GenericSegment.
+                In the GenericSegment, when an EnumeratedDimension does
+                not have any named Selection elements, every new value
+                seen will generate a new segment.
+
+                Each Selection in an EnumeratedDimension identifies a
+                match for this field. It has the attributes:
+                _________________________________________________________
+                    value = The value that the field will take on
+
+                    operator = 'equal'(default) or 'notEqual'
+                        if it is notEqual, then only one Selection entry
+                        can exist for this field.
+            
+            ... <PartitionedDimension /> .................................
+                field = The name of a MiningField element that appears in
+                        the MiningSchema of the MiningModel in the input
+                        PMML file.
+
+                Each <Partition /> in a PartitionedDimension identifies
+                a match range for this field. It has the attributes:
+                _________________________________________________________
+                    low = The low value in the range. Can be absent
+                        if the closure on the left hand side is open.
+
+                    high = The high value in the range. Can be absent
+                        if the closure on the right hand side is Open.
+
+                    divisions = The number of divisions that will be made
+                        between the low and the high ends of the range
+
+                    closure = 'openClosed'(default) or 'closedClosed' or
+                        'openOpen' or 'closedOpen'
+                        This determines the closure of every partition
+                        that will be made.  This means the range can only
+                        be 'closedClosed' or 'openOpen' if the 'divisions'
+                        attribute is absent; meaning the low and high
+                        values define one single partition; because otherwise
+                        the boundaries would either overlap or be excluded.
+        ******************************************************************
+        -->
+        <SegmentationSchema>
+            <GenericSegment>
+                <EnumeratedDimension field="car" />
+                <EnumeratedDimension field="month" />
+            </GenericSegment>
+        </SegmentationSchema>
+    </ModelSetup>
+
+</AugustusConfiguration>

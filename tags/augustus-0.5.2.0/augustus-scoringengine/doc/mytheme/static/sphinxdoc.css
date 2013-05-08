@@ -1,0 +1,427 @@
+/* TS-*
+ * Sphinx stylesheet -- sphinxdoc theme
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * Originally created by Armin Ronacher for Werkzeug, adapted by Georg Brandl.
+ */
+
+@import url("basic.css");
+
+/* TS- -- page layout ----------------------------------------------------------- */
+
+body {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva',
+                 'Verdana', sans-serif;
+    /* TS- font-family: 'Times New Roman', 'Baskerville', 'Garamond',
+     *              'Century Schoolbook', serif;
+     */
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    line-height: 150%;
+    text-align: center;
+    background-color: #F1F1F1;
+    /* TS- background-color #808082 is similar to logo font color;
+     * the background at ODG.com is F1F1F1
+     */
+    color: black;
+    padding: 0;
+    /* TS- no border at ODG.com
+     * border: 1px solid #aaa;
+     */
+
+    margin: 0px 10px 0px 10px;
+    min-width: 740px;
+}
+
+div.document {
+    background-color: white;
+    text-align: left;
+    background-image: url(contents.png);
+    background-repeat: repeat-x;
+}
+
+div.bodywrapper {
+    margin: 0 240px 0 0;
+    border-right: 1px solid #ccc;
+}
+
+div.body {
+    margin: 0;
+    padding: 0.5em 20px 20px 20px;
+}
+
+div.related {
+    font-size: 1em;
+}
+
+div.related ul {
+    background-image: url(navigation.png);
+    height: 2em;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+div.related ul li {
+    margin: 0;
+    padding: 0;
+    height: 2em;
+    float: left;
+}
+
+div.related ul li.right {
+    float: right;
+    margin-right: 5px;
+}
+
+div.related ul li a {
+    margin: 0;
+    padding: 0 5px 0 5px;
+    line-height: 1.75em;
+    color: #433;
+    /* TS- old = EE9816; does not match ODG visited (purple) or ODG link (green) colors */
+}
+
+div.related ul li a:hover {
+    color: #FF4B33; /* TS- old = 3CA8E7; matches OpenData */
+}
+
+div.sphinxsidebarwrapper {
+    padding: 0;
+}
+
+div.sphinxsidebar {
+    margin: 0;
+    padding: 0.5em 15px 15px 0;
+    width: 210px;
+    float: right;
+    font-size: 1em;
+    text-align: left;
+}
+
+div.sphinxsidebar h3, div.sphinxsidebar h4 {
+    margin: 1em 0 0.5em 0;
+    font-size: 1em;
+    padding: 0.1em 0 0.1em 0.5em;
+    color: white;
+    border: 1px solid #433;
+    /* TS- old = 86989B; does not match ODG visited (purple) or ODG link (green) colors */
+    background-color: #424242; /* TS- old = AFC1C4 */
+}
+
+div.sphinxsidebar h3 a {
+    color: white;
+}
+
+div.sphinxsidebar ul {
+    padding-left: 1.5em;
+    margin-top: 7px;
+    padding: 0;
+    line-height: 130%;
+}
+
+div.sphinxsidebar ul ul {
+    margin-left: 20px;
+}
+
+div.footer {
+    background-color: #111; /* TS- old = E3EFF1 */
+    color: #CCC; /* TS- old = 86989B */
+    padding: 3px 8px 3px 0;
+    clear: both;
+    font-size: 0.8em;
+    text-align: right;
+}
+
+div.footer a {
+    color: #DDD; /* TS- old = 86989B */
+    text-decoration: underline;
+}
+
+/* TS- -- body styles ----------------------------------------------------------- */
+
+p {    
+    margin: 0.8em 0 0.5em 0;
+}
+
+a {
+    color: #433;
+    /* TS- old = CA7433; does not match ODG visited (purple) or ODG link (green) colors */
+    text-decoration: none;
+}
+
+a:hover {
+    color: #FF4B33; /* TS- old = 2491CF, then F01216.  ODG.com is ff4b33 */
+}
+
+div.body a {
+    text-decoration: underline;
+}
+
+h1 {
+    margin: 0;
+    padding: 0.7em 0 0.3em 0;
+    font-size: 1.5em;
+    color: #420420; /* TS- old = 11557C */
+}
+
+h2 {
+    margin: 1.3em 0 0.2em 0;
+    font-size: 1.35em;
+    padding: 0;
+}
+
+h3 {
+    margin: 1em 0 -0.3em 0;
+    font-size: 1.2em;
+}
+
+div.body h1 a, div.body h2 a, div.body h3 a, div.body h4 a, div.body h5 a, div.body h6 a {
+    color: black!important;
+}
+
+h1 a.anchor, h2 a.anchor, h3 a.anchor, h4 a.anchor, h5 a.anchor, h6 a.anchor {
+    display: none;
+    margin: 0 0 0 0.3em;
+    padding: 0 0.2em 0 0.2em;
+    color: #aaa!important;
+}
+
+h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor,
+h5:hover a.anchor, h6:hover a.anchor {
+    display: inline;
+}
+
+h1 a.anchor:hover, h2 a.anchor:hover, h3 a.anchor:hover, h4 a.anchor:hover,
+h5 a.anchor:hover, h6 a.anchor:hover {
+    color: #777;
+    background-color: #eee;
+}
+
+a.headerlink {
+    color: #c60f0f!important;
+    font-size: 1em;
+    margin-left: 6px;
+    padding: 0 4px 0 4px;
+    text-decoration: none!important;
+}
+
+a.headerlink:hover {
+    background-color: #ccc;
+    color: white!important;
+}
+
+cite, code, tt {
+    font-family: 'Courier', 'UM Typewriter',
+                 'Consolas', 'Deja Vu Sans Mono',
+                 'Bitstream Vera Sans Mono', monospace;
+    color: #222;
+    /* TS- originally 794C08; then CA1014. matches OpenData pre color */
+    font-size: 0.95em;
+    letter-spacing: 0.01em;
+}
+
+tt {
+    background-color: #f7f7f7;
+    /* TS- originally f2f2f2. matches OpenData pre color */
+    border-bottom: 1px solid #ddd;
+    color: #222;
+    /* TS- originally 333. matches OpenData pre color */
+}
+
+tt.descname, tt.descclassname, tt.xref {
+    border: 0;
+}
+
+hr {
+    border: 1px solid #abc;
+    margin: 2em;
+}
+
+a tt {
+    border: 0;
+    color: #433;
+    /* TS- old = CA7433; does not match ODG visited (purple) or ODG link (green) colors */
+}
+
+a tt:hover {
+    color: #FF4B33; /* TS- old = 2491CF.  ODG.com is ff4b33 */
+}
+
+pre {
+    font-family: 'Courier', 'UM Typewriter',
+                 'Consolas', 'Deja Vu Sans Mono',
+                 'Bitstream Vera Sans Mono', monospace;
+    font-size: 0.95em;
+    letter-spacing: 0.015em;
+    line-height: 120%;
+    padding: 0.5em;
+    background-color: #f7f7f7;
+    /* TS- originally f8f8f8. matches OpenData pre color */
+}
+
+pre a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+td.linenos pre {
+    padding: 0.5em 0;
+}
+
+div.quotebar {
+    background-color: #f9f9f9;
+    /* TS- originally f8f8f8. matches OpenData textarea color */
+    max-width: 250px;
+    float: right;
+    padding: 2px 7px;
+    border: 1px solid #ccc;
+    /* TS- Matches OpenData textarea color */
+}
+
+div.topic {
+    background-color: #f9f9f9;
+    /* TS- originally f8f8f8. matches OpenData textarea color */
+}
+
+table {
+    border-collapse: collapse;
+    margin: 0 -0.5em 0 -0.5em;
+}
+
+table td, table th {
+    padding: 0.2em 0.5em 0.2em 0.5em;
+}
+
+/* TS- not adjusting warning colors */
+div.warning {
+    font-size: 0.9em;
+    margin: 1em 0 1em 0;
+    border: 1px solid #86989B;
+    background-color: #f7f7f7;
+    padding: 0;
+}
+
+div.warning p {
+    margin: 0.5em 1em 0.5em 1em;
+    padding: 0;
+}
+
+div.warning pre {
+    margin: 0.4em 1em 0.4em 1em;
+}
+
+div.warning {
+    margin: 0;
+    padding: 0.1em 0 0.1em 0.5em;
+    color: white;
+    border-bottom: 1px solid #86989B;
+    font-weight: bold;
+    background-color: #AFC1C4;
+}
+
+div.warning {
+    border: 1px solid #940000;
+}
+
+div.warning {
+    background-color: #CF0000;
+    border-bottom-color: #940000;
+}
+
+div.warning ul, div.warning ol {
+    margin: 0.1em 0.5em 0.5em 3em;
+    padding: 0;
+}
+
+div.admonition {
+    font-size: 0.9em;
+    margin: 1em 0 1em 0;
+    border: 1px solid #86989B;
+    padding: 0;
+    max-width: 720px;
+}
+
+div.admonition p {
+    margin: 0.5em 1em 0.5em 1em;
+    padding: 0;
+}
+
+div.admonition pre {
+    margin: 0.4em 1em 0.4em 1em;
+}
+
+div.admonition p.admonition-title, p.admonition-title {
+    margin: 0;
+    padding: 0.1em 0 0.1em 0.5em;
+    font-weight: bold;
+    background-color: white;
+}
+
+p.admonition-title {
+    background-color: #CF0000;
+    border-bottom-color: #940000;
+}
+
+div.admonition ul, div.admonition ol {
+    margin: 0.1em 0.5em 0.5em 3em;
+    padding: 0;
+}
+
+div.versioninfo {
+    margin: 1em 0 0 0;
+    border: 1px solid #ccc;
+    background-color: #DDEAF0;
+    padding: 8px;
+    line-height: 1.3em;
+    font-size: 0.9em;
+}
+
+div.container {
+    margin: 1em 0 1em 0;
+    /* TS- border: 1px solid #86989B; */
+    border: none;
+    /* TS- background-color: #f7f8f8; */
+    padding: 0px 10px 10px 10px;
+    max-width: 700px;
+}
+
+div.container object {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 75%;
+    max-width: 650px;
+}
+
+div.c, .err, .k, .o, .cm, .cp, .c1, .cs, .gd, .ge, .gr, .gh, .gi, .go, .gp, .gs, .gu, .gt, .kc, .kd, .kn, .kp, .kr, .kt, .m, .s, .na, .nb, .nc, .no, .nd, .ni, .ne, .nf, .nl, .nn, .nt, .nv, .ow, .w, .mf, .mh, .mi, .mo, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .sr, .s1, .ss, .bp, .vc, .vg, .vi, .il, .n, .p, pre  {
+    background-color: white;
+}
+
+table.docutils {
+    border: 0 solid #ffffff;
+    margin-left: 30px;
+}
+
+table.docutils td, table.docutils th {
+    padding: 1px 8px 1px 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+}
+
+.twocolumn {
+    -moz-column-gap: 30px;
+    -moz-column-rule: none;
+    -moz-column-fill: auto;
+    -moz-column-count: 2;
+    -webkit-column-gap: 30px;
+    -webkit-column-rule: none;
+    -webkit-column-fill: auto;
+    -webkit-column-count: 2;
+    column-gap: 30px;
+    column-rule: none;
+    column-fill: auto;
+    column-count: 2;
+}
+

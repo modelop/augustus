@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2006-2011  Open Data ("Open Data" refers to
+# one or more of the following companies: Open Data Partners LLC,
+# Open Data Research LLC, or Open Data Capital LLC.)
+#
+# This file is part of Augustus.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+## # Developers...uncomment the double hash items to run with cProfile...
+## # and comment out the main(options.config) call.
+##import cProfile
+
+import sys
+import os
+import re
+
+from augustus.engine.mainloop import main
+import augustus.core.config as c
+
+if __name__ == "__main__":
+    from augustus import version
+    from augustus.version import __version__
+    from optparse import OptionParser, make_option
+
+    version._python_check()
+    usage = """usage: %prog [[-c] configFile] [options]
+
+If a configFile is supplied, it overrides --data, --model, --scores,
+--aggregations, --replaceModel, --updateModel, --log, --logLevel,
+and --metadata.
+
+If configFile is omitted, a simple configuration is constructed from
+--data, --model, --scores, --aggregations, --replaceModel, --updateModel,
+--log, --logLevel, and --metadata.
+
+The --replaceModel and --updateModel options are mutually exclusive."""
+    version = "%prog " + __version__
+    options = [
+        make_option("-c", "--config", help="configuration file path and name (for backward compatibility)"),
+        make_option("-r", "--recursionlimit", default="1000", type="int", help="recursion limit for Python (default: 1000)"),
+        make_option("--data", type="string", help="input data file name if configFile is omitted"),
+        make_option("--model", type="string", help="input PMML model file name if configFile is omitted"),
+        make_option("--scores", type="string", help="scores output file name if configFile is omitted"),
+        make_option("--aggregations", action="store_true", help="turn on aggregate scoring if configFile is omitted"),
+        make_option("--replaceModel", type="string", help="output PMML model name if configFile is omitted (replacing numbers in input)"),
+        make_option("--updateModel", type="string", help="output PMML model name if configFile is omitted (updating numbers in input)"),
+        make_option("--algorithm", type="string", help="name of producer algorithm to use for replaceModel or updateModel"),
+        make_option("--parameters", type="string", help="*quoted* list of name='value' pairs to configure the algorithm"),
+        make_option("--log", type="string", help="log file name if configFile is omitted"),
+        make_option("--logLevel", type="string", help="level of log output (DEBUG, INFO, WARNING, ERROR) if configFile is omitted"),
+        make_option("--metadata", type="string", help="metadata file name if configFile is omitted"),
+        ]
+    parser = OptionParser(usage=usage, version=version, option_list=options)
+    (options, arguments) = parser.parse_args()
+
+    sys.setrecursionlimit(options.recursionlimit)
+
+    if len(arguments) == 1 and options.config is None:
+        config = arguments[0]
+
+    elif len(arguments) == 0 and options.config is not None:
+        config = options.config
+
+    elif len(arguments) == 0:
+        config = c.AugustusConfiguration()
+
+        if options.log is not None:
+            logging = c.Logging(c.ToLogFile(name=options.log))
+            if options.logLevel is not None:
+                logging.attrib["level"] = options.logLevel
+            config.children.append(logging)
+
+        if options.metadata is not None:
+            metadata = c.Metadata(c.ToLogFile(name=options.metadata))
+            config.children.append(metadata)
+
+        if options.aggregations:
+            config.children.append(c.AggregationSettings(score="true", output="true"))
+        config.children.append(c.EventSettings(score="true", output="true"))
+        
+        if options.model is None:
+            print "%s: error: if configFile is omitted, a PMML model must be supplied with the --model option" % sys.argv[0].split(os.path.sep)[-1]
+            sys.exit(-1)
+
+        config.children.append(c.ModelInput(fileLocation=options.model))
+
+        if options.data is None:
+            print "%s: error: if configFile is omitted, a dataset must be supplied with the --data option" % sys.argv[0].split(os.path.sep)[-1]
+            sys.exit(-1)
+
+        fromfile = c.FromFile(fileLocation=options.data)
+        if options.data[-4:].upper() == ".CSV":
+            fromfile.attrib["format"] = "CSV"
+        elif options.data[-4:].upper() == ".XML":
+            fromfile.attrib["format"] = "XML"
+        elif options.data[-4:].upper() == ".NAB":
+            fromfile.attrib["format"] = "NAB"
+        elif options.data[-5:].upper() == ".XTBL":
+            fromfile.attrib["format"] = "XTBL"
+        else:
+            print "Unrecognized file extension in \"%s\"" % options.data
+            sys.exit(-1)
+
+        config.children.append(c.DataInput(fromfile))
+
+        if options.scores is not None:
+            config.children.append(c.Output(c.ToFile(name=options.scores)))
+        else:
+            config.children.append(c.Output(c.ToStandardOut()))
+
+        if options.replaceModel is not None and options.updateModel is not None:
+            print "%s: error: specify --replaceModel, --updateModel, but not both" % sys.argv[0].split(os.path.sep)[-1]
+            sys.exit(-1)
+
+        if options.algorithm is not None and options.replaceModel is None and options.updateModel is None:
+            print "%s: error: when using algorithm, specify --replaceModel or --updateModel" % sys.argv[0].split(os.path.sep)[-1]
+            sys.exit(-1)
+
+        if options.parameters is not None and options.algorithm is None:
+            print "%s: error: when using parameters, specify the --algorithm (and --replaceModel or --updateModel)" % sys.argv[0].split(os.path.sep)[-1]
+            sys.exit(-1)
+
+        if options.replaceModel is not None or options.updateModel is not None:
+            if options.replaceModel is not None:
+                ms = c.ModelSetup(outputFilename=options.replaceModel, mode="replaceExisting")
+            else:
+                ms = c.ModelSetup(outputFilename=options.updateModel, mode="updateExisting")
+
+            if options.algorithm is not None:
+                if options.parameters is not None:
+                    parameters = [[word.lstrip("\"'").rstrip("\"'") for word in pair.split("=")] for pair in re.split("[\s,;]+", re.sub("\s*=\s*", "=", options.parameters))]
+                    if len(parameters) == 0 or set(map(len, parameters)) != set([2]):
+                        print "%s: error interpreting parameters \"%s\"" % (sys.argv[0].split(os.path.sep)[-1], options.parameters)
+                else:
+                    parameters = None
+
+                configured = 0
+                for model, available in c.ProducerAlgorithm.available.items():
+                    if options.algorithm in available:
+                        if parameters is not None:
+                            params = [c.Parameter(name=name, value=value) for name, value in parameters]
+                        else:
+                            params = []
+                        pa = c.ProducerAlgorithm(*params, **{"model": model, "algorithm": options.algorithm})
+                        pa.validate()
+                        ms.children.append(pa)
+                        configured += 1
+
+                if configured == 0:
+                    print "No model types accept an algorithm named \"%s\"" % options.algorithm
+                    sys.exit(-1)
+
+            config.children.append(ms)
+
+        config.validate()
+    else:
+        parser.print_help()
+        sys.exit(-1)
+
+    main(config)
+
+##    cProfile.run("main(options.config)", "PROFILE")
+##    import pstats
+##    p = pstats.Stats("PROFILE")
+##    p.strip_dirs()
+##    p.sort_stats("cumulative").print_stats(25)
+##    p.sort_stats("time").print_stats(25)

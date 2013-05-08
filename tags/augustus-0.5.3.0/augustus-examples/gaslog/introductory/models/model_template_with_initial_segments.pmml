@@ -1,0 +1,118 @@
+<PMML version="4.1">
+  <Header />
+  <DataDictionary>
+    <DataField name="date" optype="continuous" dataType="date" />
+    <DataField name="gallons" optype="continuous" dataType="double" />
+    <DataField name="mileage" optype="continuous" dataType="double" />
+    <DataField name="miles" optype="continuous" dataType="double" />    <!-- miles = this_mileage minus previous_mileage -->
+    <DataField name="price" optype="continuous" dataType="double" />
+    <DataField name="car" optype="categorical" dataType="string" />
+  </DataDictionary>
+  <MiningModel functionName="regression">
+    <MiningSchema>
+        <MiningField name="date" />
+        <MiningField name="gallons" />
+        <MiningField name="mileage" />
+        <MiningField name="miles" />
+        <MiningField name="price" />
+        <MiningField name="car" />
+        <MiningField name="score" usageType="predicted" />
+    </MiningSchema>
+
+    <Output>
+      <OutputField name="date" />
+      <OutputField name="gallons" />
+      <OutputField name="mileage" />
+      <OutputField name="miles" />
+      <OutputField name="price" />
+      <OutputField name="mpg" />
+      <OutputField name="score" feature="predictedValue" />
+    </Output>
+
+    <LocalTransformations>
+      <DerivedField name="year" optype="continuous" dataType="integer">
+        <Apply function="formatDateTime">
+          <FieldRef field="date" />
+          <Constant dataType="string">%Y</Constant>
+        </Apply>
+      </DerivedField>
+      <DerivedField name="month" optype="continuous" dataType="string">
+        <Apply function="formatDateTime">
+          <FieldRef field="date" />
+          <Constant dataType="string">%b</Constant>
+        </Apply>
+      </DerivedField>
+      <DerivedField name="dayOfWeek" optype="continuous" dataType="string">
+        <Apply function="formatDateTime">
+          <FieldRef field="date" />
+          <Constant dataType="string">%a</Constant>
+        </Apply>
+      </DerivedField>
+      <DerivedField name="dayOfWeekNumber" optype="continuous" dataType="integer">
+        <Apply function="formatDateTime">
+          <FieldRef field="date" />
+          <Constant dataType="string">%w</Constant>
+        </Apply>
+      </DerivedField>
+      <DerivedField name="mpg" optype="continuous" dataType="double">
+        <Apply function="/">
+          <FieldRef field="miles" />
+          <FieldRef field="gallons" />
+        </Apply>
+      </DerivedField>
+      </LocalTransformations>
+
+      <Segmentation>
+
+    <Extension name="X-ODG-SegmentTemplate">
+
+    <Segment>
+       <True/>
+
+        <BaselineModel functionName="regression">
+          <MiningSchema>
+            <MiningField name="mpg" />
+            <MiningField name="score" usageType="predicted" />
+          </MiningSchema>
+          <TestDistributions field="mpg" testStatistic="zValue">
+            <Baseline>
+              <GaussianDistribution mean="0." variance="1." />
+            </Baseline>
+          </TestDistributions>
+        </BaselineModel>
+      </Segment>
+    </Extension>
+
+    <Segment>
+      <SimplePredicate field="mpg" operator="lessOrEqual" value="20" />
+      <BaselineModel functionName="regression">
+        <MiningSchema>
+          <MiningField name="mpg" />
+          <MiningField name="score" usageType="predicted" />
+        </MiningSchema>
+        <TestDistributions field="mpg" testStatistic="zValue">
+          <Baseline>
+            <GaussianDistribution mean="0." variance="1." />
+          </Baseline>
+        </TestDistributions>
+      </BaselineModel>
+      </Segment>
+
+    <Segment>
+      <SimplePredicate field="mpg" operator="greaterThan" value="20" />
+      <BaselineModel functionName="regression">
+        <MiningSchema>
+          <MiningField name="mpg" />
+          <MiningField name="score" usageType="predicted" />
+        </MiningSchema>
+        <TestDistributions field="mpg" testStatistic="zValue">
+          <Baseline>
+            <GaussianDistribution mean="0." variance="1." />
+          </Baseline>
+        </TestDistributions>
+      </BaselineModel>
+    </Segment>
+
+    </Segmentation>
+  </MiningModel>
+</PMML>

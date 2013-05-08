@@ -1,0 +1,19 @@
+<AugustusConfiguration>
+    <EventSettings score="true" output="true" />
+    
+    <ModelInput fileLocation="models/email_headers.pmml" />
+    
+    <DataInput>
+	<FromFile fileLocation="data/jims_email.nab" format="NAB" />
+    </DataInput>
+    <ConsumerBlending method="window" windowLag="0" windowSize="1000" />
+    
+    <Output>
+	<ToFile name="_out/scoresout.xml" overwrite="true" />
+    </Output>
+    
+    <ModelSetup outputFilename="_out/modelout.pmml" mode="replaceExisting">
+	<Serialization writeFrequency="5000" frequencyUnits="observations" />
+	<ProducerBlending method="window" windowLag="1000" windowSize="1000" />
+    </ModelSetup>
+</AugustusConfiguration>

@@ -1,0 +1,146 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2006-2011  Open Data ("Open Data" refers to
+# one or more of the following companies: Open Data Partners LLC,
+# Open Data Research LLC, or Open Data Capital LLC.)
+#
+# This file is part of Augustus.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+from optparse import OptionParser, make_option
+
+from augustus.unitable.unitable import readUniTable, UniTable
+from augustus.unitable.streaminputs import CSVStream, XMLStream, NABStream
+from augustus.unitable.utilities import getformat
+
+if __name__ == "__main__":
+    ############################################################################
+    # read in the arguments to determine input, output file names and formats
+    ############################################################################
+
+    usage = """usage: %prog [--informat FMT] [--outformat FMT] [--cast F1=T1,F2=T2] infile outfile
+
+    If informat or outformat are not specified, the desired format will be
+    guessed from the file name extensions.
+
+    The infile may contain wildcards (but be sure to quote it, so that the
+    wildcards are not interpreted by the shell)."""
+
+    version = "%prog 0.1.0"
+    options = [
+        make_option("--informat", type="string", default=None),
+        make_option("--outformat", type="string", default=None),
+        make_option("--cast", type="string", default=None, help="field=type pairs, separated by commas, to cast into a new type (NAB, CSV, and XML input only)"),
+        # future options will include things like changing the page size
+        # sorting the input files according to different schemes
+        ]
+    parser = OptionParser(usage=usage, version=version, option_list=options)
+    options, arguments = parser.parse_args()
+    
+    if len(arguments) != 2:
+        parser.print_help()
+        sys.exit(-1)
+    infile, outfile = arguments
+
+    informat = getformat(infile, options.informat)
+    outformat = getformat(outfile, options.outformat)
+
+    if options.cast is None:
+        cast = {}
+    else:
+        cast = dict([[z.lstrip().rstrip() for z in y.split("=")] for y in [x.lstrip().rstrip() for x in options.cast.split(",")]])
+
+    ###########################################################################################
+    ### conversion case 1: stream-read XTBL with readUniTable() and be writing to the output
+    ###########################################################################################
+
+    if informat == "XTBL":
+        # readUniTable() reads the header information of all the files, but not all of the data
+        # data are loaded as needed
+
+        # limitGB=0: don't let the memory footprint grow beyond the current page
+        #            (we will be reading this only once: there's no advantage to keeping earlier pages)
+
+        # tables built with readUniTable() are ready to use
+
+        table = readUniTable(infile, informat, limitGB=0)
+
+        try:
+            # write() loops through the pages and writes them all in the specified format
+            table.write(outfile, outformat)
+        finally:
+            # close() is necessary for writing out the last page if it is incomplete
+            table.close()
+
+    else:
+        ################################################################################################
+        # conversion case 2: stream-read NAB, CSV, or XML with a streamer and be writing to the output
+        ################################################################################################
+
+        if informat == "NAB":
+            stream = NABStream(infile)
+        elif informat == "CSV":
+            stream = CSVStream(infile)
+        elif informat == "XML":
+            stream = XMLStream(infile)
+        
+        fields = stream.fields
+        types = stream.types
+        if types is None:
+            types = dict((f, "string") for f in csvInput.fields)
+
+        types.update(cast)
+        for t in types:
+            if t not in fields:
+                print "field \"%s\" does not exist in the input, cannot be cast (no output written)" % t
+                sys.exit(-1)
+
+        # tables built with the constructor have to be followed by initMemory() or initExisting()
+        table = UniTable(fields, types)
+
+        # initMemory() creates a blank page to be filled with data
+        table.initMemory()
+
+        try:
+            # writing() writes (and deletes) pages as they accumulate
+            table.writing(outfile, outformat)
+
+            if informat == "NAB":
+                # NABStream gives you a NumPy array for each row
+                for data in stream:
+                    table.fill(data)
+
+            elif informat == "CSV":
+                # CSVStream gives you a short list of values for each row
+                for data in stream:
+                    table.fill(data)
+
+            elif informat == "XML":
+                # XMLStream gives you a dictionary of "field": value pairs for each row
+                # because it might encounter new fields at any point
+
+                # it might encounter missing values, too: someday handle this better
+                def missing(t):
+                    if t == "object": return None
+                    elif t in ("category", "string"): return "MISSING"
+                    else: return 0
+
+                for data in stream:
+                    # only use the fields you were expecting, in the order you were expecting them
+                    table.fill([data.get(f, missing(types[f])) for f in fields])
+
+        finally:
+            # close() is necessary for writing out the last page if it is incomplete
+            table.close()

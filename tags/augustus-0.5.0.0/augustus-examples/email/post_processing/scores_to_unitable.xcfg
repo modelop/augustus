@@ -1,0 +1,58 @@
+<ScoresAwk>
+  <FileInput fileName="_out/scoresout.xml" excludeTag="Report">
+    <Context library="augustus.core.pmml41" as="pmml" />
+
+    <CastAttribute tag="Event" attribute="number" type="int" />
+    <CastContent tag="date" type="pmml.DateTimeSecondsSince1970" />
+    <CastContent tag="headerLength" type="float" />
+    <CastContent tag="chi2" type="float" />
+    <CastContent tag="ndf" type="int" />
+  </FileInput>
+
+  <PythonFunction condition="BEGIN" action="action">
+    <Context library="numpy" />
+
+    <![CDATA[
+
+def action():
+    # "g" is the global context, for variables that persist through all functions
+    g.dates = numpy.empty(153600, dtype="|S19")
+    g.headerLengths = numpy.empty(153600, dtype=numpy.float)
+    g.redchi2s = numpy.empty(153600, dtype=numpy.float)
+
+    g.index = 0
+
+    ]]>
+  </PythonFunction>
+
+  <PythonFunction condition="condition" action="action">
+    <![CDATA[
+
+def condition(event):
+    return event.matches(lambda x: x.tag == "Segment" and x["id"] == "Untitled-1" and x.child("chi2").value is not None)
+
+def action(segment):
+    g.dates[g.index] = str(segment.child("date").value.t)
+    g.headerLengths[g.index] = segment.child("headerLength").value
+    g.redchi2s[g.index] = segment.child("chi2").value/segment.child("ndf").value
+
+    g.index += 1
+    ]]>
+  </PythonFunction>
+
+  <PythonFunction condition="END" action="action">
+    <Context library="augustus.kernel.unitable" as="*" />
+
+    <![CDATA[
+
+def action():
+    g.dates = g.dates[0:g.index]
+    g.headerLengths = g.headerLengths[0:g.index]
+    g.redchi2s = g.redchi2s[0:g.index]
+    UniTable(**{"date": g.dates, "headerLength": g.headerLengths, "redchi2": g.redchi2s}).to_nab_file("_out/scoresout.nab")
+
+    ]]>
+  </PythonFunction>
+
+  <StandardOutput />
+</ScoresAwk>

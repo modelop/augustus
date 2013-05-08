@@ -1,0 +1,56 @@
+Gaslog Primer Readme
+====================
+
+This directory contains configuration files and scripts
+intended for use with Augustus's primer, as a first
+introduction to Augustus, PMML, and Python.
+
+We recommend you use the Augustus Primer. If you do not wish
+to, then below is a very brief summary of the contents of this
+directory.
+
+The directory structure looks like::
+
+        primer
+        ├── config
+        │   ├── aim_config.xcfg
+        │   ├── consumer_config.xcfg
+        │   └── producer_config.xcfg
+        ├── models
+        │   ├── example_model.pmml
+        │   ├── model_template.pmml
+        │   └── model_template_with_initial_segments.pmml
+        ├── postprocess
+        │   ├── explore_xmlbase.py
+        │   ├── prices_only_to_csv.xcfg
+        │   └── scores_to_csv.xcfg
+        ├── README
+        └── results
+            └── scores.xml.ref
+
+
+To consume data using an existing model,
+change directories to primer/config and type:
+
+    Augustus consumer_config.xcfg
+
+This will create a file primer/results/example_scores.xml.
+To convert the XML file to a CSV file, use the ScoresAwk
+script with the configuration file: primer/postprocess/scores_to_csv.xcfg
+
+    ScoresAwk scores_to_csv.xcfg
+
+or try this script to convert only the scores related to the gas price:
+
+    ScoresAwk prices_only_to_csv.xcfg
+
+
+To learn more about the xmlbase.py library and how to use it with
+ScoresAwk:
+
+    python explore_xmlbase.py
+
+To produce a new model, change back to the primer/config
+directory and type:
+
+    Augustus producer_config.xcfg
