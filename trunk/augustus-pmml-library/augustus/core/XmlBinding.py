@@ -191,7 +191,13 @@ class XmlBinding(ElementBase):
         @rtype: string
         """
 
-        attributes = " ".join(["%s=%s" % (n, v) for n, v in self.items()])
+        def truncate(x):
+            y = repr(x.strip())[:30]
+            if len(x) > 30:
+                y += "..."
+            return y
+
+        attributes = " ".join(["%s=%s" % (n, truncate(v)) for n, v in self.items()])
         nChildren = len(self)
         if nChildren == 0:
             children = ""
@@ -201,14 +207,11 @@ class XmlBinding(ElementBase):
             children = " (%d subelements)" % nChildren
 
         if self.text is not None:
-            text = self.text.strip()[:30]
-            if len(text) > 0:
-                if len(self.text) > 30:
-                    text += "..."
-                if attributes == "":
-                    attributes = "\"%s\"" % text
-                else:
-                    attributes += " \"%s\"" % text
+            text = truncate(self.text)
+            if attributes == "":
+                attributes = text
+            else:
+                attributes += " " + text
 
         if attributes == "":
             return "<%s%s at 0x%x />" % (self.t, children, id(self))

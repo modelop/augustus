@@ -67,7 +67,7 @@ class NumpyInterface(object):
                     
         return result
 
-    def __getattr__(self, name):
+    def __getattr__(self, name, noneIfMissing=False):
         """Return an object from the C{numpy} module's namespace.
 
         @type name: string
@@ -76,7 +76,10 @@ class NumpyInterface(object):
         @return: Object from Numpy.
         """
 
-        return getattr(numpy, name)
+        if noneIfMissing and not hasattr(numpy, name):
+            return None
+        else:
+            return getattr(numpy, name)
 
 NP = NumpyInterface()
 

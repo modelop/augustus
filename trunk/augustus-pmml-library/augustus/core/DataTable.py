@@ -119,6 +119,37 @@ class DataTable(object):
         dataTable._configure(dataColumns, inputState)
         return dataTable
 
+    @classmethod
+    def buildManually(self, fieldTypes, internalArrays, internalMasks=None, inputState=None):
+        """Create a DataTable from pre-built Numpy arrays filled with
+        internal values rather than user-friendly values.  For experts
+        only.
+
+        @type fieldTypes: dict of str to FieldTypes
+        @param fieldTypes: Maps field names to their FieldType.
+        @type internalArrays: dict of str to 1d Numpy arrays.
+        @param internalArrays: Maps field names to the internal data.
+        @type internalMasks: dict of str to 1d Numpy arrays, or None
+        @param internalMasks: Maps field names to the masks, or None for no masks.
+        @type inputState: DataTableState or None
+        @param inputState: Initial state of the DataTable.  To continue a previous calculation, use the C{dataTable.state} from the previous calculation.
+        @raise ValueError: If the C{fieldTypes}, C{internalArrays}, or C{internalMasks} have different field names, this function raises an error.
+        """
+
+        if internalMasks is None:
+            internalMasks = dict((x, None) for x in internalArrays)
+
+        if set(fieldTypes) != set(internalArrays) or set(fieldTypes) != set(internalMasks):
+            raise ValueError("Mismatch between fieldType names, internalArray names, or internalMasks names")
+
+        dataColumns = {}
+        for name in sorted(fieldTypes):
+            dataColumns[name] = DataColumn(fieldTypes[name], internalArrays[name], internalMasks[name])
+
+        dataTable = DataTable.__new__(DataTable)
+        dataTable._configure(dataColumns, inputState)
+        return dataTable
+
     def __init__(self, context, inputData, inputMask=None, inputState=None):
         """Create a DataTable from a type-context, input data,
         possible input masks, and possible input states.
@@ -218,7 +249,7 @@ class DataTable(object):
                         fieldType = FakeFieldType("string", "categorical")
                     elif data.dtype in (NP.int, NP.int0, NP.int8, NP.int16, NP.int32, NP.int64, NP.int_, NP.integer):
                         fieldType = FakeFieldType("integer", "continuous")
-                    elif data.dtype in (NP.float, NP.float16, NP.float32):
+                    elif data.dtype in (NP.float, NP.__getattr__("float16", noneIfMissing=True), NP.float32):
                         fieldType = FakeFieldType("float", "continuous")
                     elif data.dtype in (NP.float64, NP.float128, NP.float_, NP.double):
                         fieldType = FakeFieldType("double", "continuous")

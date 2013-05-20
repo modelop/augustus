@@ -804,7 +804,7 @@ class FieldType(object):
 
         data, mask = self._checkValues(data, mask)
         data, mask = self._checkIntervals(data, mask)
-        return DataColumn(data, mask)
+        return DataColumn(self, data, mask)
 
     ### fromDataColumn functions
 

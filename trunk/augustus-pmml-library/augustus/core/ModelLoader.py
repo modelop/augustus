@@ -358,7 +358,7 @@ class ModelLoader(object):
     #     xslt = XSLT(self.stylesheet)
     #     return xslt(pmmlBinding)
 
-    def look(self, tag=None, showXsd=True, showSource=True, stream=None):
+    def look(self, tag=None, showXsd=True, showSource=False, stream=None):
         """An informative representation of the ModelLoader's current
         interpretation of PMML, intended for interactive use.
 

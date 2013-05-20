@@ -132,6 +132,9 @@ modelLoader.register("CastExpression", CastExpression)
 
 modelLoader.xsdAddToGroupChoice("EXPRESSION", ["Formula", "CastExpression"])
 
+from augustus.pmml.odg.SerializedState import SerializedState
+modelLoader.register("SerializedState", SerializedState)
+
 ### models
 from augustus.pmml.model.segmentation.odg import *
 register(modelLoader)

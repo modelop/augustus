@@ -18,8 +18,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module defines the version of Augustus."""
-
-__version_info__ = (0, 6, "b1")
-
-__version__ = ".".join(map(str, __version_info__))
+"""This package contains modules that are used to read from different data sources and write to different data sinks."""

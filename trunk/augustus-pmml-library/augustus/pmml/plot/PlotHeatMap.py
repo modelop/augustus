@@ -121,6 +121,8 @@ class PlotHeatMap(PmmlPlotContent):
         element, so the drawing (which requires a finalized coordinate
         system) cannot begin yet.
 
+        This method modifies C{plotRange}.
+
         @type state: ad-hoc Python object
         @param state: State information that persists long enough to use quantities computed in C{prepare} in the C{draw} stage.  This is a work-around of lxml's refusal to let its Python instances maintain C{self} and it is unrelated to DataTableState.
         @type dataTable: DataTable
@@ -129,19 +131,14 @@ class PlotHeatMap(PmmlPlotContent):
         @param functionTable: Defines functions that may be used to transform data for plotting.
         @type performanceTable: PerformanceTable
         @param performanceTable: Measures and records performance (time and memory consumption) of the drawing process.
-        @type plotCoordinates: PlotCoordinates
-        @param plotCoordinates: The coordinate system in which this plot will be placed (not the coordinate system defined by the plot).
-        @type plotContentBox: PlotContentBox
-        @param plotContentBox: A bounding box in which this plot will be placed.
-        @type plotDefinitions: PlotDefinitions
-        @type plotDefinitions: The dictionary of key-value pairs that forms the <defs> section of the SVG document.
-        @rtype: SvgBinding
-        @return: An SVG fragment representing the fully drawn plot.
+        @type plotRange: PlotRange
+        @param plotRange: The bounding box of plot coordinates that this function will expand.
         """
 
         self.checkRoles(["z(x,y)", "x", "y", "zmean", "zweight"])
 
         performanceTable.begin("PlotHeatMap prepare")
+        self._saveContext(dataTable)
         
         zofxy = self.xpath("pmml:PlotFormula[@role='z(x,y)']")
         xexpr = self.xpath("pmml:PlotNumericExpression[@role='x']")
@@ -281,6 +278,13 @@ class PlotHeatMap(PmmlPlotContent):
             if len(zmean) == 0 and len(zweight) == 0:
                 histogram, xedges, yedges = NP("histogram2d", ydataColumn.data, xdataColumn.data, bins=(ybins, xbins), range=[[ylow, yhigh], [xlow, xhigh]], weights=mask)
 
+                if "histogram" in persistentState:
+                    persistentState["histogram"] = NP(persistentState["histogram"] + histogram)
+                else:
+                    persistentState["histogram"] = histogram
+
+                histogram = persistentState["histogram"]
+
                 if plotRange.zStrictlyPositive:
                     zmin = 0.1
                 else:
@@ -290,11 +294,6 @@ class PlotHeatMap(PmmlPlotContent):
                 plotRange.zminPush(zmin, self.zfieldType, sticky=True)
                 if zmax > zmin:
                     plotRange.zmaxPush(zmax, self.zfieldType, sticky=False)
-
-                if "histogram" in persistentState:
-                    persistentState["histogram"] = NP(persistentState["histogram"] + histogram)
-                else:
-                    persistentState["histogram"] = histogram
 
             elif len(zmean) == 0 and len(zweight) == 1:
                 performanceTable.pause("PlotHeatMap prepare")
@@ -306,6 +305,13 @@ class PlotHeatMap(PmmlPlotContent):
                 weights = NP(weightsDataColumn.data * mask)
 
                 histogram, xedges, yedges = NP("histogram2d", ydataColumn.data, xdataColumn.data, bins=(ybins, xbins), range=[[ylow, yhigh], [xlow, xhigh]], weights=weights)
+
+                if "histogram" in persistentState:
+                    persistentState["histogram"] = NP(persistentState["histogram"] + histogram)
+                else:
+                    persistentState["histogram"] = histogram
+
+                histogram = persistentState["histogram"]
 
                 if plotRange.zStrictlyPositive:
                     w = weights[NP(weights > 0.0)]
@@ -321,11 +327,6 @@ class PlotHeatMap(PmmlPlotContent):
                 if zmax > zmin:
                     plotRange.zmaxPush(zmax, self.zfieldType, sticky=False)
 
-                if "histogram" in persistentState:
-                    persistentState["histogram"] = NP(persistentState["histogram"] + histogram)
-                else:
-                    persistentState["histogram"] = histogram
-
             elif len(zmean) == 1 and len(zweight) == 0:
                 performanceTable.pause("PlotHeatMap prepare")
                 zdataColumn = zmean[0].evaluate(dataTable, functionTable, performanceTable)
@@ -337,6 +338,16 @@ class PlotHeatMap(PmmlPlotContent):
 
                 numer, xedges, yedges = NP("histogram2d", ydataColumn.data, xdataColumn.data, bins=(ybins, xbins), range=[[ylow, yhigh], [xlow, xhigh]], weights=weights)
                 denom, xedges, yedges = NP("histogram2d", ydataColumn.data, xdataColumn.data, bins=(ybins, xbins), range=[[ylow, yhigh], [xlow, xhigh]], weights=mask)
+
+                if "numer" in persistentState:
+                    persistentState["numer"] = NP(persistentState["numer"] + numer)
+                    persistentState["denom"] = NP(persistentState["denom"] + denom)
+                else:
+                    persistentState["numer"] = numer
+                    persistentState["denom"] = denom
+
+                numer = persistentState["numer"]
+                denom = persistentState["denom"]
                 histogram = numer / denom
 
                 selection = NP("isfinite", histogram)
@@ -347,12 +358,6 @@ class PlotHeatMap(PmmlPlotContent):
                     gooddata = histogram[selection]
                     plotRange.zminPush(gooddata.min(), self.zfieldType, sticky=False)
                     plotRange.zmaxPush(gooddata.max(), self.zfieldType, sticky=False)
-
-                if "numer" in persistentState:
-                    persistentState["numer"] = NP(persistentState["numer"] + numer)
-                    persistentState["denom"] = NP(persistentState["denom"] + denom)
-                else:
-                    persistentState["denom"] = denom
 
             else:
                 raise defs.PmmlValidationError("The only allowed combinations of PlotFormula/PlotNumericExpressions are: \"z(x,y)\" (function), \"x y\" (histogram), \"x y zmean\" (mean of z in x y bins), \"x y zweight\" (weighted x y histogram)")
@@ -396,7 +401,15 @@ class PlotHeatMap(PmmlPlotContent):
         """
 
         svg = SvgBinding.elementMaker
-        if not hasattr(plotCoordinates, "zmin"): return svg.g()
+
+        svgId = self.get("svgId")
+        if svgId is None:
+            output = svg.g()
+        else:
+            output = svg.g(id=svgId)
+
+        if not hasattr(plotCoordinates, "zmin"):
+            return output
 
         performanceTable.begin("PlotHeatMap draw")
 
@@ -479,7 +492,7 @@ class PlotHeatMap(PmmlPlotContent):
         arrayToPng = ArrayToPng()
         arrayToPng.putdata(xbins, ybins, reddata, greendata, bluedata, alphadata, flipy=True, onePixelBeyondBorder=onePixelBeyondBorder)
 
-        output = svg.image(**{defs.XLINK_HREF: "data:image/png;base64," + arrayToPng.b64encode(), "x": repr(X1), "y": repr(Y2), "width": repr(X2 - X1), "height": repr(Y1 - Y2), "image-rendering": self.get("imageRendering", defaultFromXsd=True), "preserveAspectRatio": "none"})
+        output.append(svg.image(**{defs.XLINK_HREF: "data:image/png;base64," + arrayToPng.b64encode(), "x": repr(X1), "y": repr(Y2), "width": repr(X2 - X1), "height": repr(Y1 - Y2), "image-rendering": self.get("imageRendering", defaultFromXsd=True), "preserveAspectRatio": "none"}))
 
         performanceTable.end("PlotHeatMap draw")
         return output

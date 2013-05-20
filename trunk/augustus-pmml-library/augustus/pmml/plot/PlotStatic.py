@@ -18,62 +18,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module defines the PlotSvgContent class."""
+"""This module defines the PlotStatic class."""
 
-import copy
-
-from augustus.core.defs import defs
+from augustus.core.DataTable import DataTable
 from augustus.core.SvgBinding import SvgBinding
-from augustus.core.FakeFieldType import FakeFieldType
 from augustus.core.plot.PmmlPlotContent import PmmlPlotContent
-from augustus.pmml.plot.PlotSvgAnnotation import PlotSvgAnnotation
 
-class PlotSvgContent(PmmlPlotContent):
-    """PlotSvgContent represents an SVG image embedded in a coordinate
-    system.
+class PlotStatic(PmmlPlotContent):
+    """PlotStatic encloses one or more plots and their preserved
+    state, which can represent a reference or plots produced using
+    other datasets.
 
-    PMML subelements:
-
-      - SvgBinding for inline SVG.
-
-    PMML attributes:
-
-      - svgId: id for the resulting SVG element.
-      - fileName: for external SVG.
-      - x1: left edge.
-      - y1: bottom edge.
-      - x2: right edge.
-      - y2: top edge.
-
-    Inline and external SVG are mutually exclusive.
-
-    See the source code for the full XSD.
+    Plots contained within a PlotStatic are not affected by new data.
     """
 
     xsd = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-    <xs:element name="PlotSvgContent">
+    <xs:element name="PlotStatic">
         <xs:complexType>
-            <xs:complexContent>
-                <xs:restriction base="xs:anyType">
-                    <xs:sequence>
-                        <xs:any minOccurs="0" maxOccurs="1" processContents="skip" />
-                    </xs:sequence>
-                    <xs:attribute name="svgId" type="xs:string" use="optional" />
-                    <xs:attribute name="fileName" type="xs:string" use="optional" />
-                    <xs:attribute name="x1" type="xs:double" use="required" />
-                    <xs:attribute name="y1" type="xs:double" use="required" />
-                    <xs:attribute name="x2" type="xs:double" use="required" />
-                    <xs:attribute name="y2" type="xs:double" use="required" />
-                </xs:restriction>
-            </xs:complexContent>
+            <xs:sequence>
+                <xs:element ref="Extension" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element ref="SerializedState" minOccurs="1" maxOccurs="1" />
+                <xs:group ref="PLOT-CONTENT" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="svgId" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 </xs:schema>
 """
 
-    fieldTypeNumeric = FakeFieldType("double", "continuous")
+    class _State(object):
+        pass
 
-    def prepare(self, state, dataTable, functionName, performanceTable, plotRange):
+    def prepare(self, state, dataTable, functionTable, performanceTable, plotRange):
         """Prepare a plot element for drawing.
 
         This stage consists of calculating all quantities and
@@ -96,23 +72,21 @@ class PlotSvgContent(PmmlPlotContent):
         @param plotRange: The bounding box of plot coordinates that this function will expand.
         """
 
+        performanceTable.begin("PlotStatic prepare")
         self._saveContext(dataTable)
 
-        x1 = float(self["x1"])
-        y1 = float(self["y1"])
-        x2 = float(self["x2"])
-        y2 = float(self["y2"])
+        serializedState = self.childOfTag("SerializedState")
+        emptyDataTable = serializedState.emptyDataTable()
 
-        if x1 >= x2 or y1 >= y2:
-            raise defs.PmmlValidationError("x1 must be less than x2 and y1 must be less than y2")
+        state.subStates = []
+        for plotContent in self.childrenOfClass(PmmlPlotContent):
+            # intentionally include all PerformanceTable entries below this one
+            # to segregate the the measurements of real drawing times from fake ones
+            subState = self._State()
+            plotContent.prepare(subState, emptyDataTable, functionTable, performanceTable, plotRange)
+            state.subStates.append(subState)
 
-        if plotRange.xStrictlyPositive or plotRange.yStrictlyPositive:
-            raise defs.PmmlValidationError("PlotSvgContent can only be properly displayed in linear coordinates")
-
-        plotRange.xminPush(x1, self.fieldTypeNumeric, sticky=True)
-        plotRange.yminPush(y1, self.fieldTypeNumeric, sticky=True)
-        plotRange.xmaxPush(x2, self.fieldTypeNumeric, sticky=True)
-        plotRange.ymaxPush(y2, self.fieldTypeNumeric, sticky=True)
+        performanceTable.end("PlotStatic prepare")
 
     def draw(self, state, plotCoordinates, plotDefinitions, performanceTable):
         """Draw the plot element.
@@ -133,29 +107,18 @@ class PlotSvgContent(PmmlPlotContent):
         """
 
         svg = SvgBinding.elementMaker
-
-        x1 = float(self["x1"])
-        y1 = float(self["y1"])
-        x2 = float(self["x2"])
-        y2 = float(self["y2"])
-
-        inlineSvg = self.getchildren()
-        fileName = self.get("fileName")
-        if len(inlineSvg) == 1 and fileName is None:
-            svgBinding = inlineSvg[0]
-        elif len(inlineSvg) == 0 and fileName is not None:
-            svgBinding = SvgBinding.loadXml(fileName)
-        else:
-            raise defs.PmmlValidationError("PlotSvgContent should specify an inline SVG or a fileName but not both or neither")
-        
-        sx1, sy1, sx2, sy2 = PlotSvgAnnotation.findSize(svgBinding)
-        tx1, ty1 = plotCoordinates(x1, y2)   # flip y
-        tx2, ty2 = plotCoordinates(x2, y1)
-
-        transform = "translate(%r, %r) scale(%r, %r)" % (tx1 - sx1, ty1 - sy1, (tx2 - tx1)/float(sx2 - sx1), (ty2 - ty1)/float(sy2 - sy1))
+        performanceTable.begin("PlotStatic draw")
 
         svgId = self.get("svgId")
         if svgId is None:
-            return svg.g(copy.deepcopy(svgBinding), transform=transform)
+            output = svg.g()
         else:
-            return svg.g(copy.deepcopy(svgBinding), id=svgId, transform=transform)
+            output = svg.g(id=svgId)
+
+        for subState, plotContent in zip(state.subStates, self.childrenOfClass(PmmlPlotContent)):
+            # intentionally include all PerformanceTable entries below this one
+            # to segregate the the measurements of real drawing times from fake ones
+            output.append(plotContent.draw(subState, plotCoordinates, plotDefinitions, performanceTable))
+
+        performanceTable.end("PlotStatic draw")
+        return output

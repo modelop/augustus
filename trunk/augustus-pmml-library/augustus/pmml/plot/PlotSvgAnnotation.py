@@ -21,6 +21,7 @@
 """This module defines the PlotSvgAnnotation class."""
 
 import re
+import copy
 
 from augustus.core.defs import defs
 from augustus.core.SvgBinding import SvgBinding
@@ -105,7 +106,7 @@ class PlotSvgAnnotation(PmmlPlotContentAnnotation):
         viewBox = svgBinding.get("viewBox")
 
         if viewBox is not None:
-            return map(float, svgBinding["viewBox"].split())
+            return map(float, viewBox.split())
         
         else:
             xmax, ymax = None, None
@@ -255,7 +256,7 @@ class PlotSvgAnnotation(PmmlPlotContentAnnotation):
             tx1, ty1 = plotCoordinates(subContentBox.x, subContentBox.y)
             tx2, ty2 = plotCoordinates(subContentBox.x + subContentBox.width, subContentBox.y + subContentBox.height)
 
-            output.extend(svgBinding.getchildren())
+            output.extend([copy.deepcopy(x) for x in svgBinding.getchildren()])
 
             output["transform"] = "translate(%r, %r) scale(%r, %r)" % (tx1 - sx1, ty1 - sy1, (tx2 - tx1)/float(sx2 - sx1), (ty2 - ty1)/float(sy2 - sy1))
 

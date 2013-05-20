@@ -282,6 +282,8 @@ class PlotWindow(PmmlPlotFrame):
                 content.append(r)
                 adjustForColorScale.append(r)
 
+        sawAnnotation = False
+        aboveTicks = []
         if subContentBox is not None:
             ### create a clipping region for the contents
 
@@ -340,6 +342,7 @@ class PlotWindow(PmmlPlotFrame):
                 ymax = float(overlay.get("ymax", ymax))
 
                 zmin, zmax = plotRange.zranges()
+
                 if zmin is None or zmax is None:
                     zmin = None
                     zmax = None
@@ -407,7 +410,8 @@ class PlotWindow(PmmlPlotFrame):
 
             if colorticksSource is not None:
                 colorticksSource = PlotCoordinatesWindow(plotCoordinates, 0.0, zmin, 1.0, zmax, subContentBox.x + subContentBox.width - xshiftForColorScale, subContentBox.y, xshiftForColorScale, subContentBox.height, flipy=True, xlog=False, ylog=zlog, xfieldType=cfieldType, yfieldType=cfieldType, xstrings=[], ystrings=[])
-                cx2 = borderRect.x + borderRect.width - float(style["margin-colorright"])
+
+                cx2 = plotCoordinates(borderRect.x + borderRect.width, borderRect.y)[0] - float(style["margin-colorright"])
                 if self["colorlabel"] is not None:
                     cx2 -= float(style.get("colorlabel-margin", style["label-margin"]))
 
@@ -438,6 +442,7 @@ class PlotWindow(PmmlPlotFrame):
             for overlayOrAnnotation in self.getchildren():
                 performanceTable.pause("PlotWindow")
 
+                whatToDraw = []
                 if isinstance(overlayOrAnnotation, PlotOverlay):
                     plotContents = overlayOrAnnotation.childrenOfClass(PmmlPlotContent)
                     for plotContent in plotContents:
@@ -448,11 +453,17 @@ class PlotWindow(PmmlPlotFrame):
                             plotCoordinatesWindow.zlog = zlog
                             plotCoordinatesWindow.gradient = gradient
 
-                        content.append(svg.g(plotContent.draw(states[plotContent], plotCoordinatesWindow, plotDefinitions, performanceTable), **clippedDataAttrib))
+                        whatToDraw.append(svg.g(plotContent.draw(states[plotContent], plotCoordinatesWindow, plotDefinitions, performanceTable), **clippedDataAttrib))
 
                 elif isinstance(overlayOrAnnotation, PmmlPlotContentAnnotation):
-                    content.append(overlayOrAnnotation.draw(dataTable, functionTable, performanceTable, annotationCoordinates, annotationBox, plotDefinitions))
-                
+                    whatToDraw.append(overlayOrAnnotation.draw(dataTable, functionTable, performanceTable, annotationCoordinates, annotationBox, plotDefinitions))
+                    sawAnnotation = True
+
+                if sawAnnotation:
+                    aboveTicks.extend(whatToDraw)
+                else:
+                    content.extend(whatToDraw)
+
                 performanceTable.unpause("PlotWindow")
 
             del states
@@ -817,6 +828,8 @@ class PlotWindow(PmmlPlotFrame):
 
             if rectStyle["stroke"] != "none":
                 content.append(svg.rect(**subAttrib))
+
+        content.extend(aboveTicks)
 
         performanceTable.end("PlotWindow")
         return svg.g(*content, **attrib)

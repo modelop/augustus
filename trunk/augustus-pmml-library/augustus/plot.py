@@ -46,7 +46,10 @@ from augustus.pmml.plot.PlotCanvas import PlotCanvas
 from augustus.pmml.plot.PlotLayout import PlotLayout
 from augustus.pmml.plot.PlotWindow import PlotWindow
 from augustus.pmml.plot.PlotLegendNumber import PlotLegendNumber
+from augustus.pmml.plot.PlotLegendSvg import PlotLegendSvg
 from augustus.pmml.plot.PlotOverlay import PlotOverlay
+from augustus.pmml.plot.PlotStatic import PlotStatic
+from augustus.pmml.odg.SerializedState import SerializedState
 
 def addPlotting(modelLoader):
     modelLoader.register("PlotFormula", PlotFormula)
@@ -54,6 +57,7 @@ def addPlotting(modelLoader):
     modelLoader.register("PlotNumericExpression", PlotNumericExpression)
     modelLoader.register("PlotSelection", PlotSelection)
     modelLoader.register("PlotLegendNumber", PlotLegendNumber)
+    modelLoader.register("PlotLegendSvg", PlotLegendSvg)
     modelLoader.register("PlotLegend", PlotLegend)
     modelLoader.register("PlotSvgAnnotation", PlotSvgAnnotation)
     modelLoader.register("PlotSvgContent", PlotSvgContent)
@@ -67,6 +71,8 @@ def addPlotting(modelLoader):
     modelLoader.register("PlotLayout", PlotLayout)
     modelLoader.register("PlotWindow", PlotWindow)
     modelLoader.register("PlotOverlay", PlotOverlay)
+    modelLoader.register("PlotStatic", PlotStatic)
+    modelLoader.register("SerializedState", SerializedState)
 
     E = ElementMaker(namespace=defs.XSD_NAMESPACE, nsmap={"xs": defs.XSD_NAMESPACE})
 
@@ -111,6 +117,7 @@ def addPlotting(modelLoader):
         <xs:element ref="PlotHeatMap" />
         <xs:element ref="PlotGuideLines" />
         <xs:element ref="PlotSvgContent" />
+        <xs:element ref="PlotStatic" />
     </xs:choice>
 </xs:group>
 """)
@@ -126,6 +133,7 @@ def addPlotting(modelLoader):
 <xs:group name="PLOT-LEGEND-CONTENT" xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:choice>
         <xs:element ref="PlotLegendNumber" />
+        <xs:element ref="PlotLegendSvg" />
     </xs:choice>
 </xs:group>
 """)

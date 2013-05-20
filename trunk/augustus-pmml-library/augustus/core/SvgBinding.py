@@ -79,7 +79,7 @@ class SvgBinding(XmlBinding):
             del kwds["prefix"]
         else:
             kwds["namespaces"]["svg"] = defs.SVG_NAMESPACE
-        return super(PmmlBinding, self).xpath(*args, **kwds)
+        return super(SvgBinding, self).xpath(*args, **kwds)
 
     ### view the graphic
 

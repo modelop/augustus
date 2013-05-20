@@ -443,6 +443,8 @@ class PlotCurve(PmmlPlotContent):
         element, so the drawing (which requires a finalized coordinate
         system) cannot begin yet.
 
+        This method modifies C{plotRange}.
+
         @type state: ad-hoc Python object
         @param state: State information that persists long enough to use quantities computed in C{prepare} in the C{draw} stage.  This is a work-around of lxml's refusal to let its Python instances maintain C{self} and it is unrelated to DataTableState.
         @type dataTable: DataTable
@@ -451,19 +453,14 @@ class PlotCurve(PmmlPlotContent):
         @param functionTable: Defines functions that may be used to transform data for plotting.
         @type performanceTable: PerformanceTable
         @param performanceTable: Measures and records performance (time and memory consumption) of the drawing process.
-        @type plotCoordinates: PlotCoordinates
-        @param plotCoordinates: The coordinate system in which this plot will be placed (not the coordinate system defined by the plot).
-        @type plotContentBox: PlotContentBox
-        @param plotContentBox: A bounding box in which this plot will be placed.
-        @type plotDefinitions: PlotDefinitions
-        @type plotDefinitions: The dictionary of key-value pairs that forms the <defs> section of the SVG document.
-        @rtype: SvgBinding
-        @return: An SVG fragment representing the fully drawn plot.
+        @type plotRange: PlotRange
+        @param plotRange: The bounding box of plot coordinates that this function will expand.
         """
 
         self.checkRoles(["y(x)", "dy/dx", "x(t)", "y(t)", "dx/dt", "dy/dt", "x", "y"])
 
         performanceTable.begin("PlotCurve prepare")
+        self._saveContext(dataTable)
         
         yofx = self.xpath("pmml:PlotFormula[@role='y(x)']")
         dydx = self.xpath("pmml:PlotFormula[@role='dy/dx']")

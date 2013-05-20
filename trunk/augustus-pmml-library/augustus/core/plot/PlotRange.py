@@ -162,7 +162,7 @@ class PlotRange(object):
         """
 
         self._checkFieldTypeX(fieldType)
-        if (not self.xStrictlyPositive or xmin > 0.0) and (self.xmin is None or xmin < self.xmin):
+        if NP("isfinite", xmin) and (not self.xStrictlyPositive or xmin > 0.0) and (self.xmin is None or xmin < self.xmin):
             self.xmin = xmin
             if sticky: self.xminSticky = xmin
 
@@ -192,7 +192,7 @@ class PlotRange(object):
         """
 
         self._checkFieldTypeY(fieldType)
-        if (not self.yStrictlyPositive or ymin > 0.0) and (self.ymin is None or ymin < self.ymin):
+        if NP("isfinite", ymin) and (not self.yStrictlyPositive or ymin > 0.0) and (self.ymin is None or ymin < self.ymin):
             self.ymin = ymin
             if sticky: self.yminSticky = ymin
 
@@ -222,7 +222,7 @@ class PlotRange(object):
         """
 
         self._checkFieldTypeZ(fieldType)
-        if (not self.zStrictlyPositive or zmin > 0.0) and (self.zmin is None or zmin < self.zmin):
+        if NP("isfinite", zmin) and (not self.zStrictlyPositive or zmin > 0.0) and (self.zmin is None or zmin < self.zmin):
             self.zmin = zmin
             if sticky: self.zminSticky = zmin
 
@@ -252,7 +252,7 @@ class PlotRange(object):
         """
 
         self._checkFieldTypeX(fieldType)
-        if (not self.xStrictlyPositive or xmax > 0.0) and (self.xmax is None or xmax > self.xmax):
+        if NP("isfinite", xmax) and (not self.xStrictlyPositive or xmax > 0.0) and (self.xmax is None or xmax > self.xmax):
             self.xmax = xmax
             if sticky: self.xmaxSticky = xmax
 
@@ -282,7 +282,7 @@ class PlotRange(object):
         """
 
         self._checkFieldTypeY(fieldType)
-        if (not self.yStrictlyPositive or ymax > 0.0) and (self.ymax is None or ymax > self.ymax):
+        if NP("isfinite", ymax) and (not self.yStrictlyPositive or ymax > 0.0) and (self.ymax is None or ymax > self.ymax):
             self.ymax = ymax
             if sticky: self.ymaxSticky = ymax
 
@@ -312,7 +312,7 @@ class PlotRange(object):
         """
 
         self._checkFieldTypeZ(fieldType)
-        if (not self.zStrictlyPositive or zmax > 0.0) and (self.zmax is None or zmax > self.zmax):
+        if NP("isfinite", zmax) and (not self.zStrictlyPositive or zmax > 0.0) and (self.zmax is None or zmax > self.zmax):
             self.zmax = zmax
             if sticky: self.zmaxSticky = zmax
 

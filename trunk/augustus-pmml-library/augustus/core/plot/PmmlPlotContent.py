@@ -56,6 +56,14 @@ class PmmlPlotContent(PmmlBinding, PlotStyleable):
 
         self.checkStyleProperties()
 
+    def _saveContext(self, dataTable):
+        stateId = self.get("stateId")
+        if stateId is not None:
+            context = {}
+            for fieldName, dataColumn in dataTable.fields.items():
+                context[fieldName] = (dataColumn.fieldType.dataType, dataColumn.fieldType.optype)
+            dataTable.state[stateId + ".context"] = context
+
     def prepare(self, state, dataTable, functionTable, performanceTable, plotRange):
         """Prepare a plot element for drawing.
 

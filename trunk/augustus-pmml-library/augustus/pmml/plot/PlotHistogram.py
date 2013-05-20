@@ -65,8 +65,8 @@ class PlotHistogram(PmmlPlotContent):
       - vertical: if "true", plot the "data" expression on the x
         axis and the counts/density/cumulative values on the y
         axis.
-      - visualization: one of "skyline", "smooth", "points",
-        "errorbars".
+      - visualization: one of "skyline", "polyline", "smooth",
+        "points", "errorbars".
       - gap: size of the space between histogram bars in SVG
         coordinates.
       - marker: marker to use for "points" visualization (see
@@ -117,6 +117,7 @@ class PlotHistogram(PmmlPlotContent):
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:enumeration value="skyline" />
+                        <xs:enumeration value="polyline" />
                         <xs:enumeration value="smooth" />
                         <xs:enumeration value="points" />
                         <xs:enumeration value="errorbars" />
@@ -325,6 +326,8 @@ class PlotHistogram(PmmlPlotContent):
         element, so the drawing (which requires a finalized coordinate
         system) cannot begin yet.
 
+        This method modifies C{plotRange}.
+
         @type state: ad-hoc Python object
         @param state: State information that persists long enough to use quantities computed in C{prepare} in the C{draw} stage.  This is a work-around of lxml's refusal to let its Python instances maintain C{self} and it is unrelated to DataTableState.
         @type dataTable: DataTable
@@ -333,14 +336,8 @@ class PlotHistogram(PmmlPlotContent):
         @param functionTable: Defines functions that may be used to transform data for plotting.
         @type performanceTable: PerformanceTable
         @param performanceTable: Measures and records performance (time and memory consumption) of the drawing process.
-        @type plotCoordinates: PlotCoordinates
-        @param plotCoordinates: The coordinate system in which this plot will be placed (not the coordinate system defined by the plot).
-        @type plotContentBox: PlotContentBox
-        @param plotContentBox: A bounding box in which this plot will be placed.
-        @type plotDefinitions: PlotDefinitions
-        @type plotDefinitions: The dictionary of key-value pairs that forms the <defs> section of the SVG document.
-        @rtype: SvgBinding
-        @return: An SVG fragment representing the fully drawn plot.
+        @type plotRange: PlotRange
+        @param plotRange: The bounding box of plot coordinates that this function will expand.
         """
 
         self.checkRoles(["data", "weight"])
@@ -366,6 +363,7 @@ class PlotHistogram(PmmlPlotContent):
             selection = NP("ones", len(dataTable), NP.dtype(bool))
 
         performanceTable.begin("PlotHistogram prepare")
+        self._saveContext(dataTable)
 
         if dataColumn.mask is not None:
             NP("logical_and", selection, NP(dataColumn.mask == defs.VALID), selection)
@@ -705,6 +703,22 @@ class PlotHistogram(PmmlPlotContent):
 
                         if i == len(state.count) - 1 or gap > 0.0 or (vertical and DX[i] != AX[inext]) or (not vertical and DY[i] != AY[inext]):
                             pathdata.append("L %r %r" % (DX[i], DY[i]))
+
+                style = self.getStyleState()
+                del style["marker-size"]
+                del style["marker-outline"]
+                output.append(svg.path(d=" ".join(pathdata), style=PlotStyle.toString(style)))
+
+            elif visualization == "polyline":
+                pathdata = []
+                for i in xrange(len(state.count)):
+                    if i == 0:
+                        pathdata.append("M %r %r" % (AX[i], AY[i]))
+
+                    pathdata.append("L %r %r" % ((BX[i] + CX[i])/2.0, (BY[i] + CY[i])/2.0))
+
+                    if i == len(state.count) - 1:
+                        pathdata.append("L %r %r" % (DX[i], DY[i]))
 
                 style = self.getStyleState()
                 del style["marker-size"]

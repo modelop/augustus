@@ -22,6 +22,8 @@
 
 import re
 import random
+import copy
+import math
 
 from lxml.etree import tostring, ElementTree
 
@@ -29,12 +31,14 @@ from augustus.core.defs import defs
 from augustus.core.Toolkit import Toolkit
 from augustus.core.PmmlBinding import PmmlBinding
 from augustus.core.SvgBinding import SvgBinding
+from augustus.core.PmmlPredicate import PmmlPredicate
 from augustus.core.PmmlExpression import PmmlExpression
 from augustus.core.plot.PmmlPlotFrame import PmmlPlotFrame
 from augustus.core.plot.PmmlPlotContentAnnotation import PmmlPlotContentAnnotation
 from augustus.core.plot.PmmlPlotContent import PmmlPlotContent
 from augustus.core.plot.PlotStyle import PlotStyle
 from augustus.pmml.odg.Formula import Formula
+from augustus.pmml.odg.SerializedState import SerializedState
 
 class PlotToolkit(Toolkit):
     """A Toolkit interface to the plotting elements, intended for
@@ -80,7 +84,7 @@ class PlotToolkit(Toolkit):
     bugs.
     """
 
-    importables = ["canvas", "layout", "window", "overlay", "scatter", "histogram", "curve", "parametricCurve", "pointsCurve", "parametricPointsCurve", "boxAndWhiskers", "grid", "line", "svgAnnotation", "svgContent", "heatmap", "heatmapHistogram",
+    importables = ["canvas", "layout", "window", "overlay", "scatter", "histogram", "curve", "parametricCurve", "pointsCurve", "parametricPointsCurve", "boxAndWhiskers", "grid", "line", "svgAnnotation", "svgContent", "heatmap", "heatmapHistogram", "makeStatic",
                    "makeGradient"]
 
     def __init__(self, modelLoader):
@@ -176,7 +180,7 @@ class PlotToolkit(Toolkit):
         self._splitFrames(contents, frames)
 
         E = self.modelLoader.elementMaker()
-        output = E.PlotCanvas(*frames, **canvasOptions)
+        output = E.PlotCanvas(*copy.deepcopy(frames), **canvasOptions)
         self.modelLoader.validate(output)
         return output
     
@@ -209,7 +213,7 @@ class PlotToolkit(Toolkit):
         self._splitFrames(contents, frames)
         
         E = self.modelLoader.elementMaker()
-        output = E.PlotCanvas(E.PlotLayout(*frames, **layoutOptions), **canvasOptions)
+        output = E.PlotCanvas(E.PlotLayout(*copy.deepcopy(frames), **layoutOptions), **canvasOptions)
         self.modelLoader.validate(output)
         return output
 
@@ -230,8 +234,30 @@ class PlotToolkit(Toolkit):
         This function does not create a hierarchy of plotting elements
         that can be viewed; it only creates the gradient.
 
+        The gradient C{name} can be one of
+
+          * "greyscale", "antigreyscale"
+          * "reds", "antireds"
+          * "greens", "antigreens"
+          * "blues", "antiblues"
+          * "rainbow", "antirainbow"
+          * "fire", "antifire"
+
+        or it can be one of the above followed by ":opacity", where
+        "opacity" can be one of
+
+          * a number between 0.0 (transparent) and 1.0 (opaque)
+          * "fadein": linearly increase from transparent at zmin to
+            opaque at zmax
+          * "fadeout": linearly decrease from opaque at zmin to
+            transparent at zmax
+          * "fadeinsqrt", "fadeoutsqrt": fade in/out more quickly
+            with a square-root function
+          * "fadeinsqr", "fadeoutsqr": fade in/out more slowly
+            with a square function.
+
         @type name: string
-        @param name: Can be one of "greyscale", "antigreyscale", "reds", "antireds", "greens", "antigreens", "blues", "antiblues", "rainbow", "antirainbow", "fire", "antifire".
+        @param name: See above.
         @rtype: list of PmmlBindings
         @return: The PlotGradientStops that describe a gradient.
         """
@@ -241,74 +267,102 @@ class PlotToolkit(Toolkit):
 
         if ":" in name:
             name, opacity = name.split(":")
+
+            if opacity == "fadein":
+                def getopacity(offset):
+                    return repr(offset)
+
+            elif opacity == "fadeout":
+                def getopacity(offset):
+                    return repr(1.0 - offset)
+
+            elif opacity == "fadeinsqrt":
+                def getopacity(offset):
+                    return repr(math.sqrt(offset))
+
+            elif opacity == "fadeoutsqrt":
+                def getopacity(offset):
+                    return repr(1.0 - math.sqrt(offset))
+
+            elif opacity == "fadeinsqr":
+                def getopacity(offset):
+                    return repr(offset**2)
+
+            elif opacity == "fadeoutsqr":
+                def getopacity(offset):
+                    return repr(1.0 - offset**2)
+
+            else:
+                float(opacity)
+
+                def getopacity(offset):
+                    return opacity
+
         else:
-            opacity = "1"
+            def getopacity(offset):
+                return "1"
 
         if name in ("grayscale", "greyscale"):
-            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity="0"))
-            output.append(E.PlotGradientStop(offset="0.10", red="0.9", green="0.9", blue="0.9", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="0", green="0", blue="0", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="0", green="0", blue="0", opacity=getopacity(1.00)))
 
         elif name in ("antigrayscale", "antigreyscale"):
-            output.append(E.PlotGradientStop(offset="0.00", red="0", green="0", blue="0", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="0", green="0", blue="0", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=getopacity(1.00)))
 
         elif name == "reds":
-            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity="0"))
-            output.append(E.PlotGradientStop(offset="0.10", red="1", green="0.9", blue="0.9", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="1", green="0", blue="0", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="1", green="0", blue="0", opacity=getopacity(1.00)))
 
         elif name == "antireds":
-            output.append(E.PlotGradientStop(offset="0.00", red="1", green="0", blue="0", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="1", green="0", blue="0", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=getopacity(1.00)))
 
         elif name == "greens":
-            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity="0"))
-            output.append(E.PlotGradientStop(offset="0.10", red="0.9", green="1", blue="0.9", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="0", green="1", blue="0", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="0", green="1", blue="0", opacity=getopacity(1.00)))
 
         elif name == "antigreens":
-            output.append(E.PlotGradientStop(offset="0.00", red="0", green="1", blue="0", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="0", green="1", blue="0", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=getopacity(1.00)))
 
         elif name == "blues":
-            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity="0"))
-            output.append(E.PlotGradientStop(offset="0.10", red="0.9", green="0.9", blue="1", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="0", green="0", blue="1", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="1", green="1", blue="1", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="0", green="0", blue="1", opacity=getopacity(1.00)))
 
         elif name == "antiblues":
-            output.append(E.PlotGradientStop(offset="0.00", red="0", green="0", blue="1", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="0", green="0", blue="1", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="1.00", red="1", green="1", blue="1", opacity=getopacity(1.00)))
 
         elif name == "rainbow":
-            output.append(E.PlotGradientStop(offset="0.00", red="0.00", green="0.00", blue="0.51", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.34", red="0.00", green="0.81", blue="1.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.61", red="0.87", green="1.00", blue="0.12", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.84", red="1.00", green="0.20", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="0.51", green="0.00", blue="0.00", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="0.00", green="0.00", blue="0.51", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="0.34", red="0.00", green="0.81", blue="1.00", opacity=getopacity(0.34)))
+            output.append(E.PlotGradientStop(offset="0.61", red="0.87", green="1.00", blue="0.12", opacity=getopacity(0.61)))
+            output.append(E.PlotGradientStop(offset="0.84", red="1.00", green="0.20", blue="0.00", opacity=getopacity(0.84)))
+            output.append(E.PlotGradientStop(offset="1.00", red="0.51", green="0.00", blue="0.00", opacity=getopacity(1.00)))
 
         elif name == "antirainbow":
-            output.append(E.PlotGradientStop(offset="0.00", red="0.51", green="0.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.34", red="1.00", green="0.20", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.61", red="0.87", green="1.00", blue="0.12", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.84", red="0.00", green="0.81", blue="1.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="0.00", green="0.00", blue="0.51", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="0.51", green="0.00", blue="0.00", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="0.34", red="1.00", green="0.20", blue="0.00", opacity=getopacity(0.34)))
+            output.append(E.PlotGradientStop(offset="0.61", red="0.87", green="1.00", blue="0.12", opacity=getopacity(0.61)))
+            output.append(E.PlotGradientStop(offset="0.84", red="0.00", green="0.81", blue="1.00", opacity=getopacity(0.84)))
+            output.append(E.PlotGradientStop(offset="1.00", red="0.00", green="0.00", blue="0.51", opacity=getopacity(1.00)))
 
         elif name == "fire":
-            output.append(E.PlotGradientStop(offset="0.00", red="0.00", green="0.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.15", red="0.50", green="0.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.30", red="1.00", green="0.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.40", red="1.00", green="0.20", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.60", red="1.00", green="1.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="1.00", green="1.00", blue="1.00", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="0.00", green="0.00", blue="0.00", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="0.15", red="0.50", green="0.00", blue="0.00", opacity=getopacity(0.15)))
+            output.append(E.PlotGradientStop(offset="0.30", red="1.00", green="0.00", blue="0.00", opacity=getopacity(0.30)))
+            output.append(E.PlotGradientStop(offset="0.40", red="1.00", green="0.20", blue="0.00", opacity=getopacity(0.40)))
+            output.append(E.PlotGradientStop(offset="0.60", red="1.00", green="1.00", blue="0.00", opacity=getopacity(0.60)))
+            output.append(E.PlotGradientStop(offset="1.00", red="1.00", green="1.00", blue="1.00", opacity=getopacity(1.00)))
 
         elif name == "antifire":
-            output.append(E.PlotGradientStop(offset="0.00", red="1.00", green="1.00", blue="1.00", opacity="0"))
-            output.append(E.PlotGradientStop(offset="0.15", red="1.00", green="1.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.30", red="1.00", green="0.20", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.40", red="1.00", green="0.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="0.60", red="0.50", green="0.00", blue="0.00", opacity=opacity))
-            output.append(E.PlotGradientStop(offset="1.00", red="0.00", green="0.00", blue="0.00", opacity=opacity))
+            output.append(E.PlotGradientStop(offset="0.00", red="1.00", green="1.00", blue="1.00", opacity=getopacity(0.00)))
+            output.append(E.PlotGradientStop(offset="0.15", red="1.00", green="1.00", blue="0.00", opacity=getopacity(0.15)))
+            output.append(E.PlotGradientStop(offset="0.30", red="1.00", green="0.20", blue="0.00", opacity=getopacity(0.30)))
+            output.append(E.PlotGradientStop(offset="0.40", red="1.00", green="0.00", blue="0.00", opacity=getopacity(0.40)))
+            output.append(E.PlotGradientStop(offset="0.60", red="0.50", green="0.00", blue="0.00", opacity=getopacity(0.60)))
+            output.append(E.PlotGradientStop(offset="1.00", red="0.00", green="0.00", blue="0.00", opacity=getopacity(1.00)))
 
         else:
             raise LookupError("Unrecognized gradient name: \"%s\"" % name)
@@ -352,7 +406,7 @@ class PlotToolkit(Toolkit):
         else:
             overlayAnnotations[0].extend(plotContents)
 
-        output = E.PlotCanvas(E.PlotWindow(*(overlayAnnotations + gradient), **windowOptions), **canvasOptions)
+        output = E.PlotCanvas(E.PlotWindow(*(copy.deepcopy(overlayAnnotations) + gradient), **windowOptions), **canvasOptions)
         self.modelLoader.validate(output)
         return output
 
@@ -375,6 +429,12 @@ class PlotToolkit(Toolkit):
         @return: A PlotCanvas containing the PlotOverlay.
         """
 
+        if "gradient" in options:
+            gradient = self.makeGradient(options["gradient"])
+            del options["gradient"]
+        else:
+            gradient = []
+
         overlayOptions, nextOptions = self._splitOptions("PlotOverlay", options)
         windowOptions, nextOptions = self._splitOptions("PlotWindow", nextOptions, addSvgId=True)
         canvasOptions, unrecognizedOptions = self._splitOptions("PlotCanvas", nextOptions, addSvgId=True)
@@ -388,7 +448,7 @@ class PlotToolkit(Toolkit):
         self._splitPlotContents(contents, plotContents)
 
         E = self.modelLoader.elementMaker()
-        output = E.PlotCanvas(E.PlotWindow(E.PlotOverlay(*plotContents, **overlayOptions), **windowOptions), **canvasOptions)
+        output = E.PlotCanvas(E.PlotWindow(*([E.PlotOverlay(*copy.deepcopy(plotContents), **overlayOptions)] + gradient), **windowOptions), **canvasOptions)
         self.modelLoader.validate(output)
         return output
 
@@ -436,7 +496,7 @@ class PlotToolkit(Toolkit):
             else:
                 raise TypeError("selection must be None, a string, a PmmlPredicate, or a PmmlExpression, not %r" % selection)
 
-            if isinstance(selection, PmmlExpression):
+            if isinstance(selection, (PmmlPredicate, PmmlExpression)):
                 newSelection = E.PlotSelection()
                 if self._convertToPredicate(E, selection, newSelection):
                     selection = newSelection
@@ -978,7 +1038,7 @@ class PlotToolkit(Toolkit):
         E = self.modelLoader.elementMaker()
 
         if isinstance(svg, SvgBinding):
-            svgWrapper = E.PlotSvgAnnotation(svg, **svgOptions)
+            svgWrapper = E.PlotSvgAnnotation(copy.deepcopy(svg), **svgOptions)
         elif isinstance(svg, basestring):
             svgWrapper = E.PlotSvgAnnotation(fileName=svg, **svgOptions)
         else:
@@ -1020,7 +1080,7 @@ class PlotToolkit(Toolkit):
         E = self.modelLoader.elementMaker()
 
         if isinstance(svg, SvgBinding):
-            svgWrapper = E.PlotSvgContent(svg, x1=repr(x1), y1=repr(y1), x2=repr(x2), y2=repr(y2), **svgOptions)
+            svgWrapper = E.PlotSvgContent(copy.deepcopy(svg), x1=repr(x1), y1=repr(y1), x2=repr(x2), y2=repr(y2), **svgOptions)
         elif isinstance(svg, basestring):
             svgWrapper = E.PlotSvgContent(fileName=svg, x1=repr(x1), y1=repr(y1), x2=repr(x2), y2=repr(y2), **svgOptions)
         else:
@@ -1161,5 +1221,46 @@ class PlotToolkit(Toolkit):
             heatmapPlot.append(selection)
 
         output = E.PlotCanvas(E.PlotWindow(E.PlotOverlay(heatmapPlot, **overlayOptions), *gradient, **windowOptions), **canvasOptions)
+        self.modelLoader.validate(output)
+        return output
+
+    def makeStatic(self, dataTableState, *contents, **options):
+        """Save the current state of a set of plots as a PlotStatic.
+
+        @type dataTableState: DataTableState
+        @param dataTableState: The current state of execution to save for this plot.
+        @param *contents: Plotting elements to save and embed in the PlotStatic.
+        @param **options: Options for a PlotOverlay, PlotWindow, or PlotCanvas.
+        @raise PmmlValidationError: If the resulting configuration is not valid PMML, this function raises an error.        
+        @rtype: PmmlBinding
+        @return: A PlotCanvas containing the PlotStatic.
+        """
+
+        staticOptions, nextOptions = self._splitOptions("PlotStatic", options, addSvgId=True, addStateId=False)
+        overlayOptions, nextOptions = self._splitOptions("PlotOverlay", nextOptions)
+        windowOptions, nextOptions = self._splitOptions("PlotWindow", nextOptions, addSvgId=True)
+        canvasOptions, unrecognizedOptions = self._splitOptions("PlotCanvas", nextOptions, addSvgId=True)
+        if len(unrecognizedOptions) > 0:
+            raise TypeError("Unrecognized options: %s" % " ".join(unrecognizedOptions))
+
+        if "plotName" not in canvasOptions:
+            canvasOptions["plotName"] = canvasOptions["svgId"]
+
+        plotContents = []
+        self._splitPlotContents(contents, plotContents)
+
+        restriction = []
+        for plotContent in plotContents:
+            stateId = plotContent.get("stateId")
+            if stateId is not None:
+                restriction.append(stateId)
+                restriction.append(stateId + ".context")
+
+        serializedState = SerializedState.serializeState(self.modelLoader, dataTableState, restriction=restriction)
+        plotContents.insert(0, serializedState)
+
+        E = self.modelLoader.elementMaker()
+        output = E.PlotCanvas(E.PlotWindow(E.PlotOverlay(E.PlotStatic(*copy.deepcopy(plotContents), **staticOptions), **overlayOptions), **windowOptions), **canvasOptions)
+
         self.modelLoader.validate(output)
         return output
