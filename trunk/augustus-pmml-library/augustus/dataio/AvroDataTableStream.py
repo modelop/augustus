@@ -50,6 +50,8 @@ class AvroDataTableStream(object):
             raise RuntimeError("The optional augustus.avrostream module is required for \"AvroDataTableStream\" but it hasn't been installed;%sRecommendation: re-build Augustus with \"python setup.py install --with-avrostream\"" % (os.linesep, os.linesep))
 
         self.fileNames = glob.glob(fileNames)
+        if len(self.fileNames) == 0:
+            raise IOError("No files matched the fileName pattern \"%s\"" % fileNames)
 
         self.schema = None
         for fileName in self.fileNames:

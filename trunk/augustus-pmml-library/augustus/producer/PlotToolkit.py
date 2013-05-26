@@ -696,7 +696,7 @@ class PlotToolkit(Toolkit):
         @type high: number
         @param high: The maximum x sampled.
         @type expr: string
-        @param expr: The expression to evaluate and draw.
+        @param expr: The y(x) expression to evaluate and draw, with "x" being the independent variable.
         @type deriv: string or None
         @param deriv: The derivative of the expression, for smoother curves with fewer points.
         @param **options: Options for a PlotCurve, PlotOverlay, PlotWindow, or PlotCanvas.
@@ -733,9 +733,9 @@ class PlotToolkit(Toolkit):
         @type high: number
         @param high: The maximum t sampled.
         @type x: string
-        @param x: The x(t) expression to evaluate and draw.
+        @param x: The x(t) expression to evaluate and draw, with "t" being the independent variable.
         @type y: string
-        @param y: The y(t) expression to evaluate and draw.
+        @param y: The y(t) expression to evaluate and draw, with "t" being the independent variable.
         @type dx: string or None
         @param dx: The dx/dt derivative of the expression, for smoother curves with fewer points.
         @type dy: string or None
@@ -1106,7 +1106,7 @@ class PlotToolkit(Toolkit):
         @type yhigh: number
         @param yhigh: The top edge of the heatmap.
         @type zexpr: string or PmmlExpression
-        @param zexpr: The z (color) expression to evaluate and plot.
+        @param zexpr: The z(x,y) expression to evaluate and plot, with "x" and "y" being the independent variables.
         @param **options: Options for a PlotHeatMap, PlotOverlay, PlotWindow, or PlotCanvas.
         @raise PmmlValidationError: If the resulting configuration is not valid PMML, this function raises an error.        
         @rtype: PmmlBinding
