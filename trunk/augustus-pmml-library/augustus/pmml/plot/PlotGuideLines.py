@@ -23,6 +23,7 @@
 from augustus.core.defs import defs
 from augustus.core.SvgBinding import SvgBinding
 from augustus.core.NumpyInterface import NP
+from augustus.core.FakeFieldType import FakeFieldType
 from augustus.core.plot.PmmlPlotContent import PmmlPlotContent
 from augustus.core.plot.PlotStyle import PlotStyle
 
@@ -133,6 +134,21 @@ class PlotGuideLines(PmmlPlotContent):
         """
 
         self._saveContext(dataTable)
+
+        for directive in self.xpath("pmml:PlotLine"):
+            try:
+                x1 = float(directive["x1"])
+                y1 = float(directive["y1"])
+                x2 = float(directive["x2"])
+                y2 = float(directive["y2"])
+            except ValueError:
+                pass
+            else:
+                fieldType = FakeFieldType("double", "continuous")
+                plotRange.xminPush(x1, fieldType, sticky=False)
+                plotRange.yminPush(y1, fieldType, sticky=False)
+                plotRange.xmaxPush(x2, fieldType, sticky=False)
+                plotRange.ymaxPush(y2, fieldType, sticky=False)
 
     def draw(self, state, plotCoordinates, plotDefinitions, performanceTable):
         """Draw the plot element.

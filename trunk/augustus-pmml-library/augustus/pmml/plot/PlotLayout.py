@@ -165,8 +165,8 @@ class PlotLayout(PmmlPlotFrame):
             cellHeight = subContentBox.height / float(rows)
 
             plotFramesIndex = 0
-            for horizCell in xrange(cols):
-                for vertCell in xrange(rows):
+            for vertCell in xrange(rows):
+                for horizCell in xrange(cols):
                     if plotFramesIndex < len(plotFrames):
                         plotFrame = plotFrames[plotFramesIndex]
                         cellX = subContentBox.x + horizCell*cellWidth

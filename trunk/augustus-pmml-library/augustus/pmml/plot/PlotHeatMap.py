@@ -190,7 +190,7 @@ class PlotHeatMap(PmmlPlotContent):
             plotRange.zmaxPush(gooddata.max(), zdataColumn.fieldType, sticky=False)
 
             state.zdata = zdataColumn.data
-            state.zmask = selection
+            state.zmask = NP("logical_not", selection) * defs.INVALID
 
         elif len(zofxy) == 0 and len(xexpr) == 1 and len(yexpr) == 1:
             performanceTable.pause("PlotHeatMap prepare")
@@ -468,10 +468,9 @@ class PlotHeatMap(PmmlPlotContent):
             greendata[selection] = NP("array", NP(NP(subset * ((greens[index + 1] - greens[index]) * norm)) + greens[index]), dtype=NP.uint8)
             bluedata[selection] = NP("array", NP(NP(subset * ((blues[index + 1] - blues[index]) * norm)) + blues[index]), dtype=NP.uint8)
             alphadata[selection] = NP("array", NP(NP(subset * ((alphas[index + 1] - alphas[index]) * norm)) + alphas[index]), dtype=NP.uint8)
-            
+
         badpixels = NP("isnan", normalized)
         NP("logical_or", badpixels, NP("isinf", normalized), badpixels)
-
         if state.zmask is not None:
             NP("logical_or", badpixels, NP(state.zmask != defs.VALID), badpixels)
 
