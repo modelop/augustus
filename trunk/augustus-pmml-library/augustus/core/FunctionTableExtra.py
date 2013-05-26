@@ -41,7 +41,7 @@ class FunctionTableExtra(FunctionTable):
 
     def _defineBuiltins(self):
         super(FunctionTableExtra, self)._defineBuiltins()
-        for fcnClass in self.Between, self.NotBetween, self.Like, self.FloorDivision, self.Negative, self.Modulo, self.FModulo, self.LogicalXOr, self.Sine, self.Cosine, self.SineN, self.CosineN, self.Tangent, self.ArcSine, self.ArcCosine, self.ArcTangent, self.ArcTangent2, self.HyperbolicSine, self.HyperbolicCosine, self.HyperbolicTangent, self.HyperbolicArcSine, self.HyperbolicArcCosine, self.HyperbolicArcTangent:
+        for fcnClass in self.Between, self.NotBetween, self.Like, self.FloorDivision, self.Modulo, self.FModulo, self.LogicalXOr, self.Sine, self.Cosine, self.SineN, self.CosineN, self.Tangent, self.ArcSine, self.ArcCosine, self.ArcTangent, self.ArcTangent2, self.HyperbolicSine, self.HyperbolicCosine, self.HyperbolicTangent, self.HyperbolicArcSine, self.HyperbolicArcCosine, self.HyperbolicArcTangent:
             self[fcnClass.name] = fcnClass()
 
     class Between(Function):
@@ -183,20 +183,6 @@ class FunctionTableExtra(FunctionTable):
             mask = DataColumn.mapAnyMissingInvalid([zeroDenominators, left.mask, right.mask])
 
             dataColumn = DataColumn(fieldType, NP("floor_divide", left.data, right.data), mask)
-
-            performanceTable.end("built-in \"%s\"" % self.name)
-            return dataColumn
-
-    class Negative(Function):
-        name = "negative"
-        signatures = {(FLOAT,): FLOAT, (INTEGER,): INTEGER}
-
-        def evaluate(self, dataTable, functionTable, performanceTable, arguments):
-            arguments = [x.evaluate(dataTable, functionTable, performanceTable) for x in arguments]
-            performanceTable.begin("built-in \"%s\"" % self.name)
-
-            fieldType = self.fieldTypeFromSignature(arguments)
-            dataColumn = DataColumn(fieldType, NP("negative", arguments[0].data), arguments[0].mask)
 
             performanceTable.end("built-in \"%s\"" % self.name)
             return dataColumn

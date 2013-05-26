@@ -46,7 +46,7 @@ class FunctionTable(dict):
         self._defineBuiltins()
 
     def _defineBuiltins(self):
-        for fcnClass in self.Addition, self.Subtraction, self.Multiplication, self.TrueDivision, self.Minimum, self.Maximum, self.Sum, self.Average, self.Median, self.Product, self.LogBase10, self.LogBaseE, self.SquareRoot, self.Absolute, self.Exponential, self.Power, self.Threshold, self.Floor, self.Ceiling, self.Round, self.IsMissing, self.IsNotMissing, self.Equal, self.NotEqual, self.LessThan, self.LessOrEqual, self.GreaterThan, self.GreaterOrEqual, self.LogicalAnd, self.LogicalOr, self.LogicalNot, self.Contains, self.NotContains, self.IfThenElse, self.Uppercase, self.Lowercase, self.Substring, self.TrimBlanks, self.FormatNumber, self.FormatDatetime, self.DateDaysSinceYear, self.DateSecondsSinceYear, self.DateSecondsSinceMidnight:
+        for fcnClass in self.Addition, self.Subtraction, self.Multiplication, self.TrueDivision, self.Minimum, self.Maximum, self.Sum, self.Average, self.Median, self.Product, self.LogBase10, self.LogBaseE, self.SquareRoot, self.Absolute, self.Exponential, self.Power, self.Threshold, self.Floor, self.Ceiling, self.Round, self.IsMissing, self.IsNotMissing, self.Equal, self.NotEqual, self.LessThan, self.LessOrEqual, self.GreaterThan, self.GreaterOrEqual, self.LogicalAnd, self.LogicalOr, self.LogicalNot, self.Contains, self.NotContains, self.IfThenElse, self.Uppercase, self.Lowercase, self.Substring, self.TrimBlanks, self.FormatNumber, self.FormatDatetime, self.DateDaysSinceYear, self.DateSecondsSinceYear, self.DateSecondsSinceMidnight, self.Negative:
             self[fcnClass.name] = fcnClass()
 
     class Addition(Function):
@@ -1431,3 +1431,18 @@ class FunctionTable(dict):
             
             performanceTable.end("built-in \"%s\"" % self.name)
             return DataColumn(fieldType, data, dateTimes.mask)
+
+    class Negative(Function):   # technically not in the PMML spec, but Formula needs it so often that it's inconvenient to leave out
+        name = "negative"
+        signatures = {(FLOAT,): FLOAT, (INTEGER,): INTEGER}
+
+        def evaluate(self, dataTable, functionTable, performanceTable, arguments):
+            arguments = [x.evaluate(dataTable, functionTable, performanceTable) for x in arguments]
+            performanceTable.begin("built-in \"%s\"" % self.name)
+
+            fieldType = self.fieldTypeFromSignature(arguments)
+            dataColumn = DataColumn(fieldType, NP("negative", arguments[0].data), arguments[0].mask)
+
+            performanceTable.end("built-in \"%s\"" % self.name)
+            return dataColumn
+
