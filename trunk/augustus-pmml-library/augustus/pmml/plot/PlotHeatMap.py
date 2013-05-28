@@ -277,6 +277,9 @@ class PlotHeatMap(PmmlPlotContent):
 
             if len(zmean) == 0 and len(zweight) == 0:
                 histogram, xedges, yedges = NP("histogram2d", ydataColumn.data, xdataColumn.data, bins=(ybins, xbins), range=[[ylow, yhigh], [xlow, xhigh]], weights=mask)
+                if len(dataTable) == 0:
+                    # work around Numpy <= 1.6.1 bug
+                    histogram = NP("zeros", (ybins, xbins), dtype=NP.dtype(float))
 
                 if "histogram" in persistentState:
                     persistentState["histogram"] = NP(persistentState["histogram"] + histogram)

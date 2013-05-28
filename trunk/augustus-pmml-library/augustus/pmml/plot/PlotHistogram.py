@@ -513,10 +513,13 @@ class PlotHistogram(PmmlPlotContent):
             binAssignments[NP(binAssignments > numBins)] = numBins
             binAssignments[NP(binAssignments < 0)] = numBins
             
-            if weight is None:
-                count = NP("bincount", binAssignments)
+            if len(binAssignments) == 0:
+                count = NP("empty", 0, dtype=NP.dtype(float))
             else:
-                count = NP("bincount", binAssignments, weights=weight)
+                if weight is None:
+                    count = NP("bincount", binAssignments)
+                else:
+                    count = NP("bincount", binAssignments, weights=weight)
 
             if len(count) < numBins:
                 padded = NP("zeros", numBins, dtype=NP.dtype(float))

@@ -109,6 +109,8 @@ class PlotWindow(PmmlPlotFrame):
         the tick labels and axis labels.
       - label-color, xlabel-color, ylabel-color, toplabel-color,
         rightlabel-color, colorlabel-color: label color.
+      - ticklabel-color, xticklabel-color, yticklabel-color, topticklabel-color,
+        rightticklabel-color, colorticklabel-color: ticklabel color.
       - tick-color, xtick-color, ytick-color, toptick-color,
         righttick-color, colortick-color: tick color.
       - tick-length, xtick-length, ytick-length, toptick-length
@@ -138,6 +140,7 @@ class PlotWindow(PmmlPlotFrame):
                        "border-color", "border-dasharray", "border-dashoffset", "border-linecap", "border-linejoin", "border-miterlimit", "border-opacity", "border-width",
                        "font", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight",
                        "label-color", "xlabel-color", "ylabel-color", "toplabel-color", "rightlabel-color", "colorlabel-color",
+                       "ticklabel-color", "xticklabel-color", "yticklabel-color", "topticklabel-color", "rightticklabel-color", "colorticklabel-color",
                        "tick-color", "xtick-color", "ytick-color", "toptick-color", "righttick-color", "colortick-color",
                        "tick-length", "xtick-length", "ytick-length", "toptick-length", "righttick-length", "colortick-length",
                        "minitick-length", "xminitick-length", "yminitick-length", "topminitick-length", "rightminitick-length", "colorminitick-length",
@@ -147,7 +150,7 @@ class PlotWindow(PmmlPlotFrame):
                        ]
 
     styleDefaults = {"background": "none", "border-color": "black", "margin": "10", "margin-bottom": "60", "margin-left": "100", "margin-right": "50", "margin-colorright": "50", "padding": "0", "border-width": "2", "font-size": "25.0",
-                     "label-color": "black", "tick-color": "black",
+                     "label-color": "black", "ticklabel-color": "black", "tick-color": "black",
                      "tick-length": "20.0", "minitick-length": "10.0",
                      "xtick-label-xoffset": "0.0", "xtick-label-yoffset": "15.0",
                      "ytick-label-xoffset": "-15.0", "ytick-label-yoffset": "0.0",
@@ -596,6 +599,7 @@ class PlotWindow(PmmlPlotFrame):
                 else:
                     xticksGroup = svg.g(id=(svgId + ".xticks"))
 
+                xticklabelColor = style.get("xticklabel-color", style["ticklabel-color"])
                 xtickColor = style.get("xtick-color", style["tick-color"])
                 xtickLength = float(style.get("xtick-length", style["tick-length"]))
                 xminitickLength = float(style.get("xminitick-length", style["minitick-length"]))
@@ -608,7 +612,7 @@ class PlotWindow(PmmlPlotFrame):
 
                 if xticksDraw in ("parallel-labels", "perpendicular-labels"):
                     xoffset, yoffset = float(style["xtick-label-xoffset"]), float(style["xtick-label-yoffset"])
-                    textStyle["fill"] = xtickColor
+                    textStyle["fill"] = xticklabelColor
 
                     for x, label in transformedTicks.items():
                         if x1 - eps < x < x2 + eps:
@@ -639,6 +643,7 @@ class PlotWindow(PmmlPlotFrame):
                 else:
                     yticksGroup = svg.g(id=(svgId + ".yticks"))
 
+                yticklabelColor = style.get("yticklabel-color", style["ticklabel-color"])
                 ytickColor = style.get("ytick-color", style["tick-color"])
                 ytickLength = float(style.get("ytick-length", style["tick-length"]))
                 yminitickLength = float(style.get("yminitick-length", style["minitick-length"]))
@@ -651,7 +656,7 @@ class PlotWindow(PmmlPlotFrame):
 
                 if yticksDraw in ("parallel-labels", "perpendicular-labels"):
                     xoffset, yoffset = float(style["ytick-label-xoffset"]), float(style["ytick-label-yoffset"])
-                    textStyle["fill"] = ytickColor
+                    textStyle["fill"] = yticklabelColor
 
                     for y, label in transformedTicks.items():
                         if y1 - eps < y < y2 + eps:
@@ -682,6 +687,7 @@ class PlotWindow(PmmlPlotFrame):
                 else:
                     topticksGroup = svg.g(id=(svgId + ".topticks"))
 
+                topticklabelColor = style.get("topticklabel-color", style["ticklabel-color"])
                 toptickColor = style.get("toptick-color", style["tick-color"])
                 toptickLength = float(style.get("toptick-length", style["tick-length"]))
                 topminitickLength = float(style.get("topminitick-length", style["minitick-length"]))
@@ -694,7 +700,7 @@ class PlotWindow(PmmlPlotFrame):
 
                 if topticksDraw in ("parallel-labels", "perpendicular-labels"):
                     xoffset, yoffset = float(style["toptick-label-xoffset"]), float(style["toptick-label-yoffset"])
-                    textStyle["fill"] = toptickColor
+                    textStyle["fill"] = topticklabelColor
 
                     for x, label in transformedTicks.items():
                         if x1 - eps < x < x2 + eps:
@@ -725,6 +731,7 @@ class PlotWindow(PmmlPlotFrame):
                 else:
                     rightticksGroup = svg.g(id=(svgId + ".rightticks"))
 
+                rightticklabelColor = style.get("rightticklabel-color", style["ticklabel-color"])
                 righttickColor = style.get("righttick-color", style["tick-color"])
                 righttickLength = float(style.get("righttick-length", style["tick-length"]))
                 rightminitickLength = float(style.get("rightminitick-length", style["minitick-length"]))
@@ -737,7 +744,7 @@ class PlotWindow(PmmlPlotFrame):
 
                 if rightticksDraw in ("parallel-labels", "perpendicular-labels"):
                     xoffset, yoffset = float(style["righttick-label-xoffset"]), float(style["righttick-label-yoffset"])
-                    textStyle["fill"] = righttickColor
+                    textStyle["fill"] = rightticklabelColor
 
                     for y, label in transformedTicks.items():
                         if y1 - eps < y < y2 + eps:
@@ -787,6 +794,7 @@ class PlotWindow(PmmlPlotFrame):
                 gradientStyle["fill"] = "url(#%s)" % linearGradient["id"]
                 colorticksGroup.append(svg.rect(**{"x": repr(cx2 - float(style["colorscale-width"])), "y": repr(y1), "width": style["colorscale-width"], "height": repr(y2 - y1), "style": PlotStyle.toString(gradientStyle)}))
 
+                colorticklabelColor = style.get("colorticklabel-color", style["ticklabel-color"])
                 colortickColor = style.get("colortick-color", style["tick-color"])
                 colortickLength = float(style.get("colortick-length", style["tick-length"]))
                 colorminitickLength = float(style.get("colorminitick-length", style["minitick-length"]))
@@ -799,7 +807,7 @@ class PlotWindow(PmmlPlotFrame):
 
                 if colorticksDraw in ("parallel-labels", "perpendicular-labels"):
                     xoffset, yoffset = float(style["colortick-label-xoffset"]), float(style["colortick-label-yoffset"])
-                    textStyle["fill"] = colortickColor
+                    textStyle["fill"] = colorticklabelColor
 
                     for y, label in transformedTicks.items():
                         if y1 - eps < y < y2 + eps:

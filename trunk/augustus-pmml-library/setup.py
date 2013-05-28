@@ -22,7 +22,8 @@ try:
     import lxml
 except ImportError:
     sys.stderr.write("Augustus requires numpy and lxml:\n    sudo apt-get install python-numpy python-lxml\n")
-    sys.exit(-1)
+    if not raw_input("Continue anyway? (y/N) ").lower().startswith("y"):
+        sys.exit(-1)
 
 ext_modules = []
 
