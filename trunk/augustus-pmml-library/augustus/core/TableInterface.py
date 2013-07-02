@@ -21,6 +21,7 @@
 """This module defines the TableInterface class."""
 
 from lxml.etree import iterparse
+from lxml.etree import XMLSyntaxError
 
 class TableInterface(object):
     """TableInterface is the base class for PMML elements that contain
@@ -44,14 +45,18 @@ class TableInterface(object):
            @return: Each item from the iterator is a dictionary mapping tagnames to string values.
            """
 
-        for event, row in iterparse(file, events=("end",), tag="row"):
-            output = dict((child.tag, child.text.strip() if child.text is not None else "") for child in row)
+        try:
+            for event, row in iterparse(file, events=("end",), tag="row"):
+                output = dict((child.tag, child.text.strip() if child.text is not None else "") for child in row)
 
-            row.clear()
-            while row.getprevious() is not None:
-                del row.getparent()[0]
+                row.clear()
+                while row.getprevious() is not None:
+                    del row.getparent()[0]
 
-            yield output
+                yield output
+        except XMLSyntaxError as err:  # This particular error is a bug in lxml: {libxml2.x86_64 0:2.7.8-9.fc17, libxml2-python.x86_64 0:2.7.8-9.fc17, python-lxml.x86_64 0:3.2.1-1.fc17}
+            if err.msg is not None:    # See https://bugs.launchpad.net/lxml/+bug/1185701 and
+                raise                  #     https://bugzilla.redhat.com/show_bug.cgi?id=874546
 
     def iterateOverMemory(self, element):
         """Iterate over a table that has been loaded into memory.
