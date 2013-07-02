@@ -119,7 +119,7 @@ def erf(array):
     return NP(sign * y) # erf(-x) = -erf(x)
 
 try:
-    import scipy.special.erf
+    import scipy.special
 except ImportError:
     pass
 else:
@@ -154,7 +154,7 @@ def gammaln(array):
     return NP(tmp + NP("log", NP(gammaln_stp*ser)))
 
 try:
-    import scipy.special.gammaln
+    import scipy.special
 except ImportError:
     pass
 else:
@@ -231,7 +231,7 @@ def gammainc(a, array):
     return output
 
 try:
-    import scipy.special.gammainc
+    import scipy.special
 except ImportError:
     pass
 else:
