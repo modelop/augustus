@@ -505,7 +505,7 @@ class PlotToolkit(Toolkit):
 
         return selection
 
-    def scatter(self, xexpr, yexpr, selection=None, xerr=None, xerrup=None, yerr=None, yerrup=None, svg=None, **options):
+    def scatter(self, xexpr, yexpr, selection=None, xerr=None, xerrup=None, yerr=None, yerrup=None, weight=None, svg=None, **options):
         """Create a PlotScatter.
 
         @type xexpr: string or PmmlExpression
@@ -524,6 +524,8 @@ class PlotToolkit(Toolkit):
         @param yerr: The expression to evaluate for symmetric y error bars or asymmetric low y error bars.
         @type yerrup: string, PmmlExpression, or None
         @param yerrup: The expression to evaluate for asymmetric high y error bars.
+        @type weight: string, PmmlExpression, or None
+        @param weight: The expression to evaluate and use for the opacity of each point; the user must ensure that it ranges between 0 and 1.
         @type svg: SvgBinding or None
         @param svg: The SVG object for pictogram markers.
         @param **options: Options for a PlotScatter, PlotOverlay, PlotWindow, or PlotCanvas.
@@ -602,6 +604,14 @@ class PlotToolkit(Toolkit):
             else:
                 raise TypeError("yerrup must be a string or PmmlExpression, not %r" % yerrup)
 
+        if weight is not None:
+            if isinstance(weight, basestring):
+                weight = Formula.expansion(self.modelLoader, weight)
+            elif isinstance(weight, PmmlExpression):
+                pass
+            else:
+                raise TypeError("weight must be a string or PmmlExpression, not %r" % weight)
+
         E = self.modelLoader.elementMaker()
 
         selection = self._transformSelection(E, selection)
@@ -619,6 +629,9 @@ class PlotToolkit(Toolkit):
                 scatterPlot.append(E.PlotNumericExpression(yerr, role="y-errorbar-down"))
             else:
                 scatterPlot.append(E.PlotNumericExpression(yerr, role="y-errorbar"))
+        if weight is not None:
+            scatterPlot.append(E.PlotNumericExpression(weight, role="weight"))
+
         if selection is not None:
             scatterPlot.append(selection)
         if isinstance(svg, basestring):
@@ -768,11 +781,13 @@ class PlotToolkit(Toolkit):
         self.modelLoader.validate(output)
         return output
 
-    def pointsCurve(self, expr, selection=None, **options):
+    def pointsCurve(self, expr, dydx=None, selection=None, **options):
         """Create a PlotCurve of a dataset.
 
         @type expr: string or PmmlExpression
         @param expr: The expression to evaluate and plot.
+        @type dydx: string, PmmlExpression, or None
+        @param dydx: The expression to use as a derivative.
         @type selection: string, PmmlExpression, PmmlPredicate, or None
         @param selection: The expression to evaluate to filter data in the plot.
         @param **options: Options for a PlotCurve, PlotOverlay, PlotWindow, or PlotCanvas.
@@ -806,11 +821,21 @@ class PlotToolkit(Toolkit):
         else:
             raise TypeError("expr must be a string or PmmlExpression, not %r" % expr)
 
+        if dydx is not None:
+            if isinstance(dydx, basestring):
+                dydx = Formula.expansion(self.modelLoader, dydx)
+            elif isinstance(dydx, PmmlExpression):
+                pass
+            else:
+                raise TypeError("dydx must be a string or PmmlExpression, not %r" % dydx)
+
         E = self.modelLoader.elementMaker()
 
         selection = self._transformSelection(E, selection)
 
         curvePlot = E.PlotCurve(E.PlotNumericExpression(expr, role="y"), **curveOptions)
+        if dydx is not None:
+            curvePlot.append(E.PlotNumericExpression(dydx, role="dy"))
         if selection is not None:
             curvePlot.append(selection)
 
@@ -818,13 +843,17 @@ class PlotToolkit(Toolkit):
         self.modelLoader.validate(output)
         return output
 
-    def parametricPointsCurve(self, xexpr, yexpr, selection=None, **options):
+    def parametricPointsCurve(self, xexpr, yexpr, dxdt=None, dydt=None, selection=None, **options):
         """Create a parametric PlotCurve of a dataset.
 
         @type xexpr: string or PmmlExpression
         @param xexpr: The x expression to evaluate and plot.
         @type yexpr: string or PmmlExpression
         @param yexpr: The y expression to evaluate and plot.
+        @type dxdt: string, PmmlExpression, or None
+        @param dxdt: The expression to use as a dx/dt derivative.
+        @type dydt: string, PmmlExpression, or None
+        @param dydt: The expression to use as a dy/dt derivative.
         @type selection: string, PmmlExpression, PmmlPredicate, or None
         @param selection: The expression to evaluate to filter data in the plot.
         @param **options: Options for a PlotCurve, PlotOverlay, PlotWindow, or PlotCanvas.
@@ -865,11 +894,31 @@ class PlotToolkit(Toolkit):
         else:
             raise TypeError("yexpr must be a string or PmmlExpression, not %r" % yexpr)
 
+        if dxdt is not None:
+            if isinstance(dxdt, basestring):
+                dxdt = Formula.expansion(self.modelLoader, dxdt)
+            elif isinstance(dxdt, PmmlExpression):
+                pass
+            else:
+                raise TypeError("dxdt must be a string or PmmlExpression, not %r" % dxdt)
+
+        if dydt is not None:
+            if isinstance(dydt, basestring):
+                dydt = Formula.expansion(self.modelLoader, dydt)
+            elif isinstance(dydt, PmmlExpression):
+                pass
+            else:
+                raise TypeError("dydt must be a string or PmmlExpression, not %r" % dydt)
+
         E = self.modelLoader.elementMaker()
 
         selection = self._transformSelection(E, selection)
 
         curvePlot = E.PlotCurve(E.PlotNumericExpression(xexpr, role="x"), E.PlotNumericExpression(yexpr, role="y"), **curveOptions)
+        if dxdt is not None:
+            curvePlot.append(E.PlotNumericExpression(dxdt, role="dx"))
+        if dydt is not None:
+            curvePlot.append(E.PlotNumericExpression(dydt, role="dy"))
         if selection is not None:
             curvePlot.append(selection)
 
