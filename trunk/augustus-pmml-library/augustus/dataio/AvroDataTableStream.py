@@ -22,6 +22,7 @@
 
 import glob
 import json
+import os
 
 from augustus.core.DataTable import DataTable
 from augustus.core.DataTableState import DataTableState
@@ -47,26 +48,48 @@ class AvroDataTableStream(object):
 
     def __init__(self, fileNames, namesToFieldTypes=None, namesToAvroPaths=None, inputState=None, chunkSize=1000000):
         if InputStream is None:
-            raise RuntimeError("The optional augustus.avrostream module is required for \"AvroDataTableStream\" but it hasn't been installed;%sRecommendation: re-build Augustus with \"python setup.py install --with-avrostream\"" % (os.linesep, os.linesep))
+            raise RuntimeError("The optional augustus.avrostream module is required for \"AvroDataTableStream\" but it hasn't been installed or the Avro C++ library is not accessible;%sRecommendations: re-build Augustus with \"python setup.py install --with-avrostream\" or correct your LD_LIBRARY_PATH" % os.linesep)
 
-        self.fileNames = glob.glob(fileNames)
-        if len(self.fileNames) == 0:
-            raise IOError("No files matched the fileName pattern \"%s\"" % fileNames)
+        if isinstance(fileNames, basestring):
+            self.fileNames = glob.glob(fileNames)
+            if len(self.fileNames) == 0:
+                raise IOError("No files matched the fileName pattern \"%s\"" % fileNames)
+        else:
+            self.fileNames = fileNames
 
         self.schema = None
         for fileName in self.fileNames:
             inputStream = InputStream()
             inputStream.start(fileName, 0, {}, {})
-            schema = json.loads(inputStream.schema())
-            if self.schema is not None and schema != self.schema:
-                raise ValueError("these files do not all have the same schema")
-            self.schema = schema
+            try:
+                schema = json.loads(inputStream.schema())
+                if self.schema is not None and schema != self.schema:
+                    raise ValueError("these files do not all have the same schema")
+                self.schema = schema
+            except Exception:
+                raise
+            finally:
+                inputStream.close()
 
         if self.schema["type"] != "record":
             raise TypeError("Top level of schema must describe a record, not %r" % self.schema)
 
         if namesToFieldTypes is None:
-            namesToFieldTypes = dict((x["name"], None) for x in self.schema["fields"])
+            if namesToAvroPaths is None:
+                namesToFieldTypes = dict((x["name"], None) for x in self.schema["fields"])
+
+                # If no parameters are given and this is a map-reduce result, drill down and get the values.
+                if set(namesToFieldTypes.keys()) == set(["key", "value"]) and [x["type"] for x in self.schema["fields"] if x["name"] == "key"][0] == "string" and [x["type"] for x in self.schema["fields"] if x["name"] == "value"][0]["type"] == "record":
+                    del namesToFieldTypes["value"]
+                    namesToAvroPaths = {"key": ("key",)}
+                    for x in [x["type"] for x in self.schema["fields"] if x["name"] == "value"][0]["fields"]:
+                        name = x["name"]
+                        if name != "key":
+                            namesToFieldTypes[name] = None
+                            namesToAvroPaths[name] = ("value", name)
+
+            else:
+                namesToFieldTypes = dict((x, None) for x in namesToAvroPaths)
 
         if isinstance(namesToFieldTypes, (list, tuple)):
             namesToFieldTypes = dict((x, None) for x in namesToFieldTypes)
@@ -77,9 +100,9 @@ class AvroDataTableStream(object):
                 self.namesToAvroPaths[name] = (name,)
         else:
             self.namesToAvroPaths = dict(namesToAvroPaths)
-            for path in self.namesToAvroPaths:
+            for name, path in self.namesToAvroPaths.items():
                 if isinstance(path, basestring):
-                    self.namesToAvroPaths = (path,)
+                    self.namesToAvroPaths[name] = (path,)
 
         self.namesToFieldTypes = dict(namesToFieldTypes)
         for name, fieldType in namesToFieldTypes.items():
@@ -87,12 +110,16 @@ class AvroDataTableStream(object):
             path = self.namesToAvroPaths[name]
 
             for pathname in path:
-                if schemaObject["type"] != "record":
-                    raise LookupError("path %r not found in the schema" % path)
+                if schemaObject["type"] == "record":
+                    pass
+                elif isinstance(schemaObject["type"], dict) and schemaObject["type"].get("type") == "record":
+                    schemaObject = schemaObject["type"]
+                else:
+                    raise LookupError("path %r not found in the schema" % (path,))
                 
                 fieldNames = [x["name"] for x in schemaObject["fields"]]
                 if pathname not in fieldNames:
-                    raise LookupError("path %r not found in the schema" % path)
+                    raise LookupError("path %r not found in the schema" % (path,))
 
                 schemaObject, = (x for x in schemaObject["fields"] if x["name"] == pathname)
 
@@ -117,12 +144,11 @@ class AvroDataTableStream(object):
                 self.namesToFieldTypes[name] = FakeFieldType(fieldType, "continuous")
             elif fieldType is None:
                 if avroType in ("null", "record", "array", "map", "fixed"):
-                    self.namesToFieldTypes[name] = FakeFieldType("object", "any")
-                elif avroType in ("int", "long"):
+                    del self.namesToFieldTypes[name]
+                    del self.namesToAvroPaths[name]
+                elif avroType in ("boolean", "int", "long"):
                     self.namesToFieldTypes[name] = FakeFieldType("integer", "continuous")
-                elif avroType == "float":
-                    self.namesToFieldTypes[name] = FakeFieldType("float", "continuous")
-                elif avroType == "double":
+                elif avroType in ("float", "double"):
                     self.namesToFieldTypes[name] = FakeFieldType("double", "continuous")
                 elif avroType in ("bytes", "string"):
                     self.namesToFieldTypes[name] = FakeFieldType("string", "continuous")
@@ -132,46 +158,44 @@ class AvroDataTableStream(object):
                 else:
                     raise TypeError("Unrecognized Avro type: %s" % avroType)
 
-            fieldType = self.namesToFieldTypes[name]
-            if not isinstance(fieldType, FieldType):
-                raise TypeError("namesToFieldTypes must map to FieldTypes")
+            if name in self.namesToFieldTypes:
+                fieldType = self.namesToFieldTypes[name]
+                if not isinstance(fieldType, FieldType):
+                    raise TypeError("namesToFieldTypes must map to FieldTypes")
 
-            if fieldType in ("float", "boolean", "date", "time", "dateTime", "dateDaysSince[0]", "dateDaysSince[1960]", "dateDaysSince[1970]", "dateDaysSince[1980]", "timeSeconds", "dateTimeSecondsSince[0]", "dateTimeSecondsSince[1960]", "dateTimeSecondsSince[1970]", "dateTimeSecondsSince[1980]"):
-                raise NotImplementedError
+                # TODO: make this more sensible
 
-            if fieldType.dataType == "object":
-                raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
+                if fieldType.dataType in ("date", "time", "dateTime", "dateDaysSince[0]", "dateDaysSince[1960]", "dateDaysSince[1970]", "dateDaysSince[1980]", "timeSeconds", "dateTimeSecondsSince[0]", "dateTimeSecondsSince[1960]", "dateTimeSecondsSince[1970]", "dateTimeSecondsSince[1980]"):
+                    raise NotImplementedError
 
-            elif fieldType.dataType == "string":
-                if fieldType.optype == "continuous":
-                    if avroType not in ("string", "bytes"):
+                if fieldType.dataType == "object":
+                    raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
+
+                elif fieldType.dataType == "string":
+                    if fieldType.optype == "continuous":
+                        if avroType not in ("boolean", "int", "long", "float", "double", "string", "bytes"):
+                            raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
+                    elif fieldType.optype == "categorical":
+                        if avroType != "enum":
+                            raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
+                    elif fieldType.optype == "ordinal":
+                        if avroType != "enum":
+                            raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
+
+                elif fieldType.dataType in ("boolean", "integer", "dateDaysSince[0]", "dateDaysSince[1960]", "dateDaysSince[1970]", "dateDaysSince[1980]", "timeSeconds", "dateTimeSecondsSince[0]", "dateTimeSecondsSince[1960]", "dateTimeSecondsSince[1970]", "dateTimeSecondsSince[1980]"):
+                    if avroType not in ("boolean", "int", "long"):
                         raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
-                elif fieldType.optype == "categorical":
-                    if avroType != "enum":
-                        raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
-                elif fieldType.optype == "ordinal":
-                    if avroType != "enum":
+
+                elif fieldType.dataType in ("float", "double"):
+                    if avroType not in ("boolean", "int", "long", "float", "double"):
                         raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
 
-            elif fieldType.dataType in ("integer", "dateDaysSince[0]", "dateDaysSince[1960]", "dateDaysSince[1970]", "dateDaysSince[1980]", "timeSeconds", "dateTimeSecondsSince[0]", "dateTimeSecondsSince[1960]", "dateTimeSecondsSince[1970]", "dateTimeSecondsSince[1980]"):
-                if avroType not in ("int", "long"):
+                elif fieldType.dataType == "boolean":
                     raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
 
-            elif fieldType.dataType == "float":
-                if avroType != "float":
-                    raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
-
-            elif fieldType.dataType == "double":
-                if avroType != "double":
-                    raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
-
-            elif fieldType.dataType == "boolean":
-                if avroType != "boolean":
-                    raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
-
-            elif fieldType.dataType in ("date", "time", "dateTime"):
-                if avroType != "string":
-                    raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
+                elif fieldType.dataType in ("date", "time", "dateTime"):
+                    if avroType != "string":
+                        raise TypeError("PMML type %r and Avro type \"%s\" are incompatible" % (fieldType, avroType))
 
         self.inputState = inputState
         self.chunkSize = chunkSize
@@ -216,8 +240,13 @@ class AvroDataTableStream(object):
             inputStream = InputStream()
 
             inputStream.start(fileName, self.chunkSize, namesToAvroPaths, types)
-            while True:
-                arrays = inputStream.next()
-                yield DataTable.buildManually(self.namesToFieldTypes, arrays, inputState=self.inputState)
-                if len(arrays.values()[0]) < self.chunkSize:
-                    break
+            try:
+                while True:
+                    arrays = inputStream.next()
+                    yield DataTable.buildManually(self.namesToFieldTypes, arrays, inputState=self.inputState)
+                    if len(arrays.values()[0]) < self.chunkSize:
+                        break
+            except Exception:
+                raise
+            finally:
+                inputStream.close()

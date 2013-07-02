@@ -21,6 +21,7 @@
 #include <numpy/arrayobject.h>
 
 #include "boost/any.hpp"
+#include "boost/lexical_cast.hpp"
 #include "avro/Compiler.hh"
 #include "avro/Encoder.hh"
 #include "avro/Decoder.hh"
@@ -57,6 +58,7 @@ typedef struct {
 static PyObject *avrostream_InputStream_start(avrostream_InputStream *self, PyObject *args);
 static PyObject *avrostream_InputStream_schema(avrostream_InputStream *self);
 static PyObject *avrostream_InputStream_next(avrostream_InputStream *self);
+static PyObject *avrostream_InputStream_close(avrostream_InputStream *self);
 
 /*
  * PyVarObject_HEAD_INIT was added in Python 2.6.  Its use is
@@ -101,6 +103,7 @@ static PyMethodDef avrostream_InputStream_methods[] = {
   {"start", (PyCFunction)(avrostream_InputStream_start), METH_VARARGS, "Initialize an InputStream."},
   {"schema", (PyCFunction)(avrostream_InputStream_schema), METH_NOARGS, "Get the schema from the current file."},
   {"next", (PyCFunction)(avrostream_InputStream_next), METH_NOARGS, "Get the next record or None."},
+  {"close", (PyCFunction)(avrostream_InputStream_close), METH_NOARGS, "Closes the file."},
   {NULL}
 };
 
@@ -180,12 +183,6 @@ static PyObject *avrostream_InputStream_start(avrostream_InputStream *self, PyOb
         return NULL;
       }
 
-      if (j > 0) {
-        // TODO:
-        PyErr_SetString(PyExc_NotImplementedError, "deep paths (length greater than 1) have not been implemented yet");
-        return NULL;
-      }
-
       path.push_back(std::string(PyString_AsString(itemitem)));
     }
 
@@ -235,20 +232,34 @@ static PyObject *avrostream_InputStream_start(avrostream_InputStream *self, PyOb
 
   try {
     self->dataFileReader = new avro::DataFileReader<avro::GenericDatum>(fileName);
-    self->datum = new avro::GenericDatum(self->dataFileReader->dataSchema());
   }
   catch (avro::Exception err) {
     PyErr_SetString(PyExc_IOError, err.what());
     return NULL;
   }
 
+  try {
+    self->datum = new avro::GenericDatum(self->dataFileReader->dataSchema());
+  }
+  catch (avro::Exception err) {
+    PyErr_SetString(PyExc_IOError, err.what());
+    self->dataFileReader->close();
+    return NULL;
+  }
+
   self->fieldIndexes = new std::vector<std::vector<int> >();
-  for (std::vector<std::vector<std::string> >::const_iterator path = self->paths.begin();  path != self->paths.end();  ++path) {
+  std::vector<std::string>::const_iterator theName = self->names.begin();
+  for (std::vector<std::vector<std::string> >::const_iterator path = self->paths.begin();  path != self->paths.end();  ++path, ++theName) {
     avro::NodePtr node = self->dataFileReader->dataSchema().root();
-    // TODO: verify that the top node is node->type() == avro::AVRO_RECORD and do something else if it is not
 
     std::vector<int> indexList;
     for (std::vector<std::string>::const_iterator pathname = path->begin();  pathname != path->end();  ++pathname) {
+      if (node->type() != avro::AVRO_RECORD) {
+        PyErr_SetString(PyExc_ValueError, (std::string("invalid path for \"") + *theName + std::string("\"")).c_str());
+        self->dataFileReader->close();
+        return NULL;
+      }
+
       int index = -1;
       for (unsigned int i = 0;  i < node->names();  i++) {
         if (node->nameAt(i) == *pathname) {
@@ -258,12 +269,18 @@ static PyObject *avrostream_InputStream_start(avrostream_InputStream *self, PyOb
 
       if (index == -1) {
         PyErr_SetString(PyExc_ValueError, "unrecognized name in schema");
+        self->dataFileReader->close();
         return NULL;
       }
 
       indexList.push_back(index);
+      node = node->leafAt(index);
+    }
 
-      // TODO: increment NodePtr through the tree somehow?
+    if (indexList.size() == 0) {
+      PyErr_SetString(PyExc_ValueError, "third argument: paths cannot have zero length");
+      self->dataFileReader->close();
+      return NULL;
     }
 
     self->fieldIndexes->push_back(indexList);
@@ -277,6 +294,20 @@ static PyObject *avrostream_InputStream_schema(avrostream_InputStream *self) {
   avro::NodePtr node = self->dataFileReader->dataSchema().root();
   node->printJson(stream, 0);
   return PyString_FromString(stream.str().c_str());
+}
+
+static PyObject *avrostream_InputStream_close(avrostream_InputStream *self) {
+  try {
+    if (self->dataFileReader != NULL) {
+      self->dataFileReader->close();
+    }
+  }
+  catch (avro::Exception err) {
+    PyErr_SetString(PyExc_IOError, err.what());
+    return NULL;
+  }
+
+  return Py_BuildValue("O", Py_None);
 }
 
 static PyObject *avrostream_InputStream_next(avrostream_InputStream *self) {
@@ -317,114 +348,155 @@ static PyObject *avrostream_InputStream_next(avrostream_InputStream *self) {
       }
     }
     catch (avro::Exception err) {
-      PyErr_SetString(PyExc_IOError, "Avro file reading error");
+      PyErr_SetString(PyExc_IOError, (std::string("Avro file reading error: ") + std::string(err.what())).c_str());
       goto fail;
     }
 
-    const avro::GenericRecord &record = self->datum->value<avro::GenericRecord>();
+    avro::GenericRecord &record = self->datum->value<avro::GenericRecord>();
 
     unsigned int nameIndex = 0;
     for (std::vector<std::vector<int> >::const_iterator indexList = self->fieldIndexes->begin();  indexList != self->fieldIndexes->end();  ++indexList, ++nameIndex) {
-      for (std::vector<int>::const_iterator index = indexList->begin();  index != indexList->end();  ++index) {
-        const avro::GenericDatum &field = record.fieldAt(*index);
+      avro::GenericRecord *subrecord = &record;
+      avro::GenericDatum *field = &(subrecord->fieldAt((*indexList)[0]));
 
-        // TODO: walk into the depth of the tree
+      for (unsigned int i = 1;  i < indexList->size();  i++) {
+        if (field->type() != avro::AVRO_RECORD) {
+          PyErr_SetString(PyExc_IOError, "Avro file reading error: non-record");
+          goto fail;
+        }
+        subrecord = &(field->value<avro::GenericRecord>());
+        field = &(subrecord->fieldAt((*indexList)[i]));
+      }
 
-        int type = self->types[nameIndex];
-        avro::Type fieldType = field.type();
+      int type = self->types[nameIndex];
+      avro::Type fieldType = field->type();
 
-        if (type == STRING) {
-          PyArrayIterObject *arrayiter = arrayiters[nameIndex];
-          PyObject **dataptr = (PyObject**)arrayiter->dataptr;
+      if (type == STRING) {
+        PyArrayIterObject *arrayiter = arrayiters[nameIndex];
+        PyObject **dataptr = (PyObject**)arrayiter->dataptr;
 
-          PyObject *value;
-          if (fieldType == avro::AVRO_STRING) {
-            std::string string = field.value<std::string>();
-            value = PyString_FromString(string.c_str());
+        PyObject *value;
+        if (fieldType == avro::AVRO_STRING) {
+          std::string string = field->value<std::string>();
+          value = PyString_FromString(string.c_str());
+        }
+        else if (fieldType == avro::AVRO_BYTES) {
+          std::vector<uint8_t> bytes = field->value<std::vector<uint8_t> >();
+          char *string = new char[bytes.size() + 1];
+          int pointer = 0;
+          for (std::vector<uint8_t>::const_iterator iter = bytes.begin();  iter != bytes.end();  ++iter, ++pointer) {
+            string[pointer] = (char)(*iter);
           }
-          else if (fieldType == avro::AVRO_BYTES) {
-            std::vector<uint8_t> bytes = field.value<std::vector<uint8_t> >();
-            char *string = new char[bytes.size() + 1];
-            int pointer = 0;
-            for (std::vector<uint8_t>::const_iterator iter = bytes.begin();  iter != bytes.end();  ++iter, ++pointer) {
-              string[pointer] = (char)(*iter);
-            }
-            value = PyString_FromString(string);
-            delete [] string;
-          }
-          else {
-            PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into string");
-            goto fail;
-          }
-          *dataptr = value;
+          value = PyString_FromString(string);
+          delete [] string;
+        }
+        else if (fieldType == avro::AVRO_NULL) {
+          std::string string("null");
+          value = PyString_FromString(string.c_str());
+        }
+        else if (fieldType == avro::AVRO_BOOL) {
+          std::string string(field->value<bool>() ? "true" : "false");
+          value = PyString_FromString(string.c_str());
+        }
+        else if (fieldType == avro::AVRO_INT) {
+          std::string string = boost::lexical_cast<std::string>(field->value<int32_t>());
+          value = PyString_FromString(string.c_str());
+        }
+        else if (fieldType == avro::AVRO_LONG) {
+          std::string string = boost::lexical_cast<std::string>(field->value<int64_t>());
+          value = PyString_FromString(string.c_str());
+        }
+        else if (fieldType == avro::AVRO_FLOAT) {
+          std::string string = boost::lexical_cast<std::string>(field->value<float>());
+          value = PyString_FromString(string.c_str());
+        }
+        else if (fieldType == avro::AVRO_DOUBLE) {
+          std::string string = boost::lexical_cast<std::string>(field->value<double>());
+          value = PyString_FromString(string.c_str());
+        }
+        else {
+          PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into string");
+          goto fail;
+        }
+        *dataptr = value;
           
-          PyArray_ITER_NEXT(arrayiter);
+        PyArray_ITER_NEXT(arrayiter);
+      }
+
+      else if (type == CATEGORY) {
+        PyArrayIterObject *arrayiter = arrayiters[nameIndex];
+        long *dataptr = (long*)arrayiter->dataptr;
+
+        long value;
+        if (fieldType == avro::AVRO_ENUM) {
+          avro::GenericEnum e = field->value<avro::GenericEnum>();
+          value = e.value();
         }
-
-        else if (type == CATEGORY) {
-          PyArrayIterObject *arrayiter = arrayiters[nameIndex];
-          long *dataptr = (long*)arrayiter->dataptr;
-
-          long value;
-          if (fieldType == avro::AVRO_ENUM) {
-            avro::GenericEnum e = field.value<avro::GenericEnum>();
-            value = e.value();
-          }
-          else {
-            PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into category");
-            goto fail;
-          }
-          *dataptr = value;
-
-          PyArray_ITER_NEXT(arrayiter);
+        else {
+          PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into category");
+          goto fail;
         }
+        *dataptr = value;
 
-        else if (type == INTEGER) {
-          PyArrayIterObject *arrayiter = arrayiters[nameIndex];
-          long *dataptr = (long*)arrayiter->dataptr;
+        PyArray_ITER_NEXT(arrayiter);
+      }
 
-          long value;
-          if (fieldType == avro::AVRO_INT) {
-            value = field.value<int32_t>();
-          }
-          else if (fieldType == avro::AVRO_LONG) {
-            value = field.value<int64_t>();
-          }
-          else {
-            PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into integer");
-            goto fail;
-          }
-          *dataptr = value;
+      else if (type == INTEGER) {
+        PyArrayIterObject *arrayiter = arrayiters[nameIndex];
+        long *dataptr = (long*)arrayiter->dataptr;
 
-          PyArray_ITER_NEXT(arrayiter);
+        long value;
+        if (fieldType == avro::AVRO_BOOL) {
+          value = field->value<bool>() ? 1 : 0;
         }
-
-        else if (type == DOUBLE) {
-          PyArrayIterObject *arrayiter = arrayiters[nameIndex];
-          double *dataptr = (double*)arrayiter->dataptr;
-
-          double value;
-          if (fieldType == avro::AVRO_INT) {
-            value = field.value<int32_t>();
-          }
-          else if (fieldType == avro::AVRO_LONG) {
-            value = field.value<int64_t>();
-          }
-          else if (fieldType == avro::AVRO_FLOAT) {
-            value = field.value<float>();
-          }
-          else if (fieldType == avro::AVRO_DOUBLE) {
-            value = field.value<double>();
-          }
-          else {
-            PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into double");
-            goto fail;
-            return NULL;
-          }
-          *dataptr = value;
-
-          PyArray_ITER_NEXT(arrayiter);
+        else if (fieldType == avro::AVRO_INT) {
+          value = field->value<int32_t>();
         }
+        else if (fieldType == avro::AVRO_LONG) {
+          value = field->value<int64_t>();
+        }
+        else {
+          PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into integer");
+          goto fail;
+        }
+        *dataptr = value;
+
+        PyArray_ITER_NEXT(arrayiter);
+      }
+
+      else if (type == DOUBLE) {
+        PyArrayIterObject *arrayiter = arrayiters[nameIndex];
+        double *dataptr = (double*)arrayiter->dataptr;
+
+        double value;
+        if (fieldType == avro::AVRO_BOOL) {
+          value = field->value<bool>() ? 1.0 : 0.0;
+        }
+        else if (fieldType == avro::AVRO_INT) {
+          value = field->value<int32_t>();
+        }
+        else if (fieldType == avro::AVRO_LONG) {
+          value = field->value<int64_t>();
+        }
+        else if (fieldType == avro::AVRO_FLOAT) {
+          value = field->value<float>();
+        }
+        else if (fieldType == avro::AVRO_DOUBLE) {
+          value = field->value<double>();
+        }
+        else {
+          PyErr_SetString(PyExc_TypeError, "cannot cast Avro type into double");
+          goto fail;
+          return NULL;
+        }
+        *dataptr = value;
+
+        PyArray_ITER_NEXT(arrayiter);
+      }
+
+      else {
+        PyErr_SetString(PyExc_IOError, "Avro file reading error: unrecognized type");
+        goto fail;
       }
     }
   }
