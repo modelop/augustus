@@ -20,6 +20,6 @@
 
 """This module defines the version of Augustus."""
 
-__version_info__ = (0, 6, "b1")
+__version_info__ = (0, 6, "b2")
 
 __version__ = ".".join(map(str, __version_info__))
