@@ -37,6 +37,7 @@ from augustus.core.DataTable import DataTable
 from augustus.core.DataTableFields import DataTableFields
 from augustus.core.DataTableState import DataTableState
 from augustus.core.DataTablePlots import DataTablePlots
+from augustus.core.FakeFieldType import FakeFieldType
 
 ### functions
 from augustus.core.Function import Function
