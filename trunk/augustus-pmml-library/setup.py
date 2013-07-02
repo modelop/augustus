@@ -4,6 +4,7 @@ import sys
 import os
 from distutils.core import setup, Extension
 from distutils.command.build_ext import build_ext
+import getopt
 
 import augustus.version
 
