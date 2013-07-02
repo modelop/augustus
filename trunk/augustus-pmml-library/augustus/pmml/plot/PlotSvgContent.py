@@ -26,6 +26,7 @@ from augustus.core.defs import defs
 from augustus.core.SvgBinding import SvgBinding
 from augustus.core.FakeFieldType import FakeFieldType
 from augustus.core.plot.PmmlPlotContent import PmmlPlotContent
+from augustus.core.plot.PlotCoordinatesWindow import PlotCoordinatesWindow
 from augustus.pmml.plot.PlotSvgAnnotation import PlotSvgAnnotation
 
 class PlotSvgContent(PmmlPlotContent):
@@ -149,13 +150,17 @@ class PlotSvgContent(PmmlPlotContent):
             raise defs.PmmlValidationError("PlotSvgContent should specify an inline SVG or a fileName but not both or neither")
         
         sx1, sy1, sx2, sy2 = PlotSvgAnnotation.findSize(svgBinding)
-        tx1, ty1 = plotCoordinates(x1, y2)   # flip y
-        tx2, ty2 = plotCoordinates(x2, y1)
+        subCoordinates = PlotCoordinatesWindow(plotCoordinates, sx1, sy1, sx2, sy2, x1, y1, x2 - x1, y2 - y1)
 
-        transform = "translate(%r, %r) scale(%r, %r)" % (tx1 - sx1, ty1 - sy1, (tx2 - tx1)/float(sx2 - sx1), (ty2 - ty1)/float(sy2 - sy1))
+        tx0, ty0 = subCoordinates(0.0, 0.0)
+        tx1, ty1 = subCoordinates(1.0, 1.0)
+        transform = "translate(%r, %r) scale(%r, %r)" % (tx0, ty0, tx1 - tx0, ty1 - ty0)
 
+        attribs = {"transform": transform}
         svgId = self.get("svgId")
-        if svgId is None:
-            return svg.g(copy.deepcopy(svgBinding), transform=transform)
-        else:
-            return svg.g(copy.deepcopy(svgBinding), id=svgId, transform=transform)
+        if svgId is not None:
+            attribs["id"] = svgId
+        if "style" in svgBinding.attrib:
+            attribs["style"] = svgBinding.attrib["style"]
+
+        return svg.g(*(copy.deepcopy(svgBinding).getchildren()), **attribs)

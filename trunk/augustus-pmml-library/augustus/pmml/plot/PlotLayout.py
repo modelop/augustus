@@ -54,7 +54,13 @@ class PlotLayout(PmmlPlotFrame):
         border-left-width, border-width: thickness of the border.
       - padding-top, padding-right, padding-bottom, padding-left,
         padding: space between the border and the inner content.
-      - title-height: height of the global title.
+      - row-heights, col-widths: space-delimited array of relative
+        heights and widths of each row and column, respectively;
+        use C{"auto"} for equal divisions (the default); raises an
+        error if the number of elements in the array is not equal
+        to C{rows} or C{cols}, respectively.
+      - title-height, title-gap: height of and gap below the global
+        title.
       - background, background-opacity: color of the background.
       - border-color, border-dasharray, border-dashoffset,
         border-linecap, border-linejoin, border-miterlimit,
@@ -69,13 +75,14 @@ class PlotLayout(PmmlPlotFrame):
     styleProperties = ["margin-top", "margin-right", "margin-bottom", "margin-left", "margin",
                        "border-top-width", "border-right-width", "border-bottom-width", "border-left-width", "border-width",
                        "padding-top", "padding-right", "padding-bottom", "padding-left", "padding",
-                       "title-height",
+                       "row-heights", "col-widths",
+                       "title-height", "title-gap",
                        "background", "background-opacity", 
                        "border-color", "border-dasharray", "border-dashoffset", "border-linecap", "border-linejoin", "border-miterlimit", "border-opacity", "border-width",
                        "font", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight",
                        ]
 
-    styleDefaults = {"background": "none", "border-color": "none", "margin": "2", "padding": "2", "border-width": "0", "title-height": "30", "title-color": "black", "font-size": "30.0"}
+    styleDefaults = {"background": "none", "border-color": "none", "margin": "2", "padding": "2", "border-width": "0", "row-heights": "auto", "col-widths": "auto", "title-height": "30", "title-gap": "5", "title-color": "black", "font-size": "30.0"}
 
     xsd = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:element name="PlotLayout">
@@ -130,8 +137,8 @@ class PlotLayout(PmmlPlotFrame):
                 if styleProperty in style:
                     textStyle[styleProperty] = style[styleProperty]
 
-            plotContentBox = plotContentBox.subContent({"margin-top": style["title-height"]})
-            content.append(svg.text(title, **{"transform": "translate(%r,%r)" % (plotContentBox.x + plotContentBox.width / 2.0, plotContentBox.y), "text-anchor": "middle", defs.XML_SPACE: "preserve", "style": PlotStyle.toString(textStyle)}))
+            plotContentBox = plotContentBox.subContent({"margin-top": repr(float(style.get("margin-top", style["margin"])) + float(style["title-height"]) + float(style["title-gap"]))})
+            content.append(svg.text(title, **{"transform": "translate(%r,%r)" % (plotContentBox.x + plotContentBox.width / 2.0, plotContentBox.y - float(style["title-gap"])), "text-anchor": "middle", defs.XML_SPACE: "preserve", "style": PlotStyle.toString(textStyle)}))
 
         subContentBox = plotContentBox.subContent(style)
         borderRect = plotContentBox.border(style)
@@ -161,25 +168,54 @@ class PlotLayout(PmmlPlotFrame):
             rows = self.get("rows", defaultFromXsd=True, convertType=True)
             cols = self.get("cols", defaultFromXsd=True, convertType=True)
             
-            cellWidth = subContentBox.width / float(cols)
-            cellHeight = subContentBox.height / float(rows)
+            rowHeights = style["row-heights"]
+            if rowHeights == "auto":
+                rowHeights = [subContentBox.height / float(rows)] * rows
+            else:
+                try:
+                    rowHeights = map(float, rowHeights.split())
+                    if any(x <= 0.0 for x in rowHeights): raise ValueError
+                except ValueError:
+                    raise defs.PmmlValidationError("If not \"auto\", all items in row-heights must be positive numbers")
+                if len(rowHeights) != rows:
+                    raise defs.PmmlValidationError("Number of elements in row-heights (%d) must be equal to rows (%d)" % (len(rowHeights), rows))
+
+                norm = sum(rowHeights) / subContentBox.height
+                rowHeights = [x/norm for x in rowHeights]
+
+            colWidths = style["col-widths"]
+            if colWidths == "auto":
+                colWidths = [subContentBox.width / float(cols)] * cols
+            else:
+                try:
+                    colWidths = map(float, colWidths.split())
+                    if any(x <= 0.0 for x in colWidths): raise ValueError
+                except ValueError:
+                    raise defs.PmmlValidationError("If not \"auto\", all items in col-widths must be positive numbers")
+                if len(colWidths) != cols:
+                    raise defs.PmmlValidationError("Number of elements in col-widths (%d) must be equal to cols (%d)" % (len(colWidths), cols))
+
+                norm = sum(colWidths) / subContentBox.width
+                colWidths = [x/norm for x in colWidths]
 
             plotFramesIndex = 0
+            cellY = subContentBox.y
             for vertCell in xrange(rows):
+                cellX = subContentBox.x
                 for horizCell in xrange(cols):
                     if plotFramesIndex < len(plotFrames):
                         plotFrame = plotFrames[plotFramesIndex]
-                        cellX = subContentBox.x + horizCell*cellWidth
-                        cellY = subContentBox.y + vertCell*cellHeight
 
                         cellCoordinates = PlotCoordinatesOffset(plotCoordinates, cellX, cellY)
-                        cellContentBox = PlotContentBox(0, 0, cellWidth, cellHeight)
+                        cellContentBox = PlotContentBox(0, 0, colWidths[horizCell], rowHeights[vertCell])
 
                         performanceTable.pause("PlotLayout")
                         content.append(plotFrame.frame(dataTable, functionTable, performanceTable, cellCoordinates, cellContentBox, plotDefinitions))
                         performanceTable.unpause("PlotLayout")
 
                     plotFramesIndex += 1
+                    cellX += colWidths[horizCell]
+                cellY += rowHeights[vertCell]
 
         ### border rectangle (reuses subAttrib, replaces subAttrib["style"])
         if borderRect is not None:

@@ -46,11 +46,15 @@ class PlotScatter(PmmlPlotContent):
       - PlotNumericExpression role="y-errorbar"
       - PlotNumericExpression role="y-errorbar-up"
       - PlotNumericExpression role="y-errorbar-down"
-      - PlotSelection: expression or predicate to filter the data
-        before plotting.
+      - PlotNumericExpression role="weight" PlotSelection: expression
+      - or predicate to filter the data before plotting.
 
-    Errorbars do not need to be specified, but asymmetric and symmetric
-    error bars are mututally exclusive.
+    Errorbars do not need to be specified, but asymmetric and
+    symmetric error bars are mututally exclusive.
+
+    The optional C{weight} scales the opacity according to values
+    observed in data.  These must be scaled by the user to lie in the
+    range 0 to 1.
 
     PMML attributes:
 
@@ -87,7 +91,7 @@ class PlotScatter(PmmlPlotContent):
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="Extension" minOccurs="0" maxOccurs="unbounded" />
-                <xs:element ref="PlotNumericExpression" minOccurs="2" maxOccurs="6" />
+                <xs:element ref="PlotNumericExpression" minOccurs="2" maxOccurs="9" />
                 <xs:element ref="PlotSelection" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="PlotSvgMarker" minOccurs="0" maxOccurs="1" />
             </xs:sequence>
@@ -202,7 +206,7 @@ class PlotScatter(PmmlPlotContent):
             return svg.g(copy.deepcopy(svgBinding), id=svgIdMarker, transform=transform)
 
     @staticmethod
-    def drawErrorbars(xarray, yarray, exup, exdown, eyup, eydown, markerSize, strokeStyle):
+    def drawErrorbars(xarray, yarray, exup, exdown, eyup, eydown, markerSize, strokeStyle, weight=None):
         """Draw a set of error bars, given values in global SVG
         coordinates.
 
@@ -222,12 +226,17 @@ class PlotScatter(PmmlPlotContent):
         @param markerSize: Size of the marker in SVG coordinates.
         @type strokeStyle: dict
         @param strokeStyle: CSS style attributes appropriate for stroking (not filling) in dictionary form.
+        @type weight: 1d Numpy array or None
+        @param weight: The opacity of each point (if None, the opacity is not specified and is therefore fully opaque).
         """
 
         svg = SvgBinding.elementMaker
         output = []
         
+        strokeStyle = copy.copy(strokeStyle)
         strokeStyle["fill"] = "none"
+        if weight is not None:
+            strokeStyle["opacity"] = "1"
 
         for i in xrange(len(xarray)):
             x = xarray[i]
@@ -246,6 +255,8 @@ class PlotScatter(PmmlPlotContent):
                 pathdata.append("M %r %r L %r %r" % (x - markerSize, eyup[i],   x + markerSize,   eyup[i]))
 
             if len(pathdata) > 0:
+                if weight is not None:
+                    strokeStyle["opacity"] = repr(weight[i])
                 output.append(svg.path(d=" ".join(pathdata), style=PlotStyle.toString(strokeStyle)))
 
         return output
@@ -290,7 +301,7 @@ class PlotScatter(PmmlPlotContent):
 
         self._saveContext(dataTable)
 
-        self.checkRoles(["x", "y", "x-errorbar", "x-errorbar-up", "x-errorbar-down", "y-errorbar", "y-errorbar-up", "y-errorbar-down"])
+        self.checkRoles(["x", "y", "x-errorbar", "x-errorbar-up", "x-errorbar-down", "y-errorbar", "y-errorbar-up", "y-errorbar-down", "weight"])
 
         xExpression = self.xpath("pmml:PlotNumericExpression[@role='x']")
         yExpression = self.xpath("pmml:PlotNumericExpression[@role='y']")
@@ -304,7 +315,9 @@ class PlotScatter(PmmlPlotContent):
         eyExpression = self.xpath("pmml:PlotNumericExpression[@role='y-errorbar']")
         eyupExpression = self.xpath("pmml:PlotNumericExpression[@role='y-errorbar-up']")
         eydownExpression = self.xpath("pmml:PlotNumericExpression[@role='y-errorbar-down']")
-        
+
+        weightExpression = self.xpath("pmml:PlotNumericExpression[@role='weight']")
+
         if len(xExpression) != 1 or len(yExpression) != 1:
             raise defs.PmmlValidationError("PlotScatter requires two PlotNumericExpressions, one with role \"x\", the other with role \"y\"")
 
@@ -338,6 +351,11 @@ class PlotScatter(PmmlPlotContent):
         else:
             raise defs.PmmlValidationError("Use \"y-errorbar\" for symmetric error bars or \"y-errorbar-up\" and \"y-errorbar-down\" for asymmetric errorbars, but no other combinations")
 
+        if len(weightExpression) == 1:
+            weight = weightExpression[0].evaluate(dataTable, functionTable, performanceTable)
+        else:
+            weight = None
+
         performanceTable.begin("PlotScatter prepare")
 
         if xValues.mask is not None:
@@ -358,7 +376,6 @@ class PlotScatter(PmmlPlotContent):
         state.y = yValues.data[selection]
 
         state.exup, state.exdown, state.eyup, state.eydown = None, None, None, None
-
         if exup is not None:
             state.exup = exup.data[selection]
         if exdown is not None:
@@ -367,6 +384,10 @@ class PlotScatter(PmmlPlotContent):
             state.eyup = eyup.data[selection]
         if eydown is not None:
             state.eydown = eydown.data[selection]
+
+        state.weight = None
+        if weight is not None:
+            state.weight = weight.data[selection]
 
         stateId = self.get("stateId")
         if stateId is not None:
@@ -387,6 +408,9 @@ class PlotScatter(PmmlPlotContent):
                 if eydown is not None:
                     state.eydown = NP("concatenate", (persistentState["eydown"], state.eydown))
 
+                if weight is not None:
+                    state.weight = NP("concatenate", (persistentState["weight"], state.weight))
+
             persistentState["x"] = state.x
             persistentState["y"] = state.y
 
@@ -398,6 +422,9 @@ class PlotScatter(PmmlPlotContent):
                 persistentState["eyup"] = state.eyup
             if eydown is not None:
                 persistentState["eydown"] = state.eydown
+
+            if weight is not None:
+                persistentState["weight"] = state.weight
 
         plotRange.expand(state.x, state.y, xValues.fieldType, yValues.fieldType)
         performanceTable.end("PlotScatter prepare")
@@ -433,7 +460,7 @@ class PlotScatter(PmmlPlotContent):
         # state.x = state.x[selection]
         # state.y = state.y[selection]
 
-        plotx, ploty, plotexup, plotexdown, ploteyup, ploteydown = None, None, None, None, None, None
+        plotx, ploty, plotexup, plotexdown, ploteyup, ploteydown, plotweight = None, None, None, None, None, None, None
 
         if self.get("limit") is not None and int(self.get("limit")) < len(state.x):
             indexes = random.sample(xrange(len(state.x)), int(self.get("limit")))
@@ -456,6 +483,9 @@ class PlotScatter(PmmlPlotContent):
                     ploteyup = NP(ploty + NP("absolute", state.eyup[indexes]))
                     ploteydown = NP(ploty - NP("absolute", state.eyup[indexes]))
 
+            if state.weight is not None:
+                plotweight = state.weight[indexes]
+
         else:
             plotx = state.x
             ploty = state.y
@@ -476,6 +506,9 @@ class PlotScatter(PmmlPlotContent):
                     ploteyup = NP(ploty + NP("absolute", state.eyup))
                     ploteydown = NP(ploty - NP("absolute", state.eyup))
 
+            if state.weight is not None:
+                plotweight = state.weight
+
         if plotexup is not None:
             plotexup, dummy = plotCoordinates(plotexup, ploty)
         if plotexdown is not None:
@@ -489,10 +522,13 @@ class PlotScatter(PmmlPlotContent):
 
         style = self.getStyleState()
         strokeStyle = dict((x, style[x]) for x in style if x.startswith("stroke"))
-        output.extend(self.drawErrorbars(plotx, ploty, plotexup, plotexdown, ploteyup, ploteydown, float(style["marker-size"]), strokeStyle))
+        output.extend(self.drawErrorbars(plotx, ploty, plotexup, plotexdown, ploteyup, ploteydown, float(style["marker-size"]), strokeStyle, weight=plotweight))
 
         markerReference = "#" + marker.get("id")
-        output.extend(svg.use(**{"x": repr(x), "y": repr(y), defs.XLINK_HREF: markerReference}) for x, y in itertools.izip(plotx, ploty))
+        if plotweight is None:
+            output.extend(svg.use(**{"x": repr(x), "y": repr(y), defs.XLINK_HREF: markerReference}) for x, y in itertools.izip(plotx, ploty))
+        else:
+            output.extend(svg.use(**{"x": repr(x), "y": repr(y), "style": "opacity: %r;" % w, defs.XLINK_HREF: markerReference}) for x, y, w in itertools.izip(plotx, ploty, plotweight))
 
         svgId = self.get("svgId")
         if svgId is not None:

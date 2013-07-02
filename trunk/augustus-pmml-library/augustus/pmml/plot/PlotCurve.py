@@ -52,6 +52,8 @@ class PlotCurve(PmmlPlotContent):
 
       - PlotNumericExpression role="x"
       - PlotNumericExpression role="y"
+      - PlotNumericExpression role="dx" (optional)
+      - PlotNumericExpression role="dy" (optional)
       - PlotSelection (optional)
 
     PMML attributes:
@@ -96,7 +98,7 @@ class PlotCurve(PmmlPlotContent):
                 <xs:choice minOccurs="1" maxOccurs="1">
                     <xs:element ref="PlotFormula" minOccurs="1" maxOccurs="4" />
                     <xs:sequence>
-                        <xs:element ref="PlotNumericExpression" minOccurs="1" maxOccurs="2" />
+                        <xs:element ref="PlotNumericExpression" minOccurs="1" maxOccurs="4" />
                         <xs:element ref="PlotSelection" minOccurs="0" maxOccurs="1" />
                     </xs:sequence>
                 </xs:choice>
@@ -457,7 +459,7 @@ class PlotCurve(PmmlPlotContent):
         @param plotRange: The bounding box of plot coordinates that this function will expand.
         """
 
-        self.checkRoles(["y(x)", "dy/dx", "x(t)", "y(t)", "dx/dt", "dy/dt", "x", "y"])
+        self.checkRoles(["y(x)", "dy/dx", "x(t)", "y(t)", "dx/dt", "dy/dt", "x", "y", "dx", "dy"])
 
         performanceTable.begin("PlotCurve prepare")
         self._saveContext(dataTable)
@@ -472,6 +474,8 @@ class PlotCurve(PmmlPlotContent):
 
         nx = self.xpath("pmml:PlotNumericExpression[@role='x']")
         ny = self.xpath("pmml:PlotNumericExpression[@role='y']")
+        ndx = self.xpath("pmml:PlotNumericExpression[@role='dx']")
+        ndy = self.xpath("pmml:PlotNumericExpression[@role='dy']")
         cutExpression = self.xpath("pmml:PlotSelection")
 
         if len(yofx) + len(dydx) + len(xoft) + len(yoft) + len(dxdt) + len(dydt) > 0:
@@ -505,6 +509,17 @@ class PlotCurve(PmmlPlotContent):
             state.x, state.y, state.dx, state.dy, xfieldType, yfieldType = self.expressionsToPoints(expression, derivative, samples, loop, functionTable, performanceTable)
 
         else:
+            performanceTable.pause("PlotCurve prepare")
+            if len(ndx) == 1:
+                dxdataColumn = ndx[0].evaluate(dataTable, functionTable, performanceTable)
+            else:
+                dxdataColumn = None
+            if len(ndy) == 1:
+                dydataColumn = ndy[0].evaluate(dataTable, functionTable, performanceTable)
+            else:
+                dydataColumn = None
+            performanceTable.unpause("PlotCurve prepare")
+
             if len(nx) == 0 and len(ny) == 1:
                 performanceTable.pause("PlotCurve prepare")
                 ydataColumn = ny[0].evaluate(dataTable, functionTable, performanceTable)
@@ -519,12 +534,22 @@ class PlotCurve(PmmlPlotContent):
 
                 if ydataColumn.mask is not None:
                     selection = NP("logical_and", selection, NP(ydataColumn.mask == defs.VALID), selection)
+                if dxdataColumn is not None and dxdataColumn.mask is not None:
+                    selection = NP("logical_and", selection, NP(dxdataColumn.mask == defs.VALID), selection)
+                if dydataColumn is not None and dydataColumn.mask is not None:
+                    selection = NP("logical_and", selection, NP(dydataColumn.mask == defs.VALID), selection)
                     
                 yarray = ydataColumn.data[selection]
 
                 xarray = NP("ones", len(yarray), dtype=NP.dtype(float))
                 xarray[0] = 0.0
                 xarray = NP("cumsum", xarray)
+
+                dxarray, dyarray = None, None
+                if dxdataColumn is not None:
+                    dxarray = dxdataColumn.data[selection]
+                if dydataColumn is not None:
+                    dyarray = dydataColumn.data[selection]
 
                 xfieldType = self.xfieldType
                 yfieldType = ydataColumn.fieldType
@@ -544,12 +569,21 @@ class PlotCurve(PmmlPlotContent):
 
                 if xdataColumn.mask is not None:
                     selection = NP("logical_and", selection, NP(xdataColumn.mask == defs.VALID), selection)
-
                 if ydataColumn.mask is not None:
                     selection = NP("logical_and", selection, NP(ydataColumn.mask == defs.VALID), selection)
+                if dxdataColumn is not None and dxdataColumn.mask is not None:
+                    selection = NP("logical_and", selection, NP(dxdataColumn.mask == defs.VALID), selection)
+                if dydataColumn is not None and dydataColumn.mask is not None:
+                    selection = NP("logical_and", selection, NP(dydataColumn.mask == defs.VALID), selection)
 
                 xarray = xdataColumn.data[selection]
                 yarray = ydataColumn.data[selection]
+
+                dxarray, dyarray = None, None
+                if dxdataColumn is not None:
+                    dxarray = dxdataColumn.data[selection]
+                if dydataColumn is not None:
+                    dyarray = dydataColumn.data[selection]
 
                 xfieldType = xdataColumn.fieldType
                 yfieldType = ydataColumn.fieldType
@@ -564,18 +598,38 @@ class PlotCurve(PmmlPlotContent):
                     persistentState = dataTable.state[stateId]
                     xarray = NP("concatenate", [xarray, persistentState["x"]])
                     yarray = NP("concatenate", [yarray, persistentState["y"]])
+                    if dxarray is not None:
+                        dxarray = NP("concatenate", [dxarray, persistentState["dx"]])
+                    if dyarray is not None:
+                        dyarray = NP("concatenate", [dyarray, persistentState["dy"]])
                 else:
                     dataTable.state[stateId] = persistentState
 
             persistentState["x"] = xarray
             persistentState["y"] = yarray
+            if dxarray is not None:
+                persistentState["dx"] = dxarray
+            if dyarray is not None:
+                persistentState["dy"] = dyarray
 
             smooth = self.get("smooth", defaultFromXsd=True, convertType=True)
             if not smooth:
+                if dyarray is not None and dxarray is None:
+                    dxarray = NP((NP("roll", xarray, -1) - NP("roll", xarray, 1)) / 2.0)
+                    dyarray = dyarray * dxarray
+
+                loop = self.get("loop", defaultFromXsd=True, convertType=True)
+                if dxarray is not None and not loop:
+                    dxarray[0] = 0.0
+                    dxarray[-1] = 0.0
+                if dyarray is not None and not loop:
+                    dyarray[0] = 0.0
+                    dyarray[-1] = 0.0
+
                 state.x = xarray
                 state.y = yarray
-                state.dx = None
-                state.dy = None
+                state.dx = dxarray
+                state.dy = dyarray
 
             else:
                 smoothingScale = self.get("smoothingScale", defaultFromXsd=True, convertType=True)
@@ -611,9 +665,7 @@ class PlotCurve(PmmlPlotContent):
         performanceTable.begin("PlotCurve draw")
 
         loop = self.get("loop", defaultFromXsd=True, convertType=True)        
-        smooth = self.get("smooth", defaultFromXsd=True, convertType=True)        
-        
-        pathdata = self.formatPathdata(state.x, state.y, state.dx, state.dy, plotCoordinates, loop, smooth)
+        pathdata = self.formatPathdata(state.x, state.y, state.dx, state.dy, plotCoordinates, loop, (state.dx is not None and state.dy is not None))
         output = svg.g()
 
         style = self.getStyleState()
