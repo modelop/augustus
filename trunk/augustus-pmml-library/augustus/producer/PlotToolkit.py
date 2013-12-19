@@ -1017,7 +1017,7 @@ class PlotToolkit(Toolkit):
 
         E = self.modelLoader.elementMaker()
 
-        gridPlot = E.PlotGuideLines(E.PlotVerticalLines(x0=repr(x0), spacing=repr(xspacing), **lineOptions), E.PlotHorizontalLines(y0=repr(x0), spacing=repr(yspacing), **lineOptions), **guideLinesOptions)
+        gridPlot = E.PlotGuideLines(E.PlotVerticalLines(x0=repr(x0), spacing=repr(xspacing), **lineOptions), E.PlotHorizontalLines(y0=repr(y0), spacing=repr(yspacing), **lineOptions), **guideLinesOptions)
 
         output = E.PlotCanvas(E.PlotWindow(E.PlotOverlay(gridPlot, **overlayOptions), **windowOptions), **canvasOptions)
         self.modelLoader.validate(output)
