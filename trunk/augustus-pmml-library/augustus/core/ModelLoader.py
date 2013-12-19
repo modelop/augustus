@@ -239,7 +239,22 @@ class ModelLoader(object):
                 self.xsdRemove(name)
 
         if cls.xsdAppend is not None:
+            preexisting = {}
+            for elem in self.schema:
+                name = elem.get("name")
+                if name is not None:
+                    preexisting[name] = elem
+
             for newXsd in cls.xsdAppend:
+                if isinstance(newXsd, basestring):
+                    newXsd = fromstring(newXsd)
+
+                name = newXsd.get("name")
+                if name in preexisting:
+                    parent = preexisting[name].getparent()
+                    index = parent.index(preexisting[name])
+                    del parent[index]
+                    
                 self.xsdAppend(newXsd)
 
         self.preparedSchema = None
@@ -250,7 +265,7 @@ class ModelLoader(object):
 
         @type groupName: string
         @param groupName: The name of the xs:group.
-        @type newElementNames: list of strings
+        @type newElementNames: list of strings or a single string
         @param newElementNames: References to the xs:elements to add to the xs:choice block.
         """
 
