@@ -33,7 +33,7 @@ class BaselineModel(PmmlModel):
     """BaselineModel implements the baseline model in PMML, which is a
     collection of change-detection routines.
 
-    U{PMML specification<http://dmg.org/v4-1/BaselineModel.html>}.
+    U{PMML specification<http://www.dmg.org/v4-1/BaselineModel.html>}.
     """
 
     scoreType = FakeFieldType("double", "continuous")
@@ -139,7 +139,7 @@ class BaselineModel(PmmlModel):
         if len(baseline) == 0 or len(alternate) == 0:
             raise defs.PmmlValidationError("BaselineModel CUSUM requires a Baseline and an Alternate that are either GaussianDistribution or PoissonDistribution")
 
-        ratios = baseline[0].logpdf(dataColumn.data) - alternate[0].logpdf(dataColumn.data)
+        ratios = alternate[0].logpdf(dataColumn.data) - baseline[0].logpdf(dataColumn.data)
         if dataColumn.mask is None:
             good = NP("ones", len(dataColumn), dtype=NP.dtype(bool))
         else:
