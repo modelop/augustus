@@ -73,4 +73,4 @@ class GaussianDistribution(PmmlBinding):
 
         mean = float(self.attrib["mean"])
         twovariance = 2.0 * float(self.attrib["variance"])
-        return NP(NP("negative", NP("square", NP(array - mean))) / twovariance) - math.log(math.sqrt(math.pi*twovariance))
+        return NP(NP(NP("negative", NP("square", NP(array - mean))) / twovariance) - math.log(math.sqrt(math.pi*twovariance)))
