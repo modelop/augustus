@@ -255,7 +255,7 @@ class PlotWindow(PmmlPlotFrame):
         svgId = self.get("svgId")
         content = []
         if svgId is None: attrib = {}
-        else: attrib = {"svgId": svgId}
+        else: attrib = {"id": svgId}
 
         style = self.getStyleState()
         subContentBox = plotContentBox.subContent(style)

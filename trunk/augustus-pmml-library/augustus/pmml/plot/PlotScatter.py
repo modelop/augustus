@@ -46,8 +46,8 @@ class PlotScatter(PmmlPlotContent):
       - PlotNumericExpression role="y-errorbar"
       - PlotNumericExpression role="y-errorbar-up"
       - PlotNumericExpression role="y-errorbar-down"
-      - PlotNumericExpression role="weight" PlotSelection: expression
-      - or predicate to filter the data before plotting.
+      - PlotNumericExpression role="weight"
+      - PlotSelection: expression or predicate to filter the data before plotting.
 
     Errorbars do not need to be specified, but asymmetric and
     symmetric error bars are mututally exclusive.
