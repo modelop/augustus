@@ -92,7 +92,9 @@ def addPlotting(modelLoader):
             parent = derivedField.getparent()
             index = parent.index(derivedField)
 
-            replacement = E.choice(E.element(ref="PlotCanvas"))
+            derivedField.attrib["minOccurs"] = "1"
+            derivedField.attrib["maxOccurs"] = "1"
+            replacement = E.choice(E.element(ref="PlotCanvas", minOccurs="1", maxOccurs="1"), minOccurs="0", maxOccurs="unbounded")
             parent[index] = replacement
             replacement.append(derivedField)
 
