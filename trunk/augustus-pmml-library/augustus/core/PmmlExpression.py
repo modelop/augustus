@@ -26,7 +26,7 @@ class PmmlExpression(PmmlBinding):
     """PmmlExpression is an abstract base class for all PMML
     expressions.
 
-    U{PMML specification<http://dmg.org/v4-1/Transformations.html>}.
+    U{PMML specification<http://www.dmg.org/v4-1/Transformations.html>}.
     """
 
     def evaluate(self, dataTable, functionTable, performanceTable):

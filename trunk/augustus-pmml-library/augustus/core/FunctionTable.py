@@ -33,7 +33,7 @@ class FunctionTable(dict):
     """FunctionTable is a namespace of built-in and user-defined
     functions, to be used in Apply elements.
 
-    The U{PMML built-in functions<http://dmg.org/v4-1/BuiltinFunctions.html>}
+    The U{PMML built-in functions<http://www.dmg.org/v4-1/BuiltinFunctions.html>}
     are implemented as nested classes that are added to a FunctionTable
     instance when it is created.
 
