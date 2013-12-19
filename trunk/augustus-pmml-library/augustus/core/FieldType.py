@@ -215,13 +215,16 @@ class FieldType(object):
                 self.valueToString = self._valueToString_ordinal
                 self.valueToPython = self._valueToString_ordinal
 
-            else:
+            elif self.optype == "continuous":
                 self.toDataColumn = self._toDataColumn_string
                 self.fromDataColumn = self._fromDataColumn_object
                 self.dtype = NP.dtype(object)
                 self.stringToValue = self._stringToValue_string
                 self.valueToString = self._valueToString_string
                 self.valueToPython = self._valueToString_string
+
+            else:
+                raise defs.PmmlValidationError("Unrecognized optype: %s" % self.optype)
 
         elif self.dataType == "integer":
             self.toDataColumn = self._toDataColumn_number
@@ -372,6 +375,9 @@ class FieldType(object):
             self.stringToValue = self._stringToValue_dateTimeNumber
             self.valueToString = self._valueToString_dateTimeNumber
             self.valueToPython = self._valueToPython_dateTimeNumber
+
+        else:
+            raise defs.PmmlValidationError("Unrecognized dataType: %s" % self.dataType)
 
         self._hash = hash((self.dataType, self.optype, tuple(self.values), tuple(self.intervals), self.isCyclic))
 
