@@ -25,6 +25,8 @@ from augustus.core.PmmlBinding import PmmlBinding
 from augustus.core.TableInterface import TableInterface
 from augustus.core.DataTable import DataTable
 from augustus.core.FakePerformanceTable import FakePerformanceTable
+from augustus.core.FunctionTable import FunctionTable
+from augustus.core.FakeFieldType import FakeFieldType
 
 class ModelVerification(PmmlBinding):
     """ModelVerification implements PMML model verification.
@@ -32,7 +34,7 @@ class ModelVerification(PmmlBinding):
     It must be invoked manually with C{verify}: the output is a
     JSON-like list of expected/observed comparisons.
 
-    U{PMML specification<http://dmg.org/v4-1/ModelVerification.html>}.
+    U{PMML specification<http://www.dmg.org/v4-1/ModelVerification.html>}.
     """
 
     def verify(self, showSuccess=False, performanceTable=None):
@@ -78,6 +80,7 @@ class ModelVerification(PmmlBinding):
         for index, row in enumerate(self.childOfClass(TableInterface).iterate()):
             for columnName, columnValue in row.items():
                 verificationField = verificationFields.get(columnName)
+
                 if verificationField is not None:
                     while len(verificationField.data) < index:
                         verificationField.data.append(defs.PADDING)
@@ -112,6 +115,10 @@ class ModelVerification(PmmlBinding):
             while len(inputDataField) < index:
                 inputDataField.append(defs.PADDING)
                 inputMaskField.append(True)
+
+        for columnName, verificationField in verificationFields.items():
+            inputData[columnName] = verificationField.data
+            inputMask[columnName] = verificationField.mask
 
         model = self.getparent()
 
@@ -151,6 +158,15 @@ class ModelVerification(PmmlBinding):
                 raise defs.PmmlValidationError("VerificationField references field \"%s\" but it was not produced by the model")
             fieldType = observedOutput.fieldType
 
+            if fieldType.dataType == "object":
+                try:
+                    newArray = [float(x) for x in observedOutput.data]
+                except ValueError:
+                    pass
+                else:
+                    fieldType = FakeFieldType("double", "continuous")
+                    observedOutput._data = newArray
+                        
             for index in xrange(len(dataTable)):
                 record = {"field": verificationField["field"], "index": index}
 
@@ -170,8 +186,8 @@ class ModelVerification(PmmlBinding):
                     record["observedDisplayValue"] = fieldType.valueToString(record["observedValue"])
 
                     if fieldType.optype == "continuous":
-                        if abs(record["expectedValue"]) <= verificationField.zeroThreshold:
-                            record["success"] = (abs(record["observedValue"]) <= verificationField.zeroThreshold)
+                        if (abs(record["expectedValue"]) <= verificationField.zeroThreshold) and (abs(record["observedValue"]) <= verificationField.zeroThreshold):
+                            record["success"] = True
                         else:
                             record["success"] = ((record["expectedValue"] * (1.0 - verificationField.precision)) <= record["observedValue"] <= (record["expectedValue"] * (1.0 + verificationField.precision)))
 
