@@ -7,6 +7,8 @@ Augustus is being redesigned.  For stable releases of the old version, see
 the tags directory.  For now, we recommend that you use Augustus 0.5.2.0 or
 0.5.3.0.  The trunk, when it is ready, will be released as Augustus 0.6.0.0.
 
+The Augustus interactive tutorials can be found [here] (http://augustusdocs.appspot.com/docs/welcome/index.html)
+
 Information about previous releases can be found here:
 
  * [0.6 beta API Epydoc] (http://augustus-docs.s3-website-us-east-1.amazonaws.com/Epydoc/augustus-0.6.beta.uml)
