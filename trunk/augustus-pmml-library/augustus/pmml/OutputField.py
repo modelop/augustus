@@ -31,7 +31,7 @@ from augustus.core.FieldCastMethods import FieldCastMethods
 class OutputField(PmmlBinding):
     """OutputField implements PMML output formats.
 
-    U{PMML specification<http://dmg.org/v4-1/Output.html>}.
+    U{PMML specification<http://www.dmg.org/v4-1/Output.html>}.
     """
 
     def format(self, subTable, functionTable, performanceTable, score):

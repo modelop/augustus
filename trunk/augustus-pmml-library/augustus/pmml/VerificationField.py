@@ -26,6 +26,6 @@ class VerificationField(PmmlBinding):
     """VerificationField implements the VerificationField element of
     PMML model verification.
 
-    U{PMML specification<http://dmg.org/v4-1/ModelVerification.html>}.
+    U{PMML specification<http://www.dmg.org/v4-1/ModelVerification.html>}.
     """
     pass

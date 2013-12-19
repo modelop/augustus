@@ -33,7 +33,7 @@ class Discretize(PmmlExpression):
     categorical field from a continuous one by partitioning it into
     subintervals.
 
-    U{PMML specification<http://dmg.org/v4-1/Transformations.html>}.
+    U{PMML specification<http://www.dmg.org/v4-1/Transformations.html>}.
     """
 
     _optype = "categorical"

@@ -33,7 +33,7 @@ class MiningModel(PmmlModel):
     pool of models to a dataset, with models selected for individual
     data records by the data's features.
 
-    U{PMML specification<http://dmg.org/v4-1/MultipleModels.html>}.
+    U{PMML specification<http://www.dmg.org/v4-1/MultipleModels.html>}.
     """
 
     scoreType = FakeFieldType("object", "any")
